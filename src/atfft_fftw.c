@@ -9,7 +9,7 @@
 #include <fftw3.h>
 #include <stdlib.h>
 #include <string.h>
-#include "atfft.h"
+#include "../include/atfft.h"
 
 struct atfft
 {

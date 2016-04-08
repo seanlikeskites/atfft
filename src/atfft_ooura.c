@@ -8,8 +8,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "atfft.h"
-#include "fft4g.c"
+#include "../include/atfft.h"
+#include "ooura/fft4g.c"
 
 struct atfft
 {
