@@ -6,8 +6,10 @@ Transforms.
 
 Currently it provides an interface to:
 	* FFTW3 (www.fftw.org)
-	* ooura fft4g (www.kurims.kyoto-u.ac.jp/~ooura/fft.html)
+	* Ooura fft4g (www.kurims.kyoto-u.ac.jp/~ooura/fft.html)
 	* GSL (www.gnu.org/software/gsl)
+	* Kiss FFT (kissfft.sourceforge.net) 
+		- should be built with -Dkiss_fft_scalar=double
 
 Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
 
