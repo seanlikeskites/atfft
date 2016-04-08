@@ -1,0 +1,15 @@
+All The FFT!
+
+The purpose of this project is to provide a permissively licenced
+interface to various C libraries which calculate Discrete Fourier
+Transforms.
+
+Currently it provides an interface to:
+	* FFTW3 (www.fftw.org)
+	* ooura fft4g (www.kurims.kyoto-u.ac.jp/~ooura/fft.html)
+
+Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
+
+This work is free. You can redistribute it and/or modify it under the
+terms of the Do What The Fuck You Want To Public License, Version 2,
+as published by Sam Hocevar. See the COPYING file for more details.
