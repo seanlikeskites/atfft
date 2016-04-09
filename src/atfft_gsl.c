@@ -104,7 +104,7 @@ void atfft_complex_transform (struct atfft *fft, double *in, double *out)
     memcpy (out, data, nBytes);
 }
 
-void atfft_half_complex_gsl_to_fftw (double *in, double *out, int size)
+void atfft_halfcomplex_gsl_to_fftw (double *in, double *out, int size)
 {
     out [0] = in [0];
     out [1] = 0;
@@ -126,10 +126,10 @@ void atfft_real_forward_transform (struct atfft *fft, double *in, double *out)
 
     memcpy (data, in, fft->size * sizeof (*data));
     gsl_fft_real_transform (data, fft->data->stride, fft->size, fft->tables, fft->workArea);
-    atfft_half_complex_gsl_to_fftw (data, out, fft->size);
+    atfft_halfcomplex_gsl_to_fftw (data, out, fft->size);
 }
 
-void atfft_half_complex_fftw_to_gsl (double *in, double *out, int size)
+void atfft_halfcomplex_fftw_to_gsl (double *in, double *out, int size)
 {
     out [0] = in [0];
     memcpy (out + 1, in + 2, (size - 1) * sizeof (*out));
@@ -142,7 +142,7 @@ void atfft_real_backward_transform (struct atfft *fft, double *in, double *out)
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
 
-    atfft_half_complex_fftw_to_gsl (in, data, fft->size);
+    atfft_halfcomplex_fftw_to_gsl (in, data, fft->size);
     gsl_fft_halfcomplex_transform (data, fft->data->stride, fft->size, fft->tables, fft->workArea);   
     memcpy (out, data, fft->size * sizeof (*data));
 }
