@@ -31,6 +31,8 @@ int isEven (unsigned int x);
 int isOdd (unsigned int x);
 int isPowerOf2 (unsigned int x);
 
+void atfft_real (double *in, double *out, int size);
+void atfft_imag (double *in, double *out, int size);
 void atfft_real_to_complex (double *in, double *out, int size);
 void atfft_halfcomplex_to_complex (double *in, double *out, int size);
 

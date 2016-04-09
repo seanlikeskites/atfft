@@ -16,6 +16,26 @@ int isPowerOf2 (unsigned int x)
     return x && !(x & (x - 1));
 }
 
+void atfft_real (double *in, double *out, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        out [i] = in [2 * i];
+    }
+}
+
+void atfft_imag (double *in, double *out, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        out [i] = in [2 * i + 1];
+    }
+}
+
 void atfft_real_to_complex (double *in, double *out, int size)
 {
     int i = 0;
