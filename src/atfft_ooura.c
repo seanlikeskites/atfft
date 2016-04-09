@@ -104,15 +104,15 @@ atfft_half_complex_fftw_to_ooura (double *in, double *out, int size)
 {
     int i = 0;
 
-    out [0] = in [0];
+    out [0] = 2 * in [0];
 
     for (i = 2; i < size; i += 2)
     {
-        out [i] = in [i];
+        out [i] = in [i] * 2;
         out [i + 1] = -in [i + 1] * 2;
     }
 
-    out [1] = in [size];
+    out [1] = 2 * in [size];
 }
 
 void atfft_real_backward_transform (struct atfft *fft, double *in, double *out)
