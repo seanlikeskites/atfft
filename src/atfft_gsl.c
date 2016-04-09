@@ -23,7 +23,7 @@ struct atfft
     gsl_fft_complex_wavetable *tables;
 };
 
-struct atfft* atfft_create (int size, int direction)
+struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 {
     struct atfft *fft;
 

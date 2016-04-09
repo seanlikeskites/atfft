@@ -21,7 +21,7 @@ struct atfft
     kiss_fft_cfg cfg;
 };
 
-struct atfft* atfft_create (int size, int direction)
+struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 {
     struct atfft *fft;
 

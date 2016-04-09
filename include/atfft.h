@@ -12,11 +12,21 @@
 #define ATFFT_FORWARD -1
 #define ATFFT_BACKWARD 1
 
+enum atfft_format
+{
+    ATFFT_COMPLEX,
+    ATFFT_REAL
+};
+
 struct atfft;
 
-struct atfft* atfft_create (int size, int direction);
+struct atfft* atfft_create (int size, int direction, enum atfft_format format);
 void atfft_free (struct atfft *fft);
 
 void atfft_complex_transform (struct atfft *fft, double *in, double *out);
+void atfft_real_forward_transform (struct atfft *fft, double *in, double *out);
+void atfft_real_backward_transform (struct atfft *fft, double *in, double *out);
+
+int isPowerOf2 (unsigned int x);
 
 #endif /* ATFFT_H_INCLUDED */
