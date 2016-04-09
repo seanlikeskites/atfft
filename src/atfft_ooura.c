@@ -73,7 +73,7 @@ void atfft_complex_transform (struct atfft *fft, double *in, double *out)
     memcpy (out, fft->data, fft->dataSize);
 }
 
-atfft_half_complex_ooura_to_fftw (double *in, double *out, int size)
+void atfft_half_complex_ooura_to_fftw (double *in, double *out, int size)
 {
     int i = 0;
 
@@ -100,7 +100,7 @@ void atfft_real_forward_transform (struct atfft *fft, double *in, double *out)
     atfft_half_complex_ooura_to_fftw (fft->data, out, fft->size);
 }
 
-atfft_half_complex_fftw_to_ooura (double *in, double *out, int size)
+void atfft_half_complex_fftw_to_ooura (double *in, double *out, int size)
 {
     int i = 0;
 
