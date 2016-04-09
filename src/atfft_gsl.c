@@ -111,7 +111,10 @@ void atfft_half_complex_gsl_to_fftw (double *in, double *out, int size)
 
     memcpy (out + 2, in + 1, (size - 1) * sizeof (*out));
 
-    out [size + 1] = 0;
+    if (isEven (size))
+    {
+        out [size + 1] = 0;
+    }
 }
 
 void atfft_real_forward_transform (struct atfft *fft, double *in, double *out)

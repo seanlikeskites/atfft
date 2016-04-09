@@ -27,6 +27,7 @@ void atfft_complex_transform (struct atfft *fft, double *in, double *out);
 void atfft_real_forward_transform (struct atfft *fft, double *in, double *out);
 void atfft_real_backward_transform (struct atfft *fft, double *in, double *out);
 
+int isEven (unsigned int x);
 int isPowerOf2 (unsigned int x);
 
 #endif /* ATFFT_H_INCLUDED */
