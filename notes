@@ -5,6 +5,3 @@ FFT Libraries:
 	vDSP
 	kissfft
 	GSL
-
-The GSL real transforms don't see to work for signal lengths of 15.
-This needs more investigation.
