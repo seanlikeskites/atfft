@@ -48,7 +48,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             fft->data = gsl_vector_alloc (size);
             fft->workArea = gsl_fft_real_workspace_alloc (size);
 
-            if (format == ATFFT_FORWARD)
+            if (direction == ATFFT_FORWARD)
             {
                 fft->tables = gsl_fft_real_wavetable_alloc (size);
             }
