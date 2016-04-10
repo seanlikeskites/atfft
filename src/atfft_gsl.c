@@ -73,7 +73,7 @@ void atfft_free (struct atfft *fft)
             break;
 
         case ATFFT_REAL:
-            if (fft->format == ATFFT_FORWARD)
+            if (fft->direction == ATFFT_FORWARD)
             {
                 gsl_fft_real_wavetable_free (fft->tables);
             }
