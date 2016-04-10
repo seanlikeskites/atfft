@@ -11,8 +11,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "../include/atfft.h"
-#include "kiss_fft.h"
+#include <kiss_fft.h>
+#include <atfft.h>
 
 struct atfft
 {

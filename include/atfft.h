@@ -36,4 +36,7 @@ void atfft_imag (double *in, double *out, int size);
 void atfft_real_to_complex (double *in, double *out, int size);
 void atfft_halfcomplex_to_complex (double *in, double *out, int size);
 
+void atfft_normalise_real (double *data, int size);
+void atfft_normalise_complex (double *data, int size);
+
 #endif /* ATFFT_H_INCLUDED */

@@ -15,7 +15,7 @@
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
-#include "../include/atfft.h"
+#include <atfft.h>
 
 struct atfft
 {

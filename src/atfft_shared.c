@@ -1,5 +1,5 @@
 #include <math.h>
-#include "../include/atfft.h"
+#include <atfft.h>
 
 int isEven (unsigned int x)
 {
@@ -70,5 +70,25 @@ void atfft_halfcomplex_to_complex (double *in, double *out, int size)
     {
         out [2 * (size - i)] = in [2 * i];
         out [2 * (size - i) + 1] = -in [2 * i + 1];
+    }
+}
+
+void atfft_normalise_real (double *data, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        data [i] /= size;
+    }
+}
+
+void atfft_normalise_complex (double *data, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < 2 * size; ++i)
+    {
+        data [i] /= size;
     }
 }
