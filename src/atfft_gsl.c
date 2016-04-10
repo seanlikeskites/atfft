@@ -91,9 +91,9 @@ void atfft_free (struct atfft *fft)
     free (fft);
 }
 
-void atfft_complex_transform (struct atfft *fft, double *in, double *out)
+void atfft_complex_transform (struct atfft *fft, struct atfft_complex *in, struct atfft_complex *out)
 {
-    size_t nBytes = 2 * fft->size * sizeof (*in);
+    size_t nBytes = fft->size * sizeof (*in);
     gsl_complex_packed_array data = fft->data->data;
 
     /* Only to be used with complex FFTs. */
@@ -104,20 +104,20 @@ void atfft_complex_transform (struct atfft *fft, double *in, double *out)
     memcpy (out, data, nBytes);
 }
 
-void atfft_halfcomplex_gsl_to_fftw (double *in, double *out, int size)
+void atfft_halfcomplex_gsl_to_fftw (double *in, struct atfft_complex *out, int size)
 {
-    out [0] = in [0];
-    out [1] = 0;
+    out [0].real = in [0];
+    out [0].imag = 0;
 
-    memcpy (out + 2, in + 1, (size - 1) * sizeof (*out));
+    memcpy (out + 1, in + 1, (size - 1) * sizeof (*in));
 
     if (isEven (size))
     {
-        out [size + 1] = 0;
+        out [size / 2].imag = 0;
     }
 }
 
-void atfft_real_forward_transform (struct atfft *fft, double *in, double *out)
+void atfft_real_forward_transform (struct atfft *fft, double *in, struct atfft_complex *out)
 {
     double *data = fft->data->data;
 
@@ -129,13 +129,13 @@ void atfft_real_forward_transform (struct atfft *fft, double *in, double *out)
     atfft_halfcomplex_gsl_to_fftw (data, out, fft->size);
 }
 
-void atfft_halfcomplex_fftw_to_gsl (double *in, double *out, int size)
+void atfft_halfcomplex_fftw_to_gsl (struct atfft_complex *in, double *out, int size)
 {
-    out [0] = in [0];
-    memcpy (out + 1, in + 2, (size - 1) * sizeof (*out));
+    out [0] = in [0].real;
+    memcpy (out + 1, in + 1, (size - 1) * sizeof (*out));
 }
 
-void atfft_real_backward_transform (struct atfft *fft, double *in, double *out)
+void atfft_real_backward_transform (struct atfft *fft, struct atfft_complex *in, double *out)
 {
     double *data = fft->data->data;
 

@@ -86,26 +86,26 @@ void atfft_fftw_apply_transform (struct atfft *fft, double *in, double *out)
     memcpy (out, fft->out, fft->outSize);
 }
 
-void atfft_complex_transform (struct atfft *fft, double *in, double *out)
+void atfft_complex_transform (struct atfft *fft, struct atfft_complex *in, struct atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
 
-    atfft_fftw_apply_transform (fft, in, out);
+    atfft_fftw_apply_transform (fft, (double*) in, (double*) out);
 }
 
-void atfft_real_forward_transform (struct atfft *fft, double *in, double *out)
+void atfft_real_forward_transform (struct atfft *fft, double *in, struct atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
 
-    atfft_fftw_apply_transform (fft, in, out);
+    atfft_fftw_apply_transform (fft, in, (double*) out);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, double *in, double *out)
+void atfft_real_backward_transform (struct atfft *fft, struct atfft_complex *in, double *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
 
-    atfft_fftw_apply_transform (fft, in, out);
+    atfft_fftw_apply_transform (fft, (double*) in, out);
 }

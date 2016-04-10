@@ -20,7 +20,7 @@ struct atfft
     int direction;
     enum atfft_format format;
     kiss_fft_cfg cfg;
-    double *in, *out;
+    struct atfft_complex *in, *out;
 };
 
 struct atfft* atfft_create (int size, int direction, enum atfft_format format)
@@ -35,8 +35,8 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 
     if (format == ATFFT_REAL)
     {
-        fft->in = malloc (2 * size * sizeof (*(fft->in)));
-        fft->out = malloc (2 * size * sizeof (*(fft->out)));
+        fft->in = malloc (size * sizeof (*(fft->in)));
+        fft->out = malloc (size * sizeof (*(fft->out)));
     }
 
     return fft;
@@ -54,24 +54,24 @@ void atfft_free (struct atfft *fft)
     free (fft);
 }
 
-void atfft_complex_transform (struct atfft *fft, double *in, double *out)
+void atfft_complex_transform (struct atfft *fft, struct atfft_complex *in, struct atfft_complex *out)
 {
     kiss_fft (fft->cfg, (kiss_fft_cpx*) in, (kiss_fft_cpx*) out);
 }
 
-void atfft_complex_to_halfcomplex (double *in, double *out, int size)
+void atfft_complex_to_halfcomplex (struct atfft_complex *in, struct atfft_complex *out, int size)
 {
-    memcpy (out, in, 2 * (floor (size / 2) + 1) * sizeof (*out));
+    memcpy (out, in, (floor (size / 2) + 1) * sizeof (*out));
 }
 
-void atfft_real_forward_transform (struct atfft *fft, double *in, double *out)
+void atfft_real_forward_transform (struct atfft *fft, double *in, struct atfft_complex *out)
 {
     atfft_real_to_complex (in, fft->in, fft->size);
     atfft_complex_transform (fft, fft->in, fft->out);
     atfft_complex_to_halfcomplex (fft->out, out, fft->size);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, double *in, double *out)
+void atfft_real_backward_transform (struct atfft *fft, struct atfft_complex *in, double *out)
 {
     atfft_halfcomplex_to_complex (in, fft->in, fft->size);
     atfft_complex_transform (fft, fft->in, fft->out);

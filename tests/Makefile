@@ -17,8 +17,13 @@ else
 	FFT_SOURCES += ../src/atfft_ooura.c
 endif
 
+all: complex_transform real_transform
+
 complex_transform: complex_transform.c
 	$(CC) -o $@ $< $(FFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
+real_transform: real_transform.c
+	$(CC) -o $@ $< $(FFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+
 clean:
-	rm complex_transform
+	rm complex_transform real_transform

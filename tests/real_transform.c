@@ -39,14 +39,14 @@ int main()
 {
     int nSamples = 16;
     double *signal;
-    struct atfft_complex *timeDomain, *freqDomain;
+    struct atfft_complex *freqDomain;
     struct atfft *fftForward, *fftBackward;
     int i = 0;
+    int outSize = nSamples / 2 + 1;
 
     /* allocate some memory for the signals */
     signal = malloc (nSamples * sizeof (*signal));
-    timeDomain = malloc (nSamples * sizeof (*timeDomain));
-    freqDomain = malloc (nSamples * sizeof (*freqDomain));
+    freqDomain = malloc (outSize * sizeof (*freqDomain));
 
     /* construct some signal */
     for (i = 0; i < nSamples; ++i)
@@ -61,21 +61,17 @@ int main()
     printf ("Original Signal:\n");
     printDoubleArray (signal, nSamples);
 
-    /* copy the signal into an array of complex numbers */
-    atfft_real_to_complex (signal, timeDomain, nSamples);
-
     /* create some ffts */
-    fftForward = atfft_create (nSamples, ATFFT_FORWARD, ATFFT_COMPLEX);
-    fftBackward = atfft_create (nSamples, ATFFT_BACKWARD, ATFFT_COMPLEX);
+    fftForward = atfft_create (nSamples, ATFFT_FORWARD, ATFFT_REAL);
+    fftBackward = atfft_create (nSamples, ATFFT_BACKWARD, ATFFT_REAL);
 
     /* apply the forward transform */
-    atfft_complex_transform (fftForward, timeDomain, freqDomain);
+    atfft_real_forward_transform (fftForward, signal, freqDomain);
     printf ("\nFrequency Domain:\n");
-    printComplexArray (freqDomain, nSamples);
+    printComplexArray (freqDomain, outSize);
 
     /* apply the backward transform */
-    atfft_complex_transform (fftBackward, freqDomain, timeDomain);
-    atfft_real (timeDomain, signal, nSamples);
+    atfft_real_backward_transform (fftBackward, freqDomain, signal);
     printf ("\nReconstructed Signal:\n");
     printDoubleArray (signal, nSamples);
 
@@ -88,7 +84,6 @@ int main()
     atfft_free (fftBackward);
     atfft_free (fftForward);
     free (freqDomain);
-    free (timeDomain);
     free (signal);
 
     return 0;

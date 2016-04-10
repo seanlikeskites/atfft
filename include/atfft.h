@@ -20,23 +20,29 @@ enum atfft_format
 
 struct atfft;
 
+struct atfft_complex
+{
+    double real;
+    double imag;
+};
+
 struct atfft* atfft_create (int size, int direction, enum atfft_format format);
 void atfft_free (struct atfft *fft);
 
-void atfft_complex_transform (struct atfft *fft, double *in, double *out);
-void atfft_real_forward_transform (struct atfft *fft, double *in, double *out);
-void atfft_real_backward_transform (struct atfft *fft, double *in, double *out);
+void atfft_complex_transform (struct atfft *fft, struct atfft_complex *in, struct atfft_complex *out);
+void atfft_real_forward_transform (struct atfft *fft, double *in, struct atfft_complex *out);
+void atfft_real_backward_transform (struct atfft *fft, struct atfft_complex *in, double *out);
 
 int isEven (unsigned int x);
 int isOdd (unsigned int x);
 int isPowerOf2 (unsigned int x);
 
-void atfft_real (double *in, double *out, int size);
-void atfft_imag (double *in, double *out, int size);
-void atfft_real_to_complex (double *in, double *out, int size);
-void atfft_halfcomplex_to_complex (double *in, double *out, int size);
+void atfft_real (struct atfft_complex *in, double *out, int size);
+void atfft_imag (struct atfft_complex *in, double *out, int size);
+void atfft_real_to_complex (double *in, struct atfft_complex *out, int size);
+void atfft_halfcomplex_to_complex (struct atfft_complex *in, struct atfft_complex *out, int size);
 
 void atfft_normalise_real (double *data, int size);
-void atfft_normalise_complex (double *data, int size);
+void atfft_normalise_complex (struct atfft_complex *data, int size);
 
 #endif /* ATFFT_H_INCLUDED */
