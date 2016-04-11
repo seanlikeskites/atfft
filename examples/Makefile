@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall
 LIBS = -lm
 INCLUDEDIRS = -I../include
 FFT_SOURCES = ../src/atfft_shared.c
