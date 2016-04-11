@@ -31,15 +31,15 @@ void printDoubleArray (double *data, int size)
     printf ("\n");
 }
 
-void printComplexArray (struct atfft_complex *data, int size)
+void printComplexArray (atfft_complex *data, int size)
 {
     int i = 0;
 
-    printf ("(%f, %f)", data [i].real, data [i].imag);
+    printf ("(%f, %f)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
 
     for (i = 1; i < size; ++i)
     {
-        printf (", (%f, %f)", data [i].real, data [i].imag);
+        printf (", (%f, %f)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
     }
 
     printf ("\n");
@@ -49,7 +49,7 @@ int main()
 {
     int nSamples = 16;
     double *signal;
-    struct atfft_complex *timeDomain, *freqDomain;
+    atfft_complex *timeDomain, *freqDomain;
     struct atfft *fftForward, *fftBackward;
     int i = 0;
 

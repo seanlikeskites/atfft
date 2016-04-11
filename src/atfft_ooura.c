@@ -65,7 +65,7 @@ void atfft_free (struct atfft *fft)
     free (fft);
 }
 
-void atfft_complex_transform (struct atfft *fft, struct atfft_complex *in, struct atfft_complex *out)
+void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
@@ -75,25 +75,25 @@ void atfft_complex_transform (struct atfft *fft, struct atfft_complex *in, struc
     memcpy (out, fft->data, fft->dataSize);
 }
 
-void atfft_halfcomplex_ooura_to_fftw (double *in, struct atfft_complex *out, int size)
+void atfft_halfcomplex_ooura_to_fftw (double *in, atfft_complex *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
 
-    out [0].real = in [0];
-    out [0].imag = 0;
+    ATFFT_REAL (out [0]) = in [0];
+    ATFFT_IMAG (out [0]) = 0;
 
     for (i = 1; i < halfSize; ++i)
     {
-        out [i].real = in [2 * i];
-        out [i].imag = -in [2 * i + 1];
+        ATFFT_REAL (out [i]) = in [2 * i];
+        ATFFT_IMAG (out [i]) = -in [2 * i + 1];
     }
 
-    out [halfSize].real = in [1];
-    out [halfSize].imag = 0;
+    ATFFT_REAL (out [halfSize]) = in [1];
+    ATFFT_IMAG (out [halfSize]) = 0;
 }
 
-void atfft_real_forward_transform (struct atfft *fft, double *in, struct atfft_complex *out)
+void atfft_real_forward_transform (struct atfft *fft, double *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
@@ -103,23 +103,23 @@ void atfft_real_forward_transform (struct atfft *fft, double *in, struct atfft_c
     atfft_halfcomplex_ooura_to_fftw (fft->data, out, fft->size);
 }
 
-void atfft_halfcomplex_fftw_to_ooura (struct atfft_complex *in, double *out, int size)
+void atfft_halfcomplex_fftw_to_ooura (atfft_complex *in, double *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
 
-    out [0] = 2 * in [0].real;
+    out [0] = 2 * ATFFT_REAL (in [0]);
 
     for (i = 1; i < halfSize; ++i)
     {
-        out [2 * i] = 2 * in [i].real;
-        out [2 * i + 1] = 2 * -in [i].imag;
+        out [2 * i] = 2 * ATFFT_REAL (in [i]);
+        out [2 * i + 1] = 2 * - ATFFT_IMAG (in [i]);
     }
 
-    out [1] = 2 * in [halfSize].real;
+    out [1] = 2 * ATFFT_REAL (in [halfSize]);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, struct atfft_complex *in, double *out)
+void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, double *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));

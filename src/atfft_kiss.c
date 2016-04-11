@@ -22,7 +22,7 @@ struct atfft
     int direction;
     enum atfft_format format;
     kiss_fft_cfg cfg;
-    struct atfft_complex *in, *out;
+    atfft_complex *in, *out;
 };
 
 struct atfft* atfft_create (int size, int direction, enum atfft_format format)
@@ -56,24 +56,24 @@ void atfft_free (struct atfft *fft)
     free (fft);
 }
 
-void atfft_complex_transform (struct atfft *fft, struct atfft_complex *in, struct atfft_complex *out)
+void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
 {
     kiss_fft (fft->cfg, (kiss_fft_cpx*) in, (kiss_fft_cpx*) out);
 }
 
-void atfft_complex_to_halfcomplex (struct atfft_complex *in, struct atfft_complex *out, int size)
+void atfft_complex_to_halfcomplex (atfft_complex *in, atfft_complex *out, int size)
 {
     memcpy (out, in, (floor (size / 2) + 1) * sizeof (*out));
 }
 
-void atfft_real_forward_transform (struct atfft *fft, double *in, struct atfft_complex *out)
+void atfft_real_forward_transform (struct atfft *fft, double *in, atfft_complex *out)
 {
     atfft_real_to_complex (in, fft->in, fft->size);
     atfft_complex_transform (fft, fft->in, fft->out);
     atfft_complex_to_halfcomplex (fft->out, out, fft->size);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, struct atfft_complex *in, double *out)
+void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, double *out)
 {
     atfft_halfcomplex_to_complex (in, fft->in, fft->size);
     atfft_complex_transform (fft, fft->in, fft->out);

@@ -27,38 +27,38 @@ int isPowerOf2 (unsigned int x)
     return x && !(x & (x - 1));
 }
 
-void atfft_real (struct atfft_complex *in, double *out, int size)
+void atfft_real (atfft_complex *in, double *out, int size)
 {
     int i = 0;
 
     for (i = 0; i < size; ++i)
     {
-        out [i] = in [i].real;
+        out [i] = ATFFT_REAL (in [i]);
     }
 }
 
-void atfft_imag (struct atfft_complex *in, double *out, int size)
+void atfft_imag (atfft_complex *in, double *out, int size)
 {
     int i = 0;
 
     for (i = 0; i < size; ++i)
     {
-        out [i] = in [i].imag;
+        out [i] = ATFFT_IMAG (in [i]);
     }
 }
 
-void atfft_real_to_complex (double *in, struct atfft_complex *out, int size)
+void atfft_real_to_complex (double *in, atfft_complex *out, int size)
 {
     int i = 0;
 
     for (i = 0; i < size; ++i)
     {
-        out [i].real = in [i];
-        out [i].imag = 0;
+        ATFFT_REAL (out [i]) = in [i];
+        ATFFT_IMAG (out [i]) = 0;
     }
 }
 
-void atfft_halfcomplex_to_complex (struct atfft_complex *in, struct atfft_complex *out, int size)
+void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int size)
 {
     int i = 0;
     int lastBin = size / 2 + 1;
@@ -72,8 +72,8 @@ void atfft_halfcomplex_to_complex (struct atfft_complex *in, struct atfft_comple
 
     for (i = 1; i < lastBin; ++i)
     {
-        out [size - i].real = in [i].real;
-        out [size - i].imag = -in [i].imag;
+        ATFFT_REAL (out [size - i]) = ATFFT_REAL (in [i]);
+        ATFFT_IMAG (out [size - i]) = - ATFFT_IMAG (in [i]);
     }
 }
 
@@ -87,13 +87,13 @@ void atfft_normalise_real (double *data, int size)
     }
 }
 
-void atfft_normalise_complex (struct atfft_complex *data, int size)
+void atfft_normalise_complex (atfft_complex *data, int size)
 {
     int i = 0;
 
     for (i = 0; i < size; ++i)
     {
-        data [i].real /= size;
-        data [i].imag /= size;
+        ATFFT_REAL (data [i]) /= size;
+        ATFFT_IMAG (data [i]) /= size;
     }
 }
