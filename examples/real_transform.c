@@ -31,7 +31,7 @@ void printDoubleArray (double *data, int size)
     printf ("\n");
 }
 
-void printComplexArray (atfft_complex *data, int size)
+void printComplexArray (atfft_complex_double *data, int size)
 {
     int i = 0;
 
@@ -49,7 +49,7 @@ int main()
 {
     int nSamples = 16;
     double *signal;
-    atfft_complex *freqDomain;
+    atfft_complex_double *freqDomain;
     struct atfft *fftForward, *fftBackward;
     int i = 0;
     int outSize = nSamples / 2 + 1;

@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall -g
 LIBS = -lm
 INCLUDEDIRS = -I../include
 FFT_SOURCES = ../src/atfft_shared.c
@@ -7,6 +7,9 @@ FFT_SOURCES = ../src/atfft_shared.c
 ifeq (FFTW3, $(IMPL))
 	LIBS += -lfftw3
 	FFT_SOURCES += ../src/atfft_fftw.c
+else ifeq (FFTS, $(IMPL))
+	LIBS += -lffts
+	FFT_SOURCES += ../src/atfft_ffts.c
 else ifeq (GSL, $(IMPL))
 	LIBS += -lgsl -lgslcblas
 	FFT_SOURCES += ../src/atfft_gsl.c
@@ -26,4 +29,4 @@ real_transform: real_transform.c
 	$(CC) -o $@ $< $(FFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
 clean:
-	rm complex_transform real_transform
+	rm -f complex_transform real_transform

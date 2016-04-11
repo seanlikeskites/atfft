@@ -65,7 +65,7 @@ void atfft_free (struct atfft *fft)
     free (fft);
 }
 
-void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
+void atfft_complex_transform (struct atfft *fft, atfft_complex_double *in, atfft_complex_double *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
@@ -75,7 +75,7 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_comple
     memcpy (out, fft->data, fft->dataSize);
 }
 
-void atfft_halfcomplex_ooura_to_fftw (double *in, atfft_complex *out, int size)
+void atfft_halfcomplex_ooura_to_fftw (double *in, atfft_complex_double *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
@@ -93,7 +93,7 @@ void atfft_halfcomplex_ooura_to_fftw (double *in, atfft_complex *out, int size)
     ATFFT_IMAG (out [halfSize]) = 0;
 }
 
-void atfft_real_forward_transform (struct atfft *fft, double *in, atfft_complex *out)
+void atfft_real_forward_transform (struct atfft *fft, double *in, atfft_complex_double *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
@@ -103,7 +103,7 @@ void atfft_real_forward_transform (struct atfft *fft, double *in, atfft_complex 
     atfft_halfcomplex_ooura_to_fftw (fft->data, out, fft->size);
 }
 
-void atfft_halfcomplex_fftw_to_ooura (atfft_complex *in, double *out, int size)
+void atfft_halfcomplex_fftw_to_ooura (atfft_complex_double *in, double *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
@@ -119,7 +119,7 @@ void atfft_halfcomplex_fftw_to_ooura (atfft_complex *in, double *out, int size)
     out [1] = 2 * ATFFT_REAL (in [halfSize]);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, double *out)
+void atfft_real_backward_transform (struct atfft *fft, atfft_complex_double *in, double *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
