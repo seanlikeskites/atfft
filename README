@@ -4,13 +4,41 @@ The purpose of this project is to provide a permissively licenced
 interface to various C libraries which calculate Discrete Fourier
 Transforms.
 
-Currently it provides an interface to:
-	* FFTW3 (www.fftw.org)
-	* FFTS (www.github.com/anthonix/ffts)
-	* Ooura fft4g (www.kurims.kyoto-u.ac.jp/~ooura/fft.html)
-	* GSL (www.gnu.org/software/gsl)
-	* Kiss FFT (www.kissfft.sourceforge.net) 
-		- should be built with -Dkiss_fft_scalar=double
+In an ideal world one would choose their favorite FFT library
+and use it for every project they ever work on. Unfortunately 
+we live in a work of conflicting software licences and
+unsupported platforms, so at some point most of us will have 
+to stray from our preferred implementations. Providing a uniform
+interface to as many libraries as possible should help to ease 
+this pain.
+
+Here is some useful information about the libraries usable via
+the atfft interface:
+
+* FFTW3 (www.fftw.org)
+  - Swift as the wind!
+  - GPL Licenced.
+
+* FFTS (www.github.com/anthonix/ffts)
+  - Nicely speedy.
+  - Signal lengths of 2^n only.
+  - Single precision only.
+  - BSD Licenced.
+
+* Ooura fft4g (www.kurims.kyoto-u.ac.jp/~ooura/fft.html)
+  - Nice and simple (one source file).
+  - Signal lengths of 2^n only.
+  - Very permissive licence.
+
+* GSL (www.gnu.org/software/gsl)
+  - Part of a much larger library of numerical goodies.
+  - GPL Licenced.
+
+* Kiss FFT (www.kissfft.sourceforge.net) 
+  - Simple, as the name might suggest.
+  - BSD Licenced
+  - atfft currently only supports Kiss FFT 
+      built with -Dkiss_fft_scalar=double
 
 Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
 
