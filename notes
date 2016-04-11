@@ -5,3 +5,5 @@ FFT Libraries:
 	vDSP
 	kissfft
 	GSL
+	clFFT
+	ffmpeg (libavcodec)
