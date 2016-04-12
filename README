@@ -39,9 +39,16 @@ the atfft interface:
 
 * Kiss FFT (www.kissfft.sourceforge.net) 
   - Simple, as the name might suggest.
-  - BSD Licenced
+  - BSD Licenced.
+  - Only does complex transforms, real transforms 
+    are provided by atfft by copying from complex
+    transforms.
   - atfft currently only supports Kiss FFT 
-      built with -Dkiss_fft_scalar=double
+    built with -Dkiss_fft_scalar=double.
+
+* vDSP (developer.apple.com/library/mac/documentation/Accelerate/Reference/vDSPRef)
+  - Apple only.
+  - Signal lengths of 2^n (and some multiples thereof) only.
 
 Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
 
