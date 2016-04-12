@@ -23,15 +23,18 @@ the atfft interface:
   - Nicely speedy.
   - Signal lengths of 2^n only.
   - Single precision only.
+  - Only builds on 64bit machines.
   - BSD Licenced.
 
 * Ooura fft4g (www.kurims.kyoto-u.ac.jp/~ooura/fft.html)
   - Nice and simple (one source file).
   - Signal lengths of 2^n only.
+  - Double precision only.
   - Very permissive licence.
 
 * GSL (www.gnu.org/software/gsl)
   - Part of a much larger library of numerical goodies.
+  - Double precision only.
   - GPL Licenced.
 
 * Kiss FFT (www.kissfft.sourceforge.net) 
