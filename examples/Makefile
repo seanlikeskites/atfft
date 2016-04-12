@@ -16,6 +16,9 @@ else ifeq (GSL, $(IMPL))
 else ifeq (KISS, $(IMPL))
 	LIBS += -lkissfft
 	FFT_SOURCES += ../src/atfft_kiss.c
+else ifeq (VDSP, $(IMPL))
+	LIBS += -framework Accelerate
+	FFT_SOURCES += ../src/atfft_vdsp.c
 else
 	FFT_SOURCES += ../src/atfft_ooura.c
 endif

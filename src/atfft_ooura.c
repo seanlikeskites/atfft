@@ -108,15 +108,15 @@ void atfft_halfcomplex_fftw_to_ooura (atfft_complex_double *in, double *out, int
     int i = 0;
     int halfSize = size / 2;
 
-    out [0] = 2 * ATFFT_REAL (in [0]);
+    out [0] = 2.0 * ATFFT_REAL (in [0]);
 
     for (i = 1; i < halfSize; ++i)
     {
-        out [2 * i] = 2 * ATFFT_REAL (in [i]);
-        out [2 * i + 1] = 2 * - ATFFT_IMAG (in [i]);
+        out [2 * i] = 2.0 * ATFFT_REAL (in [i]);
+        out [2 * i + 1] = 2.0 * - ATFFT_IMAG (in [i]);
     }
 
-    out [1] = 2 * ATFFT_REAL (in [halfSize]);
+    out [1] = 2.0 * ATFFT_REAL (in [halfSize]);
 }
 
 void atfft_real_backward_transform (struct atfft *fft, atfft_complex_double *in, double *out)
