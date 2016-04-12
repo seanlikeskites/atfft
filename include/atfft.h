@@ -35,9 +35,9 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex_double *in, atfft
 void atfft_real_forward_transform (struct atfft *fft, double *in, atfft_complex_double *out);
 void atfft_real_backward_transform (struct atfft *fft, atfft_complex_double *in, double *out);
 
-int isEven (unsigned int x);
-int isOdd (unsigned int x);
-int isPowerOf2 (unsigned int x);
+int atfft_is_even (unsigned int x);
+int atfft_is_odd (unsigned int x);
+int atfft_is_power_of_2 (unsigned int x);
 
 void atfft_real (atfft_complex_double *in, double *out, int size);
 void atfft_imag (atfft_complex_double *in, double *out, int size);

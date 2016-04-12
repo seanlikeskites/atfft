@@ -113,7 +113,7 @@ void atfft_halfcomplex_gsl_to_fftw (double *in, atfft_complex_double *out, int s
 
     memcpy (out + 1, in + 1, (size - 1) * sizeof (*in));
 
-    if (isEven (size))
+    if (atfft_is_even (size))
     {
         ATFFT_IMAG (out [size / 2]) = 0;
     }

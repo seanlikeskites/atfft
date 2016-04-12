@@ -28,7 +28,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     struct atfft *fft;
 
     /* FFTS only supports sizes which are a power of 2. */
-    assert (isPowerOf2 (size));
+    assert (atfft_is_power_of_2 (size));
 
     fft = malloc (sizeof (*fft));
     fft->size = size;

@@ -12,17 +12,17 @@
 #include <string.h>
 #include <atfft.h>
 
-int isEven (unsigned int x)
+int atfft_is_even (unsigned int x)
 {
     return !(x % 2);
 }
 
-int isOdd (unsigned int x)
+int atfft_is_odd (unsigned int x)
 {
     return x % 2;
 }
 
-int isPowerOf2 (unsigned int x)
+int atfft_is_power_of_2 (unsigned int x)
 {
     return x && !(x & (x - 1));
 }
@@ -65,7 +65,7 @@ void atfft_halfcomplex_to_complex (atfft_complex_double *in, atfft_complex_doubl
 
     memcpy (out, in, lastBin * sizeof (*out));
 
-    if (isEven (size))
+    if (atfft_is_even (size))
     {
         --lastBin;
     }
