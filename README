@@ -46,6 +46,12 @@ the atfft interface:
   - atfft currently only supports Kiss FFT 
     built with -Dkiss_fft_scalar=double.
 
+* FFmpeg (www.ffmpeg.org)
+  - Part of libavcodec.
+  - Signal lengths of 2^n only.
+  - Single precision only.
+  - LGPL or GPL Licenced depending on how it's built.
+
 * vDSP (developer.apple.com/library/mac/documentation/Accelerate/Reference/vDSPRef)
   - Apple only.
   - Signal lengths of 2^n (and some multiples thereof) only.
