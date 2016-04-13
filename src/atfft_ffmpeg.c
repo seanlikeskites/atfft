@@ -10,8 +10,8 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <string.h>
-#include <libavcodec/avcodec.h>
+#include <math.h>
+#include <libavutils/mem.h>
 #include <libavcodec/avfft.h>
 #include <atfft.h>
 
