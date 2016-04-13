@@ -9,7 +9,6 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include <ffts/ffts.h>
 #include <atfft.h>

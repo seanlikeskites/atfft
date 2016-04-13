@@ -9,7 +9,6 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include <Accelerate/Accelerate.h>
 #include <atfft.h>
