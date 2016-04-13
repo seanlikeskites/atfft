@@ -37,7 +37,7 @@ the atfft interface:
   - Double precision only.
   - GPL Licenced.
 
-* Kiss FFT (www.kissfft.sourceforge.net) 
+* Kiss FFT (kissfft.sourceforge.net) 
   - Simple, as the name might suggest.
   - BSD Licenced.
   - Only does complex transforms, real transforms 
