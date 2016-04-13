@@ -57,21 +57,21 @@ void atfft_imag (atfft_complex *in, double *out, int size);
 void atfft_real_to_complex (double *in, atfft_complex *out, int size);
 void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int size);
 
-#ifdef ATFFT_TYPE_FLOAT
+#ifndef ATFFT_TYPE_FLOAT
 void atfft_float_to_sample_real (float *in, atfft_sample *out, int size);
 void atfft_sample_to_float_real (atfft_sample *in, float *out, int size);
 void atfft_float_to_sample_complex (atfft_complex_float *in, atfft_complex *out, int size);
 void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_float *out, int size);
 #endif
 
-#ifdef ATFFT_TYPE_DOUBLE
+#ifndef ATFFT_TYPE_DOUBLE
 void atfft_double_to_sample_real (double *in, atfft_sample *out, int size);
 void atfft_sample_to_double_real (atfft_sample *in, double *out, int size);
 void atfft_double_to_sample_complex (atfft_complex_double *in, atfft_complex *out, int size);
 void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_double *out, int size);
 #endif
 
-#ifdef ATFFT_TYPE_LONG_DOUBLE
+#ifndef ATFFT_TYPE_LONG_DOUBLE
 void atfft_long_double_to_sample_real (long double *in, atfft_sample *out, int size);
 void atfft_sample_to_long_double_real (atfft_sample *in, long double *out, int size);
 void atfft_long_double_to_sample_complex (atfft_complex_long double *in, atfft_complex *out, int size);
