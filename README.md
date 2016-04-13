@@ -16,29 +16,29 @@ this pain.
 Here is some useful information about the libraries usable via
 the atfft interface:
 
-* [FFTW3](www.fftw.org)
+* [FFTW3](http://www.fftw.org)
   - Swift as the wind!
   - GPL Licenced.
 
-* [FFTS](www.github.com/anthonix/ffts)
+* [FFTS](http://www.github.com/anthonix/ffts)
   - Nicely speedy.
   - Signal lengths of 2^n only.
   - Single precision only.
   - Only builds on 64bit machines.
   - BSD Licenced.
 
-* [Ooura fft4g](www.kurims.kyoto-u.ac.jp/~ooura/fft.html)
+* [Ooura fft4g](http://www.kurims.kyoto-u.ac.jp/~ooura/fft.html)
   - Nice and simple (one source file).
   - Signal lengths of 2^n only.
   - Double precision only.
   - Very permissive licence.
 
-* [GSL](www.gnu.org/software/gsl)
+* [GSL](http://www.gnu.org/software/gsl)
   - Part of a much larger library of numerical goodies.
   - Double precision only.
   - GPL Licenced.
 
-* [Kiss FFT] (kissfft.sourceforge.net) 
+* [Kiss FFT](http://kissfft.sourceforge.net) 
   - Simple, as the name might suggest.
   - BSD Licenced.
   - Only does complex transforms, real transforms 
@@ -47,13 +47,13 @@ the atfft interface:
   - atfft currently only supports Kiss FFT 
     built with -Dkiss_fft_scalar=double.
 
-* [FFmpeg](www.ffmpeg.org)
+* [FFmpeg](http://www.ffmpeg.org)
   - Part of libavcodec.
   - Signal lengths of 2^n only.
   - Single precision only.
   - LGPL or GPL Licenced depending on how it's built.
 
-* [vDSP](developer.apple.com/library/mac/documentation/Accelerate/Reference/vDSPRef)
+* [vDSP](http://developer.apple.com/library/mac/documentation/Accelerate/Reference/vDSPRef)
   - Apple only.
   - Signal lengths of 2^n (and some multiples thereof) only.
 
