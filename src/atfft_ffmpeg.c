@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-#include <libavutils/mem.h>
+#include <libavutil/mem.h>
 #include <libavcodec/avfft.h>
 #include <atfft.h>
 
