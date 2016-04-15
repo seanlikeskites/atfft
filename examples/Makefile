@@ -30,7 +30,14 @@ else ifeq (GSL, $(IMPL))
 	FFT_SOURCES += ../src/atfft_gsl.c
 
 else ifeq (KISS, $(IMPL))
-	LIBS += -lkissfft
+	ifeq (FLOAT, $(TYPE))
+		LIBS += -lkissfftf
+	else ifeq (LONG_DOUBLE, $(TYPE))
+		LIBS += -lkissfftl
+	else
+		LIBS += -lkissfft
+	endif
+
 	FFT_SOURCES += ../src/atfft_kiss.c
 	
 else ifeq (VDSP, $(IMPL))

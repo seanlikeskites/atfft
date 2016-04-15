@@ -44,8 +44,6 @@ the atfft interface:
   - Only does complex transforms, real transforms 
     are provided by atfft by copying from complex
     transforms.
-  - atfft currently only supports Kiss FFT 
-    built with -Dkiss_fft_scalar=double.
 
 * [FFmpeg](http://www.ffmpeg.org)
   - Part of libavcodec.

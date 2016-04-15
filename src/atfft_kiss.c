@@ -8,13 +8,13 @@
  * the COPYING file for more details.
  */
 
-/* we need to make sure we are using kiss_fft with doubles */
-#define kiss_fft_scalar double
-
 #include <stdlib.h>
 #include <string.h>
-#include <kiss_fft.h>
 #include <atfft.h>
+
+/* we need to make sure we are using kiss_fft with the correct type */
+#define kiss_fft_scalar atfft_sample
+#include <kiss_fft.h>
 
 struct atfft
 {
@@ -22,7 +22,7 @@ struct atfft
     int direction;
     enum atfft_format format;
     kiss_fft_cfg cfg;
-    atfft_complex_double *in, *out;
+    atfft_complex *in, *out;
 };
 
 struct atfft* atfft_create (int size, int direction, enum atfft_format format)
@@ -56,24 +56,24 @@ void atfft_free (struct atfft *fft)
     free (fft);
 }
 
-void atfft_complex_transform (struct atfft *fft, atfft_complex_double *in, atfft_complex_double *out)
+void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
 {
     kiss_fft (fft->cfg, (kiss_fft_cpx*) in, (kiss_fft_cpx*) out);
 }
 
-void atfft_complex_to_halfcomplex (atfft_complex_double *in, atfft_complex_double *out, int size)
+void atfft_complex_to_halfcomplex (atfft_complex *in, atfft_complex *out, int size)
 {
     memcpy (out, in, (floor (size / 2) + 1) * sizeof (*out));
 }
 
-void atfft_real_forward_transform (struct atfft *fft, double *in, atfft_complex_double *out)
+void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_complex *out)
 {
     atfft_real_to_complex (in, fft->in, fft->size);
     atfft_complex_transform (fft, fft->in, fft->out);
     atfft_complex_to_halfcomplex (fft->out, out, fft->size);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, atfft_complex_double *in, double *out)
+void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_sample *out)
 {
     atfft_halfcomplex_to_complex (in, fft->in, fft->size);
     atfft_complex_transform (fft, fft->in, fft->out);
