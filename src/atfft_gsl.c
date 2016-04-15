@@ -95,7 +95,10 @@ void atfft_free (struct atfft *fft)
 
 void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
 {
+#ifdef ATFFT_TYPE_DOUBLE
     size_t nBytes = fft->size * sizeof (*in);
+#endif 
+
     gsl_complex_packed_array data = fft->data->data;
 
     /* Only to be used with complex FFTs. */
@@ -127,7 +130,7 @@ void atfft_halfcomplex_gsl_to_fftw (double *in, atfft_complex *out, int size)
     for (i = 1; i < halfSize; ++i)
     {
         ATFFT_REAL (out [i]) = in [2 * i - 1];
-        ATFFT_IMAG (out [i]) = -in [2 * i];
+        ATFFT_IMAG (out [i]) = in [2 * i];
     }
 
     ATFFT_REAL (out [halfSize]) = in [size - 1];
@@ -175,7 +178,6 @@ void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
 
     atfft_halfcomplex_fftw_to_gsl (in, data, fft->size);
-    printSampleArray (data, fft->size);
     gsl_fft_halfcomplex_transform (data, fft->data->stride, fft->size, fft->tables, fft->workArea);   
 
 #ifdef ATFFT_TYPE_DOUBLE
