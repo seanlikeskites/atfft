@@ -52,6 +52,7 @@ the atfft interface:
 
 * vDSP (developer.apple.com/library/mac/documentation/Accelerate/Reference/vDSPRef)
   - Apple only.
+  - Single and double precision only (no long doubles).
   - Signal lengths of 2^n (and some multiples thereof) only.
 
 Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
