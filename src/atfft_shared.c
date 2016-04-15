@@ -12,6 +12,7 @@
 #include <string.h>
 #include <atfft.h>
 
+/* some handy integer tests */
 int atfft_is_even (unsigned int x)
 {
     return !(x % 2);
@@ -27,7 +28,30 @@ int atfft_is_power_of_2 (unsigned int x)
     return x && !(x & (x - 1));
 }
 
-void atfft_real (atfft_complex_double *in, double *out, int size)
+/* normalisation */
+void atfft_normalise_real (atfft_sample *data, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        data [i] /= size;
+    }
+}
+
+void atfft_normalise_complex (atfft_complex *data, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        ATFFT_REAL (data [i]) /= size;
+        ATFFT_IMAG (data [i]) /= size;
+    }
+}
+
+/* conversion functions */
+void atfft_real (atfft_complex *in, atfft_sample *out, int size)
 {
     int i = 0;
 
@@ -37,7 +61,7 @@ void atfft_real (atfft_complex_double *in, double *out, int size)
     }
 }
 
-void atfft_imag (atfft_complex_double *in, double *out, int size)
+void atfft_imag (atfft_complex *in, atfft_sample *out, int size)
 {
     int i = 0;
 
@@ -47,7 +71,7 @@ void atfft_imag (atfft_complex_double *in, double *out, int size)
     }
 }
 
-void atfft_real_to_complex (double *in, atfft_complex_double *out, int size)
+void atfft_real_to_complex (atfft_sample *in, atfft_complex *out, int size)
 {
     int i = 0;
 
@@ -58,7 +82,7 @@ void atfft_real_to_complex (double *in, atfft_complex_double *out, int size)
     }
 }
 
-void atfft_halfcomplex_to_complex (atfft_complex_double *in, atfft_complex_double *out, int size)
+void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int size)
 {
     int i = 0;
     int lastBin = size / 2 + 1;
@@ -77,7 +101,8 @@ void atfft_halfcomplex_to_complex (atfft_complex_double *in, atfft_complex_doubl
     }
 }
 
-void atfft_float_to_double_real (float *in, double *out, int size)
+#ifndef ATFFT_TYPE_FLOAT
+void atfft_float_to_sample_real (float *in, atfft_sample *out, int size)
 {
     int i = 0;
 
@@ -87,7 +112,7 @@ void atfft_float_to_double_real (float *in, double *out, int size)
     }
 }
 
-void atfft_double_to_float_real (double *in, float *out, int size)
+void atfft_sample_to_float_real (atfft_sample *in, float *out, int size)
 {
     int i = 0;
 
@@ -97,7 +122,7 @@ void atfft_double_to_float_real (double *in, float *out, int size)
     }
 }
 
-void atfft_float_to_double_complex (atfft_complex_float *in, atfft_complex_double *out, int size)
+void atfft_float_to_sample_complex (atfft_complex_f *in, atfft_complex *out, int size)
 {
     int i = 0;
 
@@ -108,7 +133,40 @@ void atfft_float_to_double_complex (atfft_complex_float *in, atfft_complex_doubl
     }
 }
 
-void atfft_double_to_float_complex (atfft_complex_double *in, atfft_complex_float *out, int size)
+void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_f *out, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
+        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
+    }
+}
+#endif
+
+#ifndef ATFFT_TYPE_DOUBLE
+void atfft_double_to_sample_real (double *in, atfft_sample *out, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        out [i] = in [i];
+    }
+}
+
+void atfft_sample_to_double_real (atfft_sample *in, double *out, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        out [i] = in [i];
+    }
+}
+
+void atfft_double_to_sample_complex (atfft_complex_d *in, atfft_complex *out, int size)
 {
     int i = 0;
 
@@ -119,23 +177,58 @@ void atfft_double_to_float_complex (atfft_complex_double *in, atfft_complex_floa
     }
 }
 
-void atfft_normalise_real (double *data, int size)
+void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_d *out, int size)
 {
     int i = 0;
 
     for (i = 0; i < size; ++i)
     {
-        data [i] /= size;
+        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
+        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
     }
 }
+#endif
 
-void atfft_normalise_complex (atfft_complex_double *data, int size)
+#ifndef ATFFT_TYPE_LONG_DOUBLE
+void atfft_long_double_to_sample_real (long double *in, atfft_sample *out, int size)
 {
     int i = 0;
 
     for (i = 0; i < size; ++i)
     {
-        ATFFT_REAL (data [i]) /= size;
-        ATFFT_IMAG (data [i]) /= size;
+        out [i] = in [i];
     }
 }
+
+void atfft_sample_to_long_double_real (atfft_sample *in, long double *out, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        out [i] = in [i];
+    }
+}
+
+void atfft_long_double_to_sample_complex (atfft_complex_l *in, atfft_complex *out, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
+        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
+    }
+}
+
+void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *out, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
+        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
+    }
+}
+#endif

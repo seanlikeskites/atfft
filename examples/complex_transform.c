@@ -14,32 +14,48 @@
 #include <atfft.h>
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#   define M_PI 3.14159265358979323846
 #endif
 
-void printDoubleArray (double *data, int size)
+void printSampleArray (atfft_sample *data, int size)
 {
     int i = 0;
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    printf ("%Lf", data [i]);
+#else
     printf ("%f", data [i]);
+#endif
 
     for (i = 1; i < size; ++i)
     {
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+        printf (", %Lf", data [i]);
+#else
         printf (", %f", data [i]);
+#endif
     }
 
     printf ("\n");
 }
 
-void printComplexArray (atfft_complex_double *data, int size)
+void printComplexArray (atfft_complex *data, int size)
 {
     int i = 0;
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    printf ("(%Lf, %Lf)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
+#else
     printf ("(%f, %f)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
+#endif
 
     for (i = 1; i < size; ++i)
     {
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+        printf (", (%Lf, %Lf)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
+#else
         printf (", (%f, %f)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
+#endif
     }
 
     printf ("\n");
@@ -48,8 +64,8 @@ void printComplexArray (atfft_complex_double *data, int size)
 int main()
 {
     int nSamples = 16;
-    double *signal;
-    atfft_complex_double *timeDomain, *freqDomain;
+    atfft_sample *signal;
+    atfft_complex *timeDomain, *freqDomain;
     struct atfft *fftForward, *fftBackward;
     int i = 0;
 
@@ -61,7 +77,7 @@ int main()
     /* construct some signal */
     for (i = 0; i < nSamples; ++i)
     {
-        double x = 2.0 * M_PI * i / nSamples;
+        atfft_sample x = 2.0 * M_PI * i / nSamples;
 
         signal [i] = 0.3 + 0.6 * cos (2.0 * x - 0.3)
                          + 0.3 * cos (5.0 * x + 0.2)
@@ -69,7 +85,7 @@ int main()
     }
 
     printf ("Original Signal:\n");
-    printDoubleArray (signal, nSamples);
+    printSampleArray (signal, nSamples);
 
     /* copy the signal into an array of complex numbers */
     atfft_real_to_complex (signal, timeDomain, nSamples);
@@ -87,12 +103,12 @@ int main()
     atfft_complex_transform (fftBackward, freqDomain, timeDomain);
     atfft_real (timeDomain, signal, nSamples);
     printf ("\nReconstructed Signal:\n");
-    printDoubleArray (signal, nSamples);
+    printSampleArray (signal, nSamples);
 
     /* normalise the output */
     atfft_normalise_real (signal, nSamples);
     printf ("\nNormalised Signal:\n");
-    printDoubleArray (signal, nSamples);
+    printSampleArray (signal, nSamples);
 
     /* free everything */
     atfft_free (fftBackward);
