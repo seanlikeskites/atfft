@@ -65,17 +65,27 @@ void atfft_free (struct atfft *fft)
     free (fft);
 }
 
-void atfft_complex_transform (struct atfft *fft, atfft_complex_double *in, atfft_complex_double *out)
+void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
 
+#ifdef ATFFT_TYPE_DOUBLE
     memcpy (fft->data, in, fft->dataSize);
+#else
+    atfft_sample_to_double_complex (in, (atfft_complex_d*) fft->data, fft->size);
+#endif
+
     cdft (2 * fft->size, fft->direction, fft->data, fft->workArea, fft->tables);
+
+#ifdef ATFFT_TYPE_DOUBLE
     memcpy (out, fft->data, fft->dataSize);
+#else
+    atfft_double_to_sample_complex ((atfft_complex_d*) fft->data, out, fft->size);
+#endif
 }
 
-void atfft_halfcomplex_ooura_to_fftw (double *in, atfft_complex_double *out, int size)
+void atfft_halfcomplex_ooura_to_fftw (double *in, atfft_complex *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
@@ -93,17 +103,22 @@ void atfft_halfcomplex_ooura_to_fftw (double *in, atfft_complex_double *out, int
     ATFFT_IMAG (out [halfSize]) = 0;
 }
 
-void atfft_real_forward_transform (struct atfft *fft, double *in, atfft_complex_double *out)
+void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
 
+#ifdef ATFFT_TYPE_DOUBLE
     memcpy (fft->data, in, fft->dataSize);
+#else
+    atfft_sample_to_double_real (in, fft->data, fft->size);
+#endif
+
     rdft (fft->size, 1, fft->data, fft->workArea, fft->tables);
     atfft_halfcomplex_ooura_to_fftw (fft->data, out, fft->size);
 }
 
-void atfft_halfcomplex_fftw_to_ooura (atfft_complex_double *in, double *out, int size)
+void atfft_halfcomplex_fftw_to_ooura (atfft_complex *in, double *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
@@ -119,12 +134,17 @@ void atfft_halfcomplex_fftw_to_ooura (atfft_complex_double *in, double *out, int
     out [1] = 2.0 * ATFFT_REAL (in [halfSize]);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, atfft_complex_double *in, double *out)
+void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
 
     atfft_halfcomplex_fftw_to_ooura (in, fft->data, fft->size);
     rdft (fft->size, -1, fft->data, fft->workArea, fft->tables);
+
+#ifdef ATFFT_TYPE_DOUBLE
     memcpy (out, fft->data, fft->dataSize);
+#else
+    atfft_double_to_sample_real (fft->data, out, fft->size);
+#endif
 }
