@@ -1,18 +1,31 @@
 var searchData=
 [
   ['atfft_2eh',['atfft.h',['../atfft_8h.html',1,'']]],
+  ['atfft_5fbackward',['ATFFT_BACKWARD',['../atfft_8h.html#a54667b43a1643b07ef37b106395a9f60',1,'atfft.h']]],
   ['atfft_5fcomplex_5fd',['atfft_complex_d',['../atfft_8h.html#a297d661f1ec5475a131905adccaed9e6',1,'atfft.h']]],
   ['atfft_5fcomplex_5ff',['atfft_complex_f',['../atfft_8h.html#a3e8ea1d479a2f0eec7304cfe03f114d2',1,'atfft.h']]],
   ['atfft_5fcomplex_5fl',['atfft_complex_l',['../atfft_8h.html#a55de5884b0769c4f8a0783e191b68c82',1,'atfft.h']]],
+  ['atfft_5fcomplex_5ftransform',['atfft_complex_transform',['../atfft_8h.html#af09899f688cc60703728b3adfa9e7c6f',1,'atfft.h']]],
   ['atfft_5fcreate',['atfft_create',['../atfft_8h.html#aa164c82257655355706d440cf3647671',1,'atfft.h']]],
+  ['atfft_5ffloat_5fto_5fsample_5fcomplex',['atfft_float_to_sample_complex',['../atfft_8h.html#af211db42e9afab9a1e9b16f59cf157e6',1,'atfft.h']]],
+  ['atfft_5ffloat_5fto_5fsample_5freal',['atfft_float_to_sample_real',['../atfft_8h.html#a9e3e69d40f301529affe2eca4948e315',1,'atfft.h']]],
+  ['atfft_5fforward',['ATFFT_FORWARD',['../atfft_8h.html#a8da5c0daec65fa5689f50f15c8fda306',1,'atfft.h']]],
   ['atfft_5ffree',['atfft_free',['../atfft_8h.html#a1471e97bd2423b1c7d4b167c14ea7c68',1,'atfft.h']]],
   ['atfft_5fhalfcomplex_5fto_5fcomplex',['atfft_halfcomplex_to_complex',['../atfft_8h.html#a9b92d07ce603f594f966ed008a36a2ca',1,'atfft.h']]],
   ['atfft_5fimag',['ATFFT_IMAG',['../atfft_8h.html#a7740578dd0da52d9d94b834bf90fbdee',1,'ATFFT_IMAG():&#160;atfft.h'],['../atfft_8h.html#a4e7a28919239cdc4058ac5a93ef5b6af',1,'atfft_imag(atfft_complex *in, atfft_sample *out, int size):&#160;atfft.h']]],
   ['atfft_5fis_5feven',['atfft_is_even',['../atfft_8h.html#acd5a9370eb52eca8c9170f43ed86ad91',1,'atfft.h']]],
   ['atfft_5fis_5fodd',['atfft_is_odd',['../atfft_8h.html#add4289f077b1fe3200c51fe5d78e610f',1,'atfft.h']]],
   ['atfft_5fis_5fpower_5fof_5f2',['atfft_is_power_of_2',['../atfft_8h.html#a0b6888a44ff55900eaceacb8440f2386',1,'atfft.h']]],
+  ['atfft_5flong_5fdouble_5fto_5fsample_5fcomplex',['atfft_long_double_to_sample_complex',['../atfft_8h.html#ad4d721b140635d0300c924cbfdf5c5b1',1,'atfft.h']]],
+  ['atfft_5flong_5fdouble_5fto_5fsample_5freal',['atfft_long_double_to_sample_real',['../atfft_8h.html#a16f111bf5ac0746d65aa757e79658421',1,'atfft.h']]],
   ['atfft_5fnormalise_5fcomplex',['atfft_normalise_complex',['../atfft_8h.html#abddee804db044837c98672971e3340ef',1,'atfft.h']]],
   ['atfft_5fnormalise_5freal',['atfft_normalise_real',['../atfft_8h.html#a820e72f24858086c0cb424a80bd560a7',1,'atfft.h']]],
   ['atfft_5freal',['atfft_real',['../atfft_8h.html#ac57412d15b79e7eefe3008aeb55d4750',1,'atfft_real(atfft_complex *in, atfft_sample *out, int size):&#160;atfft.h'],['../atfft_8h.html#a7d0fd97fb379dc5198a3a65a40cdaa97',1,'ATFFT_REAL():&#160;atfft.h']]],
-  ['atfft_5freal_5fto_5fcomplex',['atfft_real_to_complex',['../atfft_8h.html#a9980d5008c04fbbc73ac2d29953e8d9a',1,'atfft.h']]]
+  ['atfft_5freal_5fbackward_5ftransform',['atfft_real_backward_transform',['../atfft_8h.html#a34913c826c6fbbe1cbaf82ee794808e0',1,'atfft.h']]],
+  ['atfft_5freal_5fforward_5ftransform',['atfft_real_forward_transform',['../atfft_8h.html#adf497e6f8cd4d51a8f5c7d0df16b4786',1,'atfft.h']]],
+  ['atfft_5freal_5fto_5fcomplex',['atfft_real_to_complex',['../atfft_8h.html#a9980d5008c04fbbc73ac2d29953e8d9a',1,'atfft.h']]],
+  ['atfft_5fsample_5fto_5ffloat_5fcomplex',['atfft_sample_to_float_complex',['../atfft_8h.html#af452512ef08b89496a3d9f063a6566f3',1,'atfft.h']]],
+  ['atfft_5fsample_5fto_5ffloat_5freal',['atfft_sample_to_float_real',['../atfft_8h.html#afd5a6d05dd8a2b270101fea3f83238dd',1,'atfft.h']]],
+  ['atfft_5fsample_5fto_5flong_5fdouble_5fcomplex',['atfft_sample_to_long_double_complex',['../atfft_8h.html#a4ec1178efcc035a8bfa4692d4dff0782',1,'atfft.h']]],
+  ['atfft_5fsample_5fto_5flong_5fdouble_5freal',['atfft_sample_to_long_double_real',['../atfft_8h.html#a9e8e34bea895fb62952630969bbb6f2f',1,'atfft.h']]]
 ];
