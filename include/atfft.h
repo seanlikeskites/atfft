@@ -9,15 +9,17 @@
  */
 
 /**
- * @file
+ * \file
  *
- * The men header for atfft.
+ * The main header for atfft.
  */
 
 #ifndef ATFFT_H_INCLUDED
 #define ATFFT_H_INCLUDED
 
+/** Perform a forward transform. */
 #define ATFFT_FORWARD -1
+/** Perform a backward transform. */
 #define ATFFT_BACKWARD 1
 
 /**
@@ -143,23 +145,128 @@ void atfft_real_to_complex (atfft_sample *in, atfft_complex *out, int size);
 void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int size);
 
 #ifndef ATFFT_TYPE_FLOAT
+/**
+ * Convert a real valued signal from single precision floats 
+ * to the type atfft is using.
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_float_to_sample_real (float *in, atfft_sample *out, int size);
+
+/**
+ * Convert a real valued signal from the type atfft is using
+ * to single precision floats
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_sample_to_float_real (atfft_sample *in, float *out, int size);
+
+/**
+ * Convert a complex valued signal from single precision floats 
+ * to the type atfft is using.
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_float_to_sample_complex (atfft_complex_f *in, atfft_complex *out, int size);
+
+/**
+ * Convert a complex valued signal from the type atfft is using
+ * to single precision floats
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_f *out, int size);
 #endif
 
 #ifndef ATFFT_TYPE_DOUBLE
+/**
+ * Convert a real valued signal from double precision floats 
+ * to the type atfft is using.
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_double_to_sample_real (double *in, atfft_sample *out, int size);
+
+/**
+ * Convert a real valued signal from the type atfft is using
+ * to double precision floats
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_sample_to_double_real (atfft_sample *in, double *out, int size);
+
+/**
+ * Convert a complex valued signal from double precision floats 
+ * to the type atfft is using.
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_double_to_sample_complex (atfft_complex_d *in, atfft_complex *out, int size);
+
+/**
+ * Convert a complex valued signal from the type atfft is using
+ * to double precision floats
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_d *out, int size);
 #endif
 
 #ifndef ATFFT_TYPE_LONG_DOUBLE
+/**
+ * Convert a real valued signal from long double precision floats 
+ * to the type atfft is using.
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_long_double_to_sample_real (long double *in, atfft_sample *out, int size);
+
+/**
+ * Convert a real valued signal from the type atfft is using
+ * to long double precision floats
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_sample_to_long_double_real (atfft_sample *in, long double *out, int size);
+
+/**
+ * Convert a complex valued signal from long double precision floats 
+ * to the type atfft is using.
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_long_double_to_sample_complex (atfft_complex_l *in, atfft_complex *out, int size);
+
+/**
+ * Convert a complex valued signal from the type atfft is using
+ * to long double precision floats
+ *
+ * @param in the input signal (should contain size elements)
+ * @param out the output signal (should contain size elements)
+ * @param size the length of the signals
+ */
 void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *out, int size);
 #endif
 
@@ -168,7 +275,7 @@ void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *ou
  *
  * @param size the signal length the fft should operate on
  * @param direction the direction of the transform
- * @format the type of transform (real or complex)
+ * @param format the type of transform (real or complex)
  */
 struct atfft* atfft_create (int size, int direction, enum atfft_format format);
 
@@ -179,8 +286,47 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format);
  */
 void atfft_free (struct atfft *fft);
 
+/**
+ * Perform a complex DFT.
+ *
+ * Performs a forward or inverse transform depending on what the fft
+ * structure passed was created for.
+ *
+ * @param fft a valid fft structure 
+ *            (should have been created with a format of ATFFT_COMPLEX)
+ * @param in the input signal 
+ *           (should have the number of samples the fft was created for)
+ * @param out the output signal 
+ *            (should have the number of samples the fft was created for)
+ */
 void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out);
+
+/**
+ * Perform a real forward DFT.
+ *
+ * @param fft a valid fft structure 
+ *            (should have been created with a direction of ATFFT_FORWARD
+ *             and a format of ATFFT_REAL)
+ * @param in the input signal 
+ *           (should have the number of samples the fft was created for)
+ * @param out the output signal 
+ *            (should have size / 2 + 1 sample, where size if the
+ *             size the fft was created for)
+ */
 void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_complex *out);
+
+/**
+ * Perform a real inverse DFT.
+ *
+ * @param fft a valid fft structure 
+ *            (should have been created with a direction of ATFFT_BACKWARD
+ *             and a format of ATFFT_REAL)
+ * @param in the input signal 
+ *           (should have size / 2 + 1 sample, where size if the
+ *            size the fft was created for)
+ * @param out the output signal 
+ *            (should have the number of samples the fft was created for)
+ */
 void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_sample *out);
 
 #endif /* ATFFT_H_INCLUDED */
