@@ -8,6 +8,12 @@
  * the COPYING file for more details.
  */
 
+/**
+ * @file
+ *
+ * The men header for atfft.
+ */
+
 #ifndef ATFFT_H_INCLUDED
 #define ATFFT_H_INCLUDED
 
