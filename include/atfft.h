@@ -30,15 +30,17 @@ typedef long double atfft_complex_l [2];
 #define ATFFT_IMAG(x) ((x) [1])
 
 #if defined(ATFFT_TYPE_FLOAT)
-typedef float atfft_sample;
-typedef atfft_complex_f atfft_complex;
+    typedef float atfft_sample;
+    typedef atfft_complex_f atfft_complex;
+
 #elif defined(ATFFT_TYPE_LONG_DOUBLE)
-typedef long double atfft_sample;
-typedef atfft_complex_l atfft_complex;
+    typedef long double atfft_sample;
+    typedef atfft_complex_l atfft_complex;
+
 #else
-#define ATFFT_TYPE_DOUBLE
-typedef double atfft_sample;
-typedef atfft_complex_d atfft_complex;
+#   define ATFFT_TYPE_DOUBLE
+    typedef double atfft_sample;
+    typedef atfft_complex_d atfft_complex;
 #endif
 
 /* some handy integer tests */
