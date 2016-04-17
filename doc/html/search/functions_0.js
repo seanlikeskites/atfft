@@ -2,6 +2,8 @@ var searchData=
 [
   ['atfft_5fcomplex_5ftransform',['atfft_complex_transform',['../atfft_8h.html#af09899f688cc60703728b3adfa9e7c6f',1,'atfft.h']]],
   ['atfft_5fcreate',['atfft_create',['../atfft_8h.html#aa164c82257655355706d440cf3647671',1,'atfft.h']]],
+  ['atfft_5fdouble_5fto_5fsample_5fcomplex',['atfft_double_to_sample_complex',['../atfft_8h.html#a5fa6cac6438725edeb8be65ced011404',1,'atfft.h']]],
+  ['atfft_5fdouble_5fto_5fsample_5freal',['atfft_double_to_sample_real',['../atfft_8h.html#a0399838daaf0ccb1f2c0204a04b3094d',1,'atfft.h']]],
   ['atfft_5ffloat_5fto_5fsample_5fcomplex',['atfft_float_to_sample_complex',['../atfft_8h.html#af211db42e9afab9a1e9b16f59cf157e6',1,'atfft.h']]],
   ['atfft_5ffloat_5fto_5fsample_5freal',['atfft_float_to_sample_real',['../atfft_8h.html#a9e3e69d40f301529affe2eca4948e315',1,'atfft.h']]],
   ['atfft_5ffree',['atfft_free',['../atfft_8h.html#a1471e97bd2423b1c7d4b167c14ea7c68',1,'atfft.h']]],
@@ -18,6 +20,8 @@ var searchData=
   ['atfft_5freal_5fbackward_5ftransform',['atfft_real_backward_transform',['../atfft_8h.html#a34913c826c6fbbe1cbaf82ee794808e0',1,'atfft.h']]],
   ['atfft_5freal_5fforward_5ftransform',['atfft_real_forward_transform',['../atfft_8h.html#adf497e6f8cd4d51a8f5c7d0df16b4786',1,'atfft.h']]],
   ['atfft_5freal_5fto_5fcomplex',['atfft_real_to_complex',['../atfft_8h.html#a9980d5008c04fbbc73ac2d29953e8d9a',1,'atfft.h']]],
+  ['atfft_5fsample_5fto_5fdouble_5fcomplex',['atfft_sample_to_double_complex',['../atfft_8h.html#a4c6ffbdfdf982208c3daa1ede8e31a79',1,'atfft.h']]],
+  ['atfft_5fsample_5fto_5fdouble_5freal',['atfft_sample_to_double_real',['../atfft_8h.html#aa84ca746c3e07fba52b64c17664b64cc',1,'atfft.h']]],
   ['atfft_5fsample_5fto_5ffloat_5fcomplex',['atfft_sample_to_float_complex',['../atfft_8h.html#af452512ef08b89496a3d9f063a6566f3',1,'atfft.h']]],
   ['atfft_5fsample_5fto_5ffloat_5freal',['atfft_sample_to_float_real',['../atfft_8h.html#afd5a6d05dd8a2b270101fea3f83238dd',1,'atfft.h']]],
   ['atfft_5fsample_5fto_5flong_5fdouble_5fcomplex',['atfft_sample_to_long_double_complex',['../atfft_8h.html#a4ec1178efcc035a8bfa4692d4dff0782',1,'atfft.h']]],
