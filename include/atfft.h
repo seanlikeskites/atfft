@@ -9,7 +9,8 @@
  */
 
 /**
- * \file The main header for atfft.
+ * \file 
+ * The main header for atfft.
  */
 
 #ifndef ATFFT_H_INCLUDED
