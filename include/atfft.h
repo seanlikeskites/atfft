@@ -9,9 +9,7 @@
  */
 
 /**
- * \file
- *
- * The main header for atfft.
+ * \file The main header for atfft.
  */
 
 #ifndef ATFFT_H_INCLUDED
@@ -22,14 +20,11 @@
 /** Perform a backward transform. */
 #define ATFFT_BACKWARD 1
 
-/**
- *
- *
- */
+/** An enum to represent the type of values the transform will operate on. */
 enum atfft_format
 {
-    ATFFT_COMPLEX,
-    ATFFT_REAL
+    ATFFT_COMPLEX, /**< Perform a transform on complex valued signals. */
+    ATFFT_REAL /**< Perform a transform on real valued signals. */
 };
 
 /** 
@@ -53,6 +48,7 @@ typedef long double atfft_complex_l [2];
 /** A macro to return the imaginary part of the complex types. */
 #define ATFFT_IMAG(x) ((x) [1])
 
+/** Some typdefs for changing the type atfft works with. \cond */
 #if defined(ATFFT_TYPE_FLOAT)
     typedef float atfft_sample;
     typedef atfft_complex_f atfft_complex;
@@ -66,6 +62,7 @@ typedef long double atfft_complex_l [2];
     typedef double atfft_sample;
     typedef atfft_complex_d atfft_complex;
 #endif
+/** \endcond */
 
 /**
  * Check if an integer is even.
@@ -310,7 +307,7 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_comple
  * @param in the input signal 
  *           (should have the number of samples the fft was created for)
  * @param out the output signal 
- *            (should have size / 2 + 1 sample, where size if the
+ *            (should have size / 2 + 1 samples, where size if the
  *             size the fft was created for)
  */
 void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_complex *out);
@@ -322,7 +319,7 @@ void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_co
  *            (should have been created with a direction of ATFFT_BACKWARD
  *             and a format of ATFFT_REAL)
  * @param in the input signal 
- *           (should have size / 2 + 1 sample, where size if the
+ *           (should have size / 2 + 1 samples, where size if the
  *            size the fft was created for)
  * @param out the output signal 
  *            (should have the number of samples the fft was created for)
