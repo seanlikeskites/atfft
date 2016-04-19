@@ -106,6 +106,12 @@ void atfft_normalise_real (atfft_sample *data, int size);
  */
 void atfft_normalise_complex (atfft_complex *data, int size);
 
+/** Return the absolute value of a complex number. */
+atfft_sample atfft_abs (atfft_complex x);
+
+/** Return the complex argument of a complex number. */
+atfft_sample atfft_arg (atfft_complex x);
+
 /**
  * Get the real part of a complex signal.
  *

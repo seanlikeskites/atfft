@@ -50,6 +50,16 @@ void atfft_normalise_complex (atfft_complex *data, int size)
     }
 }
 
+atfft_sample atfft_abs (atfft_complex x)
+{
+    return sqrt (ATFFT_REAL (x) * ATFFT_REAL (x) + ATFFT_IMAG (x) * ATFFT_IMAG (x));
+}
+
+atfft_sample atfft_arg (atfft_complex x)
+{
+    return atan2 (ATFFT_IMAG (x), ATFFT_REAL (x));
+}
+
 /* conversion functions */
 void atfft_real (atfft_complex *in, atfft_sample *out, int size)
 {
