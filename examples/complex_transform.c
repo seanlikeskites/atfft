@@ -111,8 +111,8 @@ int main()
     printSampleArray (signal, nSamples);
 
     /* free everything */
-    atfft_free (fftBackward);
-    atfft_free (fftForward);
+    atfft_destroy (fftBackward);
+    atfft_destroy (fftForward);
     free (freqDomain);
     free (timeDomain);
     free (signal);

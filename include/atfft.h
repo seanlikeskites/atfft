@@ -288,7 +288,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format);
  *
  * @param fft the structure to free
  */
-void atfft_free (struct atfft *fft);
+void atfft_destroy (struct atfft *fft);
 
 /**
  * Perform a complex DFT.

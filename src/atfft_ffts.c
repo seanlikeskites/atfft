@@ -67,7 +67,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     return fft;
 }
 
-void atfft_free (struct atfft *fft)
+void atfft_destroy (struct atfft *fft)
 {
     ffts_free (fft->plan);
 #ifndef ATFFT_TYPE_FLOAT

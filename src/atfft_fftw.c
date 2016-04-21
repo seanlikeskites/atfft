@@ -114,7 +114,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     return fft;
 }
 
-void atfft_free (struct atfft *fft)
+void atfft_destroy (struct atfft *fft)
 {
     ATFFT_FFTW_DESTROY_PLAN (fft->plan);
     ATFFT_FFTW_FREE (fft->out);
