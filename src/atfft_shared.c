@@ -100,9 +100,7 @@ void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int si
     memcpy (out, in, lastBin * sizeof (*out));
 
     if (atfft_is_even (size))
-    {
         --lastBin;
-    }
 
     for (i = 1; i < lastBin; ++i)
     {
