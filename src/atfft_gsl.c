@@ -33,7 +33,9 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 {
     struct atfft *fft;
 
-    fft = malloc (sizeof (*fft));
+    if (!(fft = malloc (sizeof (*fft))))
+        return NULL;
+
     fft->size = size;
     fft->direction = direction;
     fft->format = format;
@@ -51,15 +53,18 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             fft->workArea = gsl_fft_real_workspace_alloc (size);
 
             if (direction == ATFFT_FORWARD)
-            {
                 fft->tables = gsl_fft_real_wavetable_alloc (size);
-            }
             else
-            {
                 fft->tables = gsl_fft_halfcomplex_wavetable_alloc (size);
-            }
 
             break;
+    }
+
+    /* clean up on failure (might be bad for old versions of GSL) */
+    if (!(fft->data && fft->workArea && fft->tables))
+    {
+        atfft_destroy (fft);
+        fft = NULL;
     }
 
     return fft;
@@ -67,30 +72,29 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 
 void atfft_destroy (struct atfft *fft)
 {
-    switch (fft->format)
+    if (fft)
     {
-        case ATFFT_COMPLEX:
-            gsl_fft_complex_wavetable_free (fft->tables);
-            gsl_fft_complex_workspace_free (fft->workArea);
-            break;
+        switch (fft->format)
+        {
+            case ATFFT_COMPLEX:
+                gsl_fft_complex_wavetable_free (fft->tables);
+                gsl_fft_complex_workspace_free (fft->workArea);
+                break;
 
-        case ATFFT_REAL:
-            if (fft->direction == ATFFT_FORWARD)
-            {
-                gsl_fft_real_wavetable_free (fft->tables);
-            }
-            else
-            {
-                gsl_fft_halfcomplex_wavetable_free (fft->tables);
-            }
+            case ATFFT_REAL:
+                if (fft->direction == ATFFT_FORWARD)
+                    gsl_fft_real_wavetable_free (fft->tables);
+                else
+                    gsl_fft_halfcomplex_wavetable_free (fft->tables);
 
-            gsl_fft_real_workspace_free (fft->workArea);
-            break;
+                gsl_fft_real_workspace_free (fft->workArea);
+                break;
+        }
+
+        gsl_vector_free (fft->data);
+
+        free (fft);
     }
-
-    gsl_vector_free (fft->data);
-
-    free (fft);
 }
 
 void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
