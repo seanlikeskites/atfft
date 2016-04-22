@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <atfft.h>
 
 /* we need to make sure we are using kiss_fft with the correct type */
@@ -28,8 +29,11 @@ struct atfft
 struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 {
     struct atfft *fft;
+    int dataOk = 0;
 
-    fft = malloc (sizeof (*fft));
+    if (!(fft = malloc (sizeof (*fft))))
+        return NULL;
+
     fft->size = size;
     fft->direction = direction;
     fft->format = format;
@@ -39,6 +43,22 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     {
         fft->in = malloc (size * sizeof (*(fft->in)));
         fft->out = malloc (size * sizeof (*(fft->out)));
+        dataOk = fft->in && fft->out;
+    }
+    else
+    {
+        fft->in = NULL;
+        fft->out = NULL;
+        dataOk = 1;
+    }
+
+    /* clean up on failure */
+    if (!(fft->cfg && dataOk))
+    {
+        free (fft->in);
+        free (fft->cfg);
+        free (fft);
+        fft = NULL;
     }
 
     return fft;
@@ -46,18 +66,20 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 
 void atfft_destroy (struct atfft *fft)
 {
-    if (fft->format == ATFFT_REAL)
+    if (fft)
     {
         free (fft->out);
         free (fft->in);
+        free (fft->cfg);
+        free (fft);
     }
-
-    free (fft->cfg);
-    free (fft);
 }
 
 void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
 {
+    /* Only to be used with complex FFTs. */
+    assert (fft->format == ATFFT_COMPLEX);
+
     kiss_fft (fft->cfg, (kiss_fft_cpx*) in, (kiss_fft_cpx*) out);
 }
 
@@ -68,14 +90,24 @@ void atfft_complex_to_halfcomplex (atfft_complex *in, atfft_complex *out, int si
 
 void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_complex *out)
 {
+    /* Only to be used for forward real FFTs. */
+    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+
     atfft_real_to_complex (in, fft->in, fft->size);
+    fft->format = ATFFT_COMPLEX;
     atfft_complex_transform (fft, fft->in, fft->out);
+    fft->format = ATFFT_REAL;
     atfft_complex_to_halfcomplex (fft->out, out, fft->size);
 }
 
 void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_sample *out)
 {
+    /* Only to be used for backward real FFTs. */
+    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+
     atfft_halfcomplex_to_complex (in, fft->in, fft->size);
+    fft->format = ATFFT_COMPLEX;
     atfft_complex_transform (fft, fft->in, fft->out);
+    fft->format = ATFFT_REAL;
     atfft_real (fft->out, out, fft->size);
 }
