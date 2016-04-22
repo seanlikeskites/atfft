@@ -44,24 +44,16 @@ int atfft_is_supported_length_vdsp (unsigned int length, enum atfft_format forma
     int min = 8;
 
     if (atfft_is_power_of_2 (length))
-    {
         return 1;
-    }
 
     if (format == ATFFT_REAL)
-    {
         min = 16;
-    }
 
     if ((!(length % 3) && atfft_is_power_of_2 (length / 3) && (length / 3 >= min)) ||
         (!(length % 5) && atfft_is_power_of_2 (length / 5) && (length / 5 >= min)))
-    {
         return 1;        
-    }
     else
-    {
         return 0;
-    }
 }
 
 struct atfft* atfft_create (int size, int direction, enum atfft_format format)
@@ -71,7 +63,9 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     /* vDSP only supports certain lengths */
     assert (atfft_is_supported_length_vdsp (size, format));
 
-    fft = malloc (sizeof (*fft));
+    if (!(fft = malloc (sizeof (*fft))))
+        return NULL;
+
     fft->size = size;
     fft->direction = direction;
     fft->format = format;
@@ -92,17 +86,26 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             break;
     }
 
+    if (!(fft->inR && fft->inI && fft->outR && fft->outI && fft->setup))
+    {
+        atfft_destroy (fft);
+        fft = NULL;
+    }
+
     return fft;
 }
 
 void atfft_destroy (struct atfft *fft)
 {
-    ATFFT_VDSP_DFT_DESTROY_SETUP (fft->setup);
-    free (fft->outI);
-    free (fft->outR);
-    free (fft->inI);
-    free (fft->inR);
-    free (fft);
+    if (fft)
+    {
+        ATFFT_VDSP_DFT_DESTROY_SETUP (fft->setup);
+        free (fft->outI);
+        free (fft->outR);
+        free (fft->inI);
+        free (fft->inR);
+        free (fft);
+    }
 }
 
 void atfft_complex_fftw_to_vdsp (atfft_complex *in, atfft_vdsp_sample *real, atfft_vdsp_sample *imag, int size)
