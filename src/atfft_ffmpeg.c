@@ -40,9 +40,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     assert (atfft_is_power_of_2 (size));
 
     if (!(fft = malloc (sizeof (*fft))))
-    {
         return NULL;
-    }
 
     fft->size = size;
     fft->direction = direction;
@@ -56,14 +54,9 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             freeContext = (free_context) av_fft_end;
 
             if (direction == ATFFT_FORWARD)
-            {
                 initDirection = 0;
-            }
             else
-            {
                 initDirection = 1;
-            }
-
             break;
 
         case ATFFT_REAL:
@@ -72,14 +65,9 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             freeContext = (free_context) av_rdft_end;
 
             if (direction == ATFFT_FORWARD)
-            {
                 initDirection = DFT_R2C;
-            }
             else
-            {
                 initDirection = IDFT_C2R;
-            }
-
             break;
     }
 
