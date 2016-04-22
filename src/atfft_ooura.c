@@ -28,11 +28,14 @@ struct atfft
 struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 {
     struct atfft *fft;
+    int workSize;
 
     /* Ooura only supports sizes which are a power of 2. */
     assert (atfft_is_power_of_2 (size));
 
-    fft = malloc (sizeof (*fft));
+    if (!(fft = malloc (sizeof (*fft))))
+        return NULL;
+
     fft->size = size;
     fft->direction = direction;
     fft->format = format;
@@ -41,28 +44,41 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     {
         case ATFFT_COMPLEX:
             fft->dataSize = 2 * size * sizeof (*(fft->data));
-            fft->data = malloc (fft->dataSize);
-            fft->workArea = malloc ((2 + (1 << (int) (log (size + 0.5) / log (2)) / 2)) * sizeof (*(fft->workArea)));
+            workSize = (2 + (1 << (int) (log (size + 0.5) / log (2)) / 2)) * sizeof (*(fft->workArea));
             break;
 
         case ATFFT_REAL:
             fft->dataSize = size * sizeof (*(fft->data));
-            fft->data = malloc (fft->dataSize);
-            fft->workArea = malloc ((2 + (1 << (int) (log (size / 2 + 0.5) / log (2)) / 2)) * sizeof (*(fft->workArea)));
+            workSize = (2 + (1 << (int) (log (size / 2 + 0.5) / log (2)) / 2)) * sizeof (*(fft->workArea));
     }
 
+    fft->data = malloc (fft->dataSize);
+    fft->workArea = malloc (workSize);
     fft->tables = malloc (size / 2 * sizeof (*(fft->tables)));
-    fft->workArea [0] = 0;
+
+    /* clean up on failure */
+    if (!(fft->data && fft->workArea && fft->tables))
+    {
+        atfft_destroy (fft);
+        fft = NULL;
+    }
+    else
+    {
+        fft->workArea [0] = 0;
+    }
 
     return fft;
 }
 
 void atfft_destroy (struct atfft *fft)
 {
-    free (fft->tables);
-    free (fft->workArea);
-    free (fft->data);
-    free (fft);
+    if (fft)
+    {
+        free (fft->tables);
+        free (fft->workArea);
+        free (fft->data);
+        free (fft);
+    }
 }
 
 void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
