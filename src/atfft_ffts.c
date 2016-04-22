@@ -27,11 +27,16 @@ struct atfft
 struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 {
     struct atfft *fft;
+#ifndef ATFFT_TYPE_FLOAT
+    int inSize, outSize;
+#endif
 
     /* FFTS only supports sizes which are a power of 2. */
     assert (atfft_is_power_of_2 (size));
 
-    fft = malloc (sizeof (*fft));
+    if (!(fft = malloc (sizeof (*fft))))
+        return NULL;
+
     fft->size = size;
     fft->direction = direction;
     fft->format = format;
@@ -40,8 +45,8 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     {
         case ATFFT_COMPLEX:
 #ifndef ATFFT_TYPE_FLOAT
-            fft->in = malloc (2 * size * sizeof (*(fft->in)));
-            fft->out = malloc (2 * size * sizeof (*(fft->out)));
+            inSize = 2 * size * sizeof (*(fft->in));
+            outSize = 2 * size * sizeof (*(fft->out));
 #endif
             fft->plan = ffts_init_1d (size, direction);
             break;
@@ -50,13 +55,13 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 #ifndef ATFFT_TYPE_FLOAT
             if (direction == ATFFT_FORWARD)
             {
-                fft->in = malloc (size * sizeof (*(fft->in)));
-                fft->out = malloc (2 * (floor (size / 2) + 1) * sizeof (*(fft->out)));
+                inSize = size * sizeof (*(fft->in));
+                outSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->out));
             }
             else
             {
-                fft->in = malloc (2 * (floor (size / 2) + 1) * sizeof (*(fft->in)));
-                fft->out = malloc (size * sizeof (*(fft->out)));
+                inSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->in));
+                outSize = size * sizeof (*(fft->out));
             }
 #endif
 
@@ -64,17 +69,44 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             break;
     }
 
+#ifndef ATFFT_TYPE_FLOAT
+    fft->in = malloc (inSize);
+    fft->out = malloc (outSize);
+#endif
+
+#ifndef ATFFT_TYPE_FLOAT
+    if (!(fft->in && fft->out && fft->plan))
+    {
+        if (fft->plan) /* ffts can't hack freeing a null pointer */
+            ffts_free (fft->plan);
+
+        free (fft->out);
+        free (fft->in);
+        free (fft);
+        fft = NULL;
+    }
+#else
+    if (!fft->plan)
+    {
+        free (fft);
+        fft = NULL;
+    }
+#endif
+
     return fft;
 }
 
 void atfft_destroy (struct atfft *fft)
 {
-    ffts_free (fft->plan);
+    if (fft)
+    {
+        ffts_free (fft->plan);
 #ifndef ATFFT_TYPE_FLOAT
-    free (fft->out);
-    free (fft->in);
+        free (fft->out);
+        free (fft->in);
 #endif
-    free (fft);
+        free (fft);
+    }
 }
 
 void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
