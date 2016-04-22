@@ -16,6 +16,11 @@
 #ifndef ATFFT_H_INCLUDED
 #define ATFFT_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /** Perform a forward transform. */
 #define ATFFT_FORWARD -1
 /** Perform a backward transform. */
@@ -332,5 +337,9 @@ void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_co
  *            (should have the number of samples the fft was created for)
  */
 void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_sample *out);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ATFFT_H_INCLUDED */
