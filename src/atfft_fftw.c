@@ -62,44 +62,20 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 
     if (!(fft = malloc (sizeof (*fft))))
         return NULL;
-            
+
     fft->size = size;
     fft->direction = direction;
     fft->format = format;
 
-    /* work out sizes */
     switch (format)
     {
         case ATFFT_COMPLEX:
             fft->inSize = 2 * size * sizeof (*(fft->in));
+            fft->in = ATFFT_FFTW_MALLOC (fft->inSize);
+
             fft->outSize = 2 * size * sizeof (*(fft->out));
-            break;
+            fft->out = ATFFT_FFTW_MALLOC (fft->outSize);
 
-        case ATFFT_REAL:
-            if (direction == ATFFT_FORWARD)
-            {
-                fft->inSize = size * sizeof (*(fft->in));
-                fft->outSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->out));
-            }
-            else
-            {
-                fft->inSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->in));
-                fft->outSize = size * sizeof (*(fft->out));
-            }
-            break;
-    }
-
-    /* allocate buffers */
-    if (!(fft->in = ATFFT_FFTW_MALLOC (fft->inSize)))
-        goto inFail;
-
-    if (!(fft->out = ATFFT_FFTW_MALLOC (fft->outSize)))
-        goto outFail;
-
-    /* allocate plan */
-    switch (format)
-    {
-        case ATFFT_COMPLEX:
             fft->plan = ATFFT_FFTW_PLAN_DFT_1D (size,
                                                 (atfft_complex*) fft->in,
                                                 (atfft_complex*) fft->out, 
@@ -109,30 +85,44 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 
         case ATFFT_REAL:
             if (direction == ATFFT_FORWARD)
+            {
+                fft->inSize = size * sizeof (*(fft->in));
+                fft->in = ATFFT_FFTW_MALLOC (fft->inSize);
+
+                fft->outSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->out));
+                fft->out = ATFFT_FFTW_MALLOC (fft->outSize);
+
                 fft->plan = ATFFT_FFTW_PLAN_DFT_R2C_1D (size, 
                                                         fft->in,
                                                         (atfft_complex*) fft->out,
                                                         FFTW_ESTIMATE);
+            }
             else
+            {
+                fft->inSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->in));
+                fft->in = ATFFT_FFTW_MALLOC (fft->inSize);
+
+                fft->outSize = size * sizeof (*(fft->out));
+                fft->out = ATFFT_FFTW_MALLOC (fft->outSize);
+
                 fft->plan = ATFFT_FFTW_PLAN_DFT_C2R_1D (size,
                                                         (atfft_complex*) fft->in,
                                                         fft->out,
                                                         FFTW_ESTIMATE);
+            }
             break;
     }
 
-    if (fft->plan)
-        goto success;
-
     /* clean up on failure */
-    ATFFT_FFTW_FREE (fft->out);
-outFail:
-    ATFFT_FFTW_FREE (fft->in);
-inFail:
-    free (fft);
-    fft = NULL;
+    if (!(fft->in && fft->out && fft->plan))
+    {
+        ATFFT_FFTW_DESTROY_PLAN (fft->plan);
+        ATFFT_FFTW_FREE (fft->out);
+        ATFFT_FFTW_FREE (fft->in);
+        free (fft);
+        fft = NULL;
+    }
 
-success:
     return fft;
 }
 

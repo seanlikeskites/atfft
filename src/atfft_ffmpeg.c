@@ -75,7 +75,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     fft->data = av_malloc (dataSize);
     fft->context = initContext (log2 (size), initDirection);
 
-    /* if we fail, free stuff what was allocated */
+    /* clean up on failure */
     if (!(fft->data && fft->context))
     {
         av_free (fft->data);
