@@ -33,6 +33,8 @@ static void complexTransform (benchmark::State &state)
     delete[] x;
 }
 
-BENCHMARK (complexTransform)->Range (16, 1 << 16);
+BENCHMARK (complexTransform)->Arg(4)->Arg(8)->Arg(16)->Arg(32)->Arg(64)->Arg(128)
+                            ->Arg(256)->Arg(512)->Arg(1024)->Arg(2048)->Arg(4096)->Arg(8192)
+                            ->Arg(16384)->Arg(32768)->Arg(65536);
 
 BENCHMARK_MAIN();
