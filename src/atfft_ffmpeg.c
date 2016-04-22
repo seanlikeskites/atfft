@@ -15,6 +15,9 @@
 #include <libavcodec/avfft.h>
 #include <atfft.h>
 
+typedef void* (*init_context) (int, int);
+typedef void (*free_context) (void*);
+
 struct atfft
 {
     int size;
@@ -28,10 +31,19 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 {
     struct atfft *fft;
 
+    init_context initContext;
+    free_context freeContext;
+    size_t dataSize;
+    int initDirection;
+
     /* ffmpeg only supports sizes which are a power of 2. */
     assert (atfft_is_power_of_2 (size));
 
-    fft = malloc (sizeof (*fft));
+    if (!(fft = malloc (sizeof (*fft))))
+    {
+        return NULL;
+    }
+
     fft->size = size;
     fft->direction = direction;
     fft->format = format;
@@ -39,32 +51,49 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     switch (format)
     {
         case ATFFT_COMPLEX:
-            fft->data = av_malloc (2 * size * sizeof (*(fft->data)));
+            dataSize = 2 * size * sizeof (*(fft->data));
+            initContext = (init_context) av_fft_init;
+            freeContext = (free_context) av_fft_end;
 
             if (direction == ATFFT_FORWARD)
             {
-                fft->context = av_fft_init (log2 (size), 0);
+                initDirection = 0;
             }
             else
             {
-                fft->context = av_fft_init (log2 (size), 1);
+                initDirection = 1;
             }
 
             break;
 
         case ATFFT_REAL:
-            fft->data = av_malloc (size * sizeof (*(fft->data)));
+            dataSize = size * sizeof (*(fft->data));
+            initContext = (init_context) av_rdft_init;
+            freeContext = (free_context) av_rdft_end;
 
             if (direction == ATFFT_FORWARD)
             {
-                fft->context = av_rdft_init (log2 (size), DFT_R2C);
+                initDirection = DFT_R2C;
             }
             else
             {
-                fft->context = av_rdft_init (log2 (size), IDFT_C2R);
+                initDirection = IDFT_C2R;
             }
 
             break;
+    }
+
+    /* allocate some fft stuff */
+    fft->data = av_malloc (dataSize);
+    fft->context = initContext (log2 (size), initDirection);
+
+    /* if we fail, free stuff what was allocated */
+    if (!(fft->data && fft->context))
+    {
+        av_free (fft->data);
+        freeContext (fft->context);
+        free (fft);
+        fft = NULL;
     }
 
     return fft;
@@ -72,19 +101,22 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
 
 void atfft_destroy (struct atfft *fft)
 {
-    switch (fft->format)
+    if (fft)
     {
-        case ATFFT_COMPLEX:
-            av_fft_end (fft->context);
-            break;
+        switch (fft->format)
+        {
+            case ATFFT_COMPLEX:
+                av_fft_end (fft->context);
+                break;
 
-        case ATFFT_REAL:
-            av_rdft_end (fft->context);
-            break;
+            case ATFFT_REAL:
+                av_rdft_end (fft->context);
+                break;
+        }
+
+        av_free (fft->data);
+        free (fft);
     }
-
-    av_free (fft->data);
-    free (fft);
 }
 
 void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
