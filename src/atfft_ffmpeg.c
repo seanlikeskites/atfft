@@ -16,7 +16,6 @@
 #include <atfft.h>
 
 typedef void* (*init_context) (int, int);
-typedef void (*free_context) (void*);
 
 struct atfft
 {
@@ -32,7 +31,6 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     struct atfft *fft;
 
     init_context initContext;
-    free_context freeContext;
     size_t dataSize;
     int initDirection;
 
@@ -51,7 +49,6 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
         case ATFFT_COMPLEX:
             dataSize = 2 * size * sizeof (*(fft->data));
             initContext = (init_context) av_fft_init;
-            freeContext = (free_context) av_fft_end;
 
             if (direction == ATFFT_FORWARD)
                 initDirection = 0;
@@ -62,7 +59,6 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
         case ATFFT_REAL:
             dataSize = size * sizeof (*(fft->data));
             initContext = (init_context) av_rdft_init;
-            freeContext = (free_context) av_rdft_end;
 
             if (direction == ATFFT_FORWARD)
                 initDirection = DFT_R2C;
@@ -78,9 +74,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     /* clean up on failure */
     if (!(fft->data && fft->context))
     {
-        av_free (fft->data);
-        freeContext (fft->context);
-        free (fft);
+        atfft_destroy (fft);
         fft = NULL;
     }
 

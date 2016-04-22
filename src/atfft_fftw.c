@@ -116,10 +116,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     /* clean up on failure */
     if (!(fft->in && fft->out && fft->plan))
     {
-        ATFFT_FFTW_DESTROY_PLAN (fft->plan);
-        ATFFT_FFTW_FREE (fft->out);
-        ATFFT_FFTW_FREE (fft->in);
-        free (fft);
+        atfft_destroy (fft);
         fft = NULL;
     }
 

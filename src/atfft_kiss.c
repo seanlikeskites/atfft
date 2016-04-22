@@ -55,9 +55,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     /* clean up on failure */
     if (!(fft->cfg && dataOk))
     {
-        free (fft->in);
-        free (fft->cfg);
-        free (fft);
+        atfft_destroy (fft);
         fft = NULL;
     }
 
