@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+           "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<meta name="GENERATOR" content="TtH 4.03">
+ <style type="text/css"> div.p { margin-top: 7pt;}</style>
+ <style type="text/css"><!--
+ td div.comp { margin-top: -0.6ex; margin-bottom: -1ex;}
+ td div.comb { margin-top: -0.6ex; margin-bottom: -.6ex;}
+ td div.hrcomp { line-height: 0.9; margin-top: -0.8ex; margin-bottom: -1ex;}
+ td div.norm {line-height:normal;}
+ span.roman {font-family: serif; font-style: normal; font-weight: normal;} 
+ span.overacc2 {position: relative;  left: .8em; top: -1.2ex;}
+ span.overacc1 {position: relative;  left: .6em; top: -1.2ex;} --></style>
+ <style type="text/css"><!--
+ .tiny {font-size:30%;}
+ .scriptsize {font-size:xx-small;}
+ .footnotesize {font-size:x-small;}
+ .smaller {font-size:smaller;}
+ .small {font-size:small;}
+ .normalsize {font-size:medium;}
+ .large {font-size:large;}
+ .larger {font-size:x-large;}
+ .largerstill {font-size:xx-large;}
+ .huge {font-size:300%;}
+ --></style>
+
+
+<title> ATFFT Benchmarks</title>
+ 
+<h1 align="center">ATFFT Benchmarks </h1>
+
+<div class="p"><!----></div>
+ 			Here are a few simple benchmarks performed on ATFFT using google benchmark. They do not
+	measure the performance of the various FFT implementations (like the ones you will find on
+	the FFTW website), rather they measure the performance of those implementations as used
+	through the ATFFT interface. Timings include any manipulation that needs to be done in order
+	to get the input data in the correct format for the FFT implementation being used. Each
+	implementation was benchmarked for the floating point precisions it supports. The reported
+	speeds are calculated as [Input Length/CPU Time] giving results in
+	samples per second.  
+
+<div class="p"><!----></div>
+	Figures <a href="#fig:singleComplex">1</a>, <a href="#fig:doubleComplex">2</a> and
+	<a href="#fig:longComplex">3</a> speeds of each implementation in performing a forward FFT on complex
+	data of different lengths, with different precisions.
+
+<div class="p"><!----></div>
+	
+<div class="p"><!----></div>
+<a name="tth_fIg1">
+</a> 		<div style="text-align:center">		<img src="singleComplex.png" alt="singleComplex.png" />
+		
+<div style="text-align:center">Figure 1: Single Precision Complex Transform</div>
+		<a name="fig:singleComplex">
+</a>
+	</div>
+<div class="p"><!----></div>
+	
+<div class="p"><!----></div>
+<a name="tth_fIg2">
+</a> 		<div style="text-align:center">		<img src="doubleComplex.png" alt="doubleComplex.png" />
+		
+<div style="text-align:center">Figure 2: Double Precision Complex Transform</div>
+		<a name="fig:doubleComplex">
+</a>
+	</div>
+<div class="p"><!----></div>
+	
+<div class="p"><!----></div>
+<a name="tth_fIg3">
+</a> 		<div style="text-align:center">		<img src="longComplex.png" alt="longComplex.png" />
+		
+<div style="text-align:center">Figure 3: Long Double Precision Complex Transform</div>
+		<a name="fig:longComplex">
+</a>
+	</div>
+<div class="p"><!----></div>
+
+<br /><br /><hr /><small>File translated from
+T<sub><span class="small">E</span></sub>X
+by <a href="http://hutchinson.belmont.ma.us/tth/">
+T<sub><span class="small">T</span></sub>H</a>,
+version 4.03.<br />On 23 Apr 2016, 13:18.</small>
+</html>
