@@ -56,6 +56,11 @@ the atfft interface:
   - Single and double precision only (no long doubles).
   - Signal lengths of 2^n (and some multiples thereof) only.
 
+## Links
+* [Documentation](https://seanlikeskites.github.io/atfft/doc/html)
+* [Benchmarks](https://seanlikeskites.github.io/atfft/benchmarks/benchmark.html)
+
+
 ## Licence
 Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
 
