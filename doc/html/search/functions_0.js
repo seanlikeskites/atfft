@@ -3,7 +3,7 @@ var searchData=
   ['atfft_5fabs',['atfft_abs',['../atfft_8h.html#a2af9eaf5ffde58a2ed4a8cfb22b3733e',1,'atfft.h']]],
   ['atfft_5farg',['atfft_arg',['../atfft_8h.html#a5219cad0c3c1f27a6aedc4f54277ebdf',1,'atfft.h']]],
   ['atfft_5fcomplex_5ftransform',['atfft_complex_transform',['../atfft_8h.html#af09899f688cc60703728b3adfa9e7c6f',1,'atfft.h']]],
-  ['atfft_5fcreate',['atfft_create',['../atfft_8h.html#aa164c82257655355706d440cf3647671',1,'atfft.h']]],
+  ['atfft_5fcreate',['atfft_create',['../atfft_8h.html#a6872db66b916d75ff54afd5e80763dc7',1,'atfft.h']]],
   ['atfft_5fdestroy',['atfft_destroy',['../atfft_8h.html#a88ead893cf75e7fdbe93fd2e1eaf04c5',1,'atfft.h']]],
   ['atfft_5fdouble_5fto_5fsample_5fcomplex',['atfft_double_to_sample_complex',['../atfft_8h.html#a5fa6cac6438725edeb8be65ced011404',1,'atfft.h']]],
   ['atfft_5fdouble_5fto_5fsample_5freal',['atfft_double_to_sample_real',['../atfft_8h.html#a0399838daaf0ccb1f2c0204a04b3094d',1,'atfft.h']]],
