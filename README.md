@@ -41,9 +41,7 @@ the atfft interface:
 * [Kiss FFT](http://kissfft.sourceforge.net) 
   - Simple, as the name might suggest.
   - BSD Licenced.
-  - Only does complex transforms, real transforms 
-    are provided by atfft by copying from complex
-    transforms.
+  - Real transforms only support even lengths.
 
 * [FFmpeg](http://www.ffmpeg.org)
   - Part of libavcodec.
