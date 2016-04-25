@@ -22,14 +22,15 @@
 struct atfft
 {
     int size;
-    int direction;
+    enum atfft_direction direction;
+    gsl_fft_direction gslDirection;
     enum atfft_format format;
     gsl_vector *data;
     void *workArea;
     void *tables;
 };
 
-struct atfft* atfft_create (int size, int direction, enum atfft_format format)
+struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft *fft;
 
@@ -46,11 +47,18 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             fft->data = gsl_vector_alloc (2 * size);
             fft->workArea = gsl_fft_complex_workspace_alloc (size);
             fft->tables = gsl_fft_complex_wavetable_alloc (size);
+
+            if (direction == ATFFT_FORWARD)
+                fft->gslDirection = -1;
+            else
+                fft->gslDirection = 1;
+
             break;
 
         case ATFFT_REAL:
             fft->data = gsl_vector_alloc (size);
             fft->workArea = gsl_fft_real_workspace_alloc (size);
+            fft->gslDirection = 0; /* unused */
 
             if (direction == ATFFT_FORWARD)
                 fft->tables = gsl_fft_real_wavetable_alloc (size);
@@ -114,7 +122,7 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_comple
     atfft_sample_to_double_complex (in, (atfft_complex_d*) data, fft->size);
 #endif
 
-    gsl_fft_complex_transform (data, fft->data->stride, fft->size, fft->tables, fft->workArea, fft->direction);
+    gsl_fft_complex_transform (data, fft->data->stride, fft->size, fft->tables, fft->workArea, fft->gslDirection);
 
 #ifdef ATFFT_TYPE_DOUBLE
     memcpy (out, data, nBytes);

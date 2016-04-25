@@ -21,12 +21,14 @@ extern "C"
 {
 #endif
 
-/** Perform a forward transform. */
-#define ATFFT_FORWARD -1
-/** Perform a backward transform. */
-#define ATFFT_BACKWARD 1
+/** An enum to represent the direction of a transform. */
+enum atfft_direction
+{
+    ATFFT_FORWARD, /**< Perform a forward transform. */
+    ATFFT_BACKWARD /**< Perform a backward transform. */
+};
 
-/** An enum to represent the type of values the transform will operate on. */
+/** An enum to represent the type of values transform will operate on. */
 enum atfft_format
 {
     ATFFT_COMPLEX, /**< Perform a transform on complex valued signals. */
@@ -286,7 +288,7 @@ void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *ou
  * @param direction the direction of the transform
  * @param format the type of transform (real or complex)
  */
-struct atfft* atfft_create (int size, int direction, enum atfft_format format);
+struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format);
 
 /**
  * Free an fft structure.

@@ -20,13 +20,13 @@ typedef void* (*init_context) (int, int);
 struct atfft
 {
     int size;
-    int direction;
+    enum atfft_direction direction;
     enum atfft_format format;
     FFTSample *data;
     void *context;
 };
 
-struct atfft* atfft_create (int size, int direction, enum atfft_format format)
+struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft *fft;
 

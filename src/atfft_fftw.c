@@ -49,14 +49,14 @@
 struct atfft
 {
     int size;
-    int direction;
+    enum atfft_direction direction;
     enum atfft_format format;
     int inSize, outSize;
     atfft_sample *in, *out;
     atfft_fftw_plan plan;
 };
 
-struct atfft* atfft_create (int size, int direction, enum atfft_format format)
+struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft *fft;
 
@@ -76,11 +76,18 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             fft->outSize = 2 * size * sizeof (*(fft->out));
             fft->out = ATFFT_FFTW_MALLOC (fft->outSize);
 
-            fft->plan = ATFFT_FFTW_PLAN_DFT_1D (size,
-                                                (atfft_complex*) fft->in,
-                                                (atfft_complex*) fft->out, 
-                                                direction, 
-                                                FFTW_ESTIMATE);
+            if (direction == ATFFT_FORWARD)
+                fft->plan = ATFFT_FFTW_PLAN_DFT_1D (size,
+                                                    (atfft_complex*) fft->in,
+                                                    (atfft_complex*) fft->out, 
+                                                    FFTW_FORWARD, 
+                                                    FFTW_ESTIMATE);
+            else
+                fft->plan = ATFFT_FFTW_PLAN_DFT_1D (size,
+                                                    (atfft_complex*) fft->in,
+                                                    (atfft_complex*) fft->out, 
+                                                    FFTW_BACKWARD, 
+                                                    FFTW_ESTIMATE);
             break;
 
         case ATFFT_REAL:

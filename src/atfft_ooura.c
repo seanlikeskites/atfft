@@ -17,7 +17,8 @@
 struct atfft
 {
     int size;
-    int direction;
+    enum atfft_direction direction;
+    int oouraDirection;
     enum atfft_format format;
     int dataSize;
     double *data;
@@ -25,7 +26,7 @@ struct atfft
     double *tables;
 };
 
-struct atfft* atfft_create (int size, int direction, enum atfft_format format)
+struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft *fft;
     int workSize;
@@ -40,6 +41,11 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     fft->direction = direction;
     fft->format = format;
 
+    if (direction == ATFFT_FORWARD)
+        fft->oouraDirection = -1;
+    else
+        fft->oouraDirection = 1;
+
     switch (format)
     {
         case ATFFT_COMPLEX:
@@ -48,6 +54,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             break;
 
         case ATFFT_REAL:
+            fft->oouraDirection *= -1; /* dodgy inconsistent interface */
             fft->dataSize = size * sizeof (*(fft->data));
             workSize = (2 + (1 << (int) (log (size / 2 + 0.5) / log (2)) / 2)) * sizeof (*(fft->workArea));
     }
@@ -92,7 +99,7 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_comple
     atfft_sample_to_double_complex (in, (atfft_complex_d*) fft->data, fft->size);
 #endif
 
-    cdft (2 * fft->size, fft->direction, fft->data, fft->workArea, fft->tables);
+    cdft (2 * fft->size, fft->oouraDirection, fft->data, fft->workArea, fft->tables);
 
 #ifdef ATFFT_TYPE_DOUBLE
     memcpy (out, fft->data, fft->dataSize);
@@ -130,7 +137,7 @@ void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_co
     atfft_sample_to_double_real (in, fft->data, fft->size);
 #endif
 
-    rdft (fft->size, 1, fft->data, fft->workArea, fft->tables);
+    rdft (fft->size, fft->oouraDirection, fft->data, fft->workArea, fft->tables);
     atfft_halfcomplex_ooura_to_fftw (fft->data, out, fft->size);
 }
 
@@ -156,7 +163,7 @@ void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
 
     atfft_halfcomplex_fftw_to_ooura (in, fft->data, fft->size);
-    rdft (fft->size, -1, fft->data, fft->workArea, fft->tables);
+    rdft (fft->size, fft->oouraDirection, fft->data, fft->workArea, fft->tables);
 
 #ifdef ATFFT_TYPE_DOUBLE
     memcpy (out, fft->data, fft->dataSize);

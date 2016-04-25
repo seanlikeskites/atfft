@@ -20,13 +20,13 @@
 struct atfft
 {
     int size;
-    int direction;
+    enum atfft_direction direction;
     enum atfft_format format;
     kiss_fft_cfg cfg;
     atfft_complex *in, *out;
 };
 
-struct atfft* atfft_create (int size, int direction, enum atfft_format format)
+struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft *fft;
     int dataOk = 0;
@@ -37,7 +37,12 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     fft->size = size;
     fft->direction = direction;
     fft->format = format;
-    fft->cfg = kiss_fft_alloc (size, direction == 1, 0, 0);
+
+    if (direction == ATFFT_FORWARD)
+        fft->cfg = kiss_fft_alloc (size, 0, 0, 0);
+    else
+        fft->cfg = kiss_fft_alloc (size, 1, 0, 0);
+
 
     if (format == ATFFT_REAL)
     {
