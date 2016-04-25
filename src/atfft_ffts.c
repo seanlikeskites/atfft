@@ -16,7 +16,7 @@
 struct atfft
 {
     int size;
-    int direction;
+    enum atfft_direction direction;
     enum atfft_format format;
 #ifndef ATFFT_TYPE_FLOAT
     float *in, *out;
@@ -24,9 +24,10 @@ struct atfft
     ffts_plan_t *plan;
 };
 
-struct atfft* atfft_create (int size, int direction, enum atfft_format format)
+struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft *fft;
+    int fftsDirection;
 #ifndef ATFFT_TYPE_FLOAT
     int inSize, outSize;
 #endif
@@ -41,6 +42,11 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
     fft->direction = direction;
     fft->format = format;
 
+    if (direction == ATFFT_FORWARD)
+        fftsDirection = -1;
+    else
+        fftsDirection = 1;
+
     switch (format)
     {
         case ATFFT_COMPLEX:
@@ -48,7 +54,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             inSize = 2 * size * sizeof (*(fft->in));
             outSize = 2 * size * sizeof (*(fft->out));
 #endif
-            fft->plan = ffts_init_1d (size, direction);
+            fft->plan = ffts_init_1d (size, fftsDirection);
             break;
 
         case ATFFT_REAL:
@@ -65,7 +71,7 @@ struct atfft* atfft_create (int size, int direction, enum atfft_format format)
             }
 #endif
 
-            fft->plan = ffts_init_1d_real (size, direction);
+            fft->plan = ffts_init_1d_real (size, fftsDirection);
             break;
     }
 
