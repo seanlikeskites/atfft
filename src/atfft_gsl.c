@@ -105,7 +105,7 @@ void atfft_destroy (struct atfft *fft)
     }
 }
 
-void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
+void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out)
 {
 #ifdef ATFFT_TYPE_DOUBLE
     size_t nBytes = fft->size * sizeof (*in);
@@ -119,7 +119,7 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_comple
 #ifdef ATFFT_TYPE_DOUBLE
     memcpy (data, in, nBytes);
 #else
-    atfft_sample_to_double_complex (in, (atfft_complex_d*) data, fft->size);
+    atfft_sample_to_double_complex (in, (const atfft_complex_d*) data, fft->size);
 #endif
 
     gsl_fft_complex_transform (data, fft->data->stride, fft->size, fft->tables, fft->workArea, fft->gslDirection);
@@ -127,11 +127,11 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_comple
 #ifdef ATFFT_TYPE_DOUBLE
     memcpy (out, data, nBytes);
 #else
-    atfft_double_to_sample_complex ((atfft_complex_d*) data, out, fft->size);
+    atfft_double_to_sample_complex ((const atfft_complex_d*) data, out, fft->size);
 #endif
 }
 
-void atfft_halfcomplex_gsl_to_fftw (double *in, atfft_complex *out, int size)
+void atfft_halfcomplex_gsl_to_fftw (const double *in, atfft_complex *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
@@ -149,7 +149,7 @@ void atfft_halfcomplex_gsl_to_fftw (double *in, atfft_complex *out, int size)
     ATFFT_IMAG (out [halfSize]) = 0;
 }
 
-void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_complex *out)
+void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out)
 {
     double *data = fft->data->data;
 
@@ -166,7 +166,7 @@ void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_co
     atfft_halfcomplex_gsl_to_fftw (data, out, fft->size);
 }
 
-void atfft_halfcomplex_fftw_to_gsl (atfft_complex *in, double *out, int size)
+void atfft_halfcomplex_fftw_to_gsl (const atfft_complex *in, double *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
@@ -182,7 +182,7 @@ void atfft_halfcomplex_fftw_to_gsl (atfft_complex *in, double *out, int size)
     out [size - 1] = ATFFT_REAL (in [halfSize]);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_sample *out)
+void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out)
 {
     double *data = fft->data->data;
 

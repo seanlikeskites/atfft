@@ -115,13 +115,13 @@ void atfft_destroy (struct atfft *fft)
     }
 }
 
-void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
+void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
 
 #ifdef ATFFT_TYPE_FLOAT
-    ffts_execute (fft->plan, (float*) in, (float*) out);
+    ffts_execute (fft->plan, (const float*) in, (float*) out);
 #else
     atfft_sample_to_float_complex (in, (atfft_complex_f*) fft->in, fft->size);
     ffts_execute (fft->plan, fft->in, fft->out);
@@ -129,13 +129,13 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_comple
 #endif
 }
 
-void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_complex *out)
+void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
 
 #ifdef ATFFT_TYPE_FLOAT
-    ffts_execute (fft->plan, (float*) in, (float*) out);
+    ffts_execute (fft->plan, (const float*) in, (float*) out);
 #else
     atfft_sample_to_float_real (in, fft->in, fft->size);
     ffts_execute (fft->plan, fft->in, fft->out);
@@ -143,13 +143,13 @@ void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_co
 #endif
 }
 
-void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_sample *out)
+void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
 
 #ifdef ATFFT_TYPE_FLOAT
-    ffts_execute (fft->plan, (float*) in, (float*) out);
+    ffts_execute (fft->plan, (const float*) in, (float*) out);
 #else
     atfft_sample_to_float_complex (in, (atfft_complex_f*) fft->in, fft->size / 2 + 1);
     ffts_execute (fft->plan, fft->in, fft->out);

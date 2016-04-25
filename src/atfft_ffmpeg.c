@@ -101,7 +101,7 @@ void atfft_destroy (struct atfft *fft)
     }
 }
 
-void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out)
+void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out)
 {
 #ifdef ATFFT_TYPE_FLOAT
     size_t nBytes = fft->size * sizeof (*in);
@@ -126,7 +126,7 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_comple
 #endif
 }
 
-void atfft_halfcomplex_ffmpeg_to_fftw (FFTSample *in, atfft_complex *out, int size)
+void atfft_halfcomplex_ffmpeg_to_fftw (const FFTSample *in, atfft_complex *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
@@ -144,7 +144,7 @@ void atfft_halfcomplex_ffmpeg_to_fftw (FFTSample *in, atfft_complex *out, int si
     ATFFT_IMAG (out [halfSize]) = 0;
 }
 
-void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_complex *out)
+void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
@@ -159,7 +159,7 @@ void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_co
     atfft_halfcomplex_ffmpeg_to_fftw (fft->data, out, fft->size);
 }
 
-void atfft_halfcomplex_fftw_to_ffmpeg (atfft_complex *in, FFTSample *out, int size)
+void atfft_halfcomplex_fftw_to_ffmpeg (const atfft_complex *in, FFTSample *out, int size)
 {
     int i = 0;
     int halfSize = size / 2;
@@ -175,7 +175,7 @@ void atfft_halfcomplex_fftw_to_ffmpeg (atfft_complex *in, FFTSample *out, int si
     out [1] = 2.0 * ATFFT_REAL (in [halfSize]);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_sample *out)
+void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));

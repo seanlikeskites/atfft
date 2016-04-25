@@ -126,7 +126,7 @@ atfft_sample atfft_arg (atfft_complex x);
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_real (atfft_complex *in, atfft_sample *out, int size);
+void atfft_real (const atfft_complex *in, atfft_sample *out, int size);
 
 /**
  * Get the imaginary part of a complex signal.
@@ -135,7 +135,7 @@ void atfft_real (atfft_complex *in, atfft_sample *out, int size);
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_imag (atfft_complex *in, atfft_sample *out, int size);
+void atfft_imag (const atfft_complex *in, atfft_sample *out, int size);
 
 /**
  * Create a complex signal from a real signal.
@@ -144,7 +144,7 @@ void atfft_imag (atfft_complex *in, atfft_sample *out, int size);
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_real_to_complex (atfft_sample *in, atfft_complex *out, int size);
+void atfft_real_to_complex (const atfft_sample *in, atfft_complex *out, int size);
 
 /**
  * Create a complex signal from a halfcomplex signal.
@@ -153,7 +153,7 @@ void atfft_real_to_complex (atfft_sample *in, atfft_complex *out, int size);
  * @param out the output signal (should contain size elements)
  * @param size the length of the output signal
  */
-void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int size);
+void atfft_halfcomplex_to_complex (const atfft_complex *in, atfft_complex *out, int size);
 
 #ifndef ATFFT_TYPE_FLOAT
 /**
@@ -164,7 +164,7 @@ void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int si
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_float_to_sample_real (float *in, atfft_sample *out, int size);
+void atfft_float_to_sample_real (const float *in, atfft_sample *out, int size);
 
 /**
  * Convert a real valued signal from the type atfft is using
@@ -174,7 +174,7 @@ void atfft_float_to_sample_real (float *in, atfft_sample *out, int size);
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_sample_to_float_real (atfft_sample *in, float *out, int size);
+void atfft_sample_to_float_real (const atfft_sample *in, float *out, int size);
 
 /**
  * Convert a complex valued signal from single precision floats 
@@ -184,7 +184,7 @@ void atfft_sample_to_float_real (atfft_sample *in, float *out, int size);
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_float_to_sample_complex (atfft_complex_f *in, atfft_complex *out, int size);
+void atfft_float_to_sample_complex (const atfft_complex_f *in, atfft_complex *out, int size);
 
 /**
  * Convert a complex valued signal from the type atfft is using
@@ -194,7 +194,7 @@ void atfft_float_to_sample_complex (atfft_complex_f *in, atfft_complex *out, int
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_f *out, int size);
+void atfft_sample_to_float_complex (const atfft_complex *in, atfft_complex_f *out, int size);
 #endif
 
 #ifndef ATFFT_TYPE_DOUBLE
@@ -206,7 +206,7 @@ void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_f *out, int
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_double_to_sample_real (double *in, atfft_sample *out, int size);
+void atfft_double_to_sample_real (const double *in, atfft_sample *out, int size);
 
 /**
  * Convert a real valued signal from the type atfft is using
@@ -216,7 +216,7 @@ void atfft_double_to_sample_real (double *in, atfft_sample *out, int size);
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_sample_to_double_real (atfft_sample *in, double *out, int size);
+void atfft_sample_to_double_real (const atfft_sample *in, double *out, int size);
 
 /**
  * Convert a complex valued signal from double precision floats 
@@ -226,7 +226,7 @@ void atfft_sample_to_double_real (atfft_sample *in, double *out, int size);
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_double_to_sample_complex (atfft_complex_d *in, atfft_complex *out, int size);
+void atfft_double_to_sample_complex (const atfft_complex_d *in, atfft_complex *out, int size);
 
 /**
  * Convert a complex valued signal from the type atfft is using
@@ -236,7 +236,7 @@ void atfft_double_to_sample_complex (atfft_complex_d *in, atfft_complex *out, in
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_d *out, int size);
+void atfft_sample_to_double_complex (const atfft_complex *in, atfft_complex_d *out, int size);
 #endif
 
 #ifndef ATFFT_TYPE_LONG_DOUBLE
@@ -248,7 +248,7 @@ void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_d *out, in
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_long_double_to_sample_real (long double *in, atfft_sample *out, int size);
+void atfft_long_double_to_sample_real (const long double *in, atfft_sample *out, int size);
 
 /**
  * Convert a real valued signal from the type atfft is using
@@ -258,7 +258,7 @@ void atfft_long_double_to_sample_real (long double *in, atfft_sample *out, int s
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_sample_to_long_double_real (atfft_sample *in, long double *out, int size);
+void atfft_sample_to_long_double_real (const atfft_sample *in, long double *out, int size);
 
 /**
  * Convert a complex valued signal from long double precision floats 
@@ -268,7 +268,7 @@ void atfft_sample_to_long_double_real (atfft_sample *in, long double *out, int s
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_long_double_to_sample_complex (atfft_complex_l *in, atfft_complex *out, int size);
+void atfft_long_double_to_sample_complex (const atfft_complex_l *in, atfft_complex *out, int size);
 
 /**
  * Convert a complex valued signal from the type atfft is using
@@ -278,7 +278,7 @@ void atfft_long_double_to_sample_complex (atfft_complex_l *in, atfft_complex *ou
  * @param out the output signal (should contain size elements)
  * @param size the length of the signals
  */
-void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *out, int size);
+void atfft_sample_to_long_double_complex (const atfft_complex *in, atfft_complex_l *out, int size);
 #endif
 
 /**
@@ -310,7 +310,7 @@ void atfft_destroy (struct atfft *fft);
  * @param out the output signal 
  *            (should have the number of samples the fft was created for)
  */
-void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_complex *out);
+void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out);
 
 /**
  * Perform a real forward DFT.
@@ -324,7 +324,7 @@ void atfft_complex_transform (struct atfft *fft, atfft_complex *in, atfft_comple
  *            (should have size / 2 + 1 samples, where size if the
  *             size the fft was created for)
  */
-void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_complex *out);
+void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out);
 
 /**
  * Perform a real inverse DFT.
@@ -338,7 +338,7 @@ void atfft_real_forward_transform (struct atfft *fft, atfft_sample *in, atfft_co
  * @param out the output signal 
  *            (should have the number of samples the fft was created for)
  */
-void atfft_real_backward_transform (struct atfft *fft, atfft_complex *in, atfft_sample *out);
+void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out);
 
 #ifdef __cplusplus
 }
