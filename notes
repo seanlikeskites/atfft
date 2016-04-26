@@ -7,3 +7,9 @@ FFT Libraries:
 	GSL
 	clFFT
 	ffmpeg (libavcodec)
+
+DCTs:
+	FFTW
+	Ooura (double only)
+	vDSP (float only)
+	ffmpeg (float only)
