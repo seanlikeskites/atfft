@@ -15,6 +15,16 @@
 #include <libavcodec/avfft.h>
 #include <atfft.h>
 
+#ifndef ATFFT_TYPE_FLOAT
+#   ifdef _MSC_VER
+#       pragma message(": warning: FFmpeg only supports single precision floating point, " \
+                       "higher precision values will be demoted to float for FFT calculations.")
+#   else
+#       warning FFmpeg only supports single precision floating point, \
+                higher precision values will be demoted to float for FFT calculations.
+#   endif
+#endif
+
 typedef void* (*init_context) (int, int);
 
 struct atfft

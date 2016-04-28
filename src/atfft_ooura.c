@@ -14,6 +14,16 @@
 #include <atfft.h>
 #include "ooura/fft4g.c"
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+#   ifdef _MSC_VER
+#       pragma message(": warning: Ooura only supports double precision floating point, " \
+                       "higher precision values will be demoted to double for FFT calculations.")
+#   else
+#       warning Ooura only supports double precision floating point, \
+                higher precision values will be demoted to double for FFT calculations.
+#   endif
+#endif
+
 struct atfft
 {
     int size;

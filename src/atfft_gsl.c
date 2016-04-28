@@ -19,6 +19,16 @@
 #include <gsl/gsl_fft_halfcomplex.h>
 #include <atfft.h>
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+#   ifdef _MSC_VER
+#       pragma message(": warning: GSL only supports double precision floating point, " \
+                       "higher precision values will be demoted to double for FFT calculations.")
+#   else
+#       warning GSL only supports double precision floating point, \
+                higher precision values will be demoted to double for FFT calculations.
+#   endif
+#endif
+
 struct atfft
 {
     int size;
@@ -119,7 +129,7 @@ void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_
 #ifdef ATFFT_TYPE_DOUBLE
     memcpy (data, in, nBytes);
 #else
-    atfft_sample_to_double_complex (in, (const atfft_complex_d*) data, fft->size);
+    atfft_sample_to_double_complex (in, (atfft_complex_d*) data, fft->size);
 #endif
 
     gsl_fft_complex_transform (data, fft->data->stride, fft->size, fft->tables, fft->workArea, fft->gslDirection);

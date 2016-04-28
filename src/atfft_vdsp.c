@@ -13,6 +13,11 @@
 #include <Accelerate/Accelerate.h>
 #include <atfft.h>
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+#   warning vDSP only supports double precision floating point, \
+            higher precision values will be demoted to double for FFT calculations.
+#endif
+
 #ifdef ATFFT_TYPE_FLOAT
 #   define ATFFT_VDSP_DFT_SETUP vDSP_DFT_Setup
 #   define ATFFT_VDSP_DFT_ZOP_CREATE_SETUP vDSP_DFT_zop_CreateSetup
