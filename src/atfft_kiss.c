@@ -11,14 +11,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <atfft.h>
+#include <atfft/atfft_dft.h>
 
 /* we need to make sure we are using kiss_fft with the correct type */
 #define kiss_fft_scalar atfft_sample
 #include <kiss_fft.h>
 #include <kiss_fftr.h>
 
-struct atfft
+struct atfft_dft
 {
     int size;
     enum atfft_direction direction;
@@ -26,9 +26,9 @@ struct atfft
     void *cfg;
 };
 
-struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
+struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    struct atfft *fft;
+    struct atfft_dft *fft;
 
     /* kiss_fft only does even length real transforms */
     assert ((format == ATFFT_COMPLEX) || atfft_is_even (size));
@@ -60,14 +60,14 @@ struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft
     /* clean up on failure */
     if (!fft->cfg)
     {
-        atfft_destroy (fft);
+        atfft_dft_destroy (fft);
         fft = NULL;
     }
 
     return fft;
 }
 
-void atfft_destroy (struct atfft *fft)
+void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
     {
@@ -76,7 +76,7 @@ void atfft_destroy (struct atfft *fft)
     }
 }
 
-void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
@@ -84,7 +84,7 @@ void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_
     kiss_fft ((kiss_fft_cfg) fft->cfg, (const kiss_fft_cpx*) in, (kiss_fft_cpx*) out);
 }
 
-void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
@@ -92,7 +92,7 @@ void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, at
     kiss_fftr (fft->cfg, in, (kiss_fft_cpx*) out);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));

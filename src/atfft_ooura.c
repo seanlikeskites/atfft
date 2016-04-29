@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <atfft.h>
+#include <atfft/atfft_dft.h>
 #include "ooura/fft4g.c"
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
@@ -24,7 +24,7 @@
 #   endif
 #endif
 
-struct atfft
+struct atfft_dft
 {
     int size;
     enum atfft_direction direction;
@@ -36,9 +36,9 @@ struct atfft
     double *tables;
 };
 
-struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
+struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    struct atfft *fft;
+    struct atfft_dft *fft;
     int workSize;
 
     /* Ooura only supports sizes which are a power of 2. */
@@ -76,7 +76,7 @@ struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft
     /* clean up on failure */
     if (!(fft->data && fft->workArea && fft->tables))
     {
-        atfft_destroy (fft);
+        atfft_dft_destroy (fft);
         fft = NULL;
     }
     else
@@ -87,7 +87,7 @@ struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft
     return fft;
 }
 
-void atfft_destroy (struct atfft *fft)
+void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
     {
@@ -98,7 +98,7 @@ void atfft_destroy (struct atfft *fft)
     }
 }
 
-void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
@@ -136,7 +136,7 @@ void atfft_halfcomplex_ooura_to_fftw (const double *in, atfft_complex *out, int 
     ATFFT_IMAG (out [halfSize]) = 0;
 }
 
-void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
@@ -167,7 +167,7 @@ void atfft_halfcomplex_fftw_to_ooura (const atfft_complex *in, double *out, int 
     out [1] = 2.0 * ATFFT_REAL (in [halfSize]);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));

@@ -11,10 +11,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <atfft.h>
+#include <atfft/atfft.h>
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#   define M_PI 3.14159265358979323846
 #endif
 
 void printSampleArray (atfft_sample *data, int size)
@@ -66,7 +66,7 @@ int main()
     int nSamples = 16;
     atfft_sample *signal;
     atfft_complex *freqDomain;
-    struct atfft *fftForward, *fftBackward;
+    struct atfft_dft *fftForward, *fftBackward;
     int i = 0;
     int outSize = nSamples / 2 + 1;
 
@@ -88,16 +88,16 @@ int main()
     printSampleArray (signal, nSamples);
 
     /* create some ffts */
-    fftForward = atfft_create (nSamples, ATFFT_FORWARD, ATFFT_REAL);
-    fftBackward = atfft_create (nSamples, ATFFT_BACKWARD, ATFFT_REAL);
+    fftForward = atfft_dft_create (nSamples, ATFFT_FORWARD, ATFFT_REAL);
+    fftBackward = atfft_dft_create (nSamples, ATFFT_BACKWARD, ATFFT_REAL);
 
     /* apply the forward transform */
-    atfft_real_forward_transform (fftForward, signal, freqDomain);
+    atfft_dft_real_forward_transform (fftForward, signal, freqDomain);
     printf ("\nFrequency Domain:\n");
     printComplexArray (freqDomain, outSize);
 
     /* apply the backward transform */
-    atfft_real_backward_transform (fftBackward, freqDomain, signal);
+    atfft_dft_real_backward_transform (fftBackward, freqDomain, signal);
     printf ("\nReconstructed Signal:\n");
     printSampleArray (signal, nSamples);
 
@@ -107,8 +107,8 @@ int main()
     printSampleArray (signal, nSamples);
 
     /* free everything */
-    atfft_destroy (fftBackward);
-    atfft_destroy (fftForward);
+    atfft_dft_destroy (fftBackward);
+    atfft_dft_destroy (fftForward);
     free (freqDomain);
     free (signal);
 

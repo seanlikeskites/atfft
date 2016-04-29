@@ -13,8 +13,8 @@
  * The main header for atfft.
  */
 
-#ifndef ATFFT_H_INCLUDED
-#define ATFFT_H_INCLUDED
+#ifndef ATFFT_SHARED_H_INCLUDED
+#define ATFFT_SHARED_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C"
@@ -28,21 +28,12 @@ enum atfft_direction
     ATFFT_BACKWARD /**< Perform a backward transform. */
 };
 
-/** An enum to represent the type of values transform will operate on. */
+/** An enum to represent the type of values the transform will operate on. */
 enum atfft_format
 {
     ATFFT_COMPLEX, /**< Perform a transform on complex valued signals. */
     ATFFT_REAL /**< Perform a transform on real valued signals. */
 };
-
-/** 
- * A Structure to hold internal FFT implementation.
- * 
- * When using atfft you will create one of these structures
- * using atfft_create(), this structure is then passed 
- * to the calculation functions in order to compute DFTs.
- */
-struct atfft;
 
 /** A complex float type. */
 typedef float atfft_complex_f [2];
@@ -281,67 +272,8 @@ void atfft_long_double_to_sample_complex (const atfft_complex_l *in, atfft_compl
 void atfft_sample_to_long_double_complex (const atfft_complex *in, atfft_complex_l *out, int size);
 #endif
 
-/**
- * Create an fft structure.
- *
- * @param size the signal length the fft should operate on
- * @param direction the direction of the transform
- * @param format the type of transform (real or complex)
- */
-struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format);
-
-/**
- * Free an fft structure.
- *
- * @param fft the structure to free
- */
-void atfft_destroy (struct atfft *fft);
-
-/**
- * Perform a complex DFT.
- *
- * Performs a forward or inverse transform depending on what the fft
- * structure passed was created for.
- *
- * @param fft a valid fft structure 
- *            (should have been created with a format of ATFFT_COMPLEX)
- * @param in the input signal 
- *           (should have the number of samples the fft was created for)
- * @param out the output signal 
- *            (should have the number of samples the fft was created for)
- */
-void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out);
-
-/**
- * Perform a real forward DFT.
- *
- * @param fft a valid fft structure 
- *            (should have been created with a direction of ATFFT_FORWARD
- *             and a format of ATFFT_REAL)
- * @param in the input signal 
- *           (should have the number of samples the fft was created for)
- * @param out the output signal 
- *            (should have size / 2 + 1 samples, where size if the
- *             size the fft was created for)
- */
-void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out);
-
-/**
- * Perform a real inverse DFT.
- *
- * @param fft a valid fft structure 
- *            (should have been created with a direction of ATFFT_BACKWARD
- *             and a format of ATFFT_REAL)
- * @param in the input signal 
- *           (should have size / 2 + 1 samples, where size if the
- *            size the fft was created for)
- * @param out the output signal 
- *            (should have the number of samples the fft was created for)
- */
-void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out);
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* ATFFT_H_INCLUDED */
+#endif /* ATFFT_SHARED_H_INCLUDED */

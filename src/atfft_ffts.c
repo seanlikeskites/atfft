@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <ffts/ffts.h>
-#include <atfft.h>
+#include <atfft/atfft_dft.h>
 
 #ifndef ATFFT_TYPE_FLOAT
 #   ifdef _MSC_VER
@@ -23,7 +23,7 @@
 #   endif
 #endif
 
-struct atfft
+struct atfft_dft
 {
     int size;
     enum atfft_direction direction;
@@ -34,9 +34,9 @@ struct atfft
     ffts_plan_t *plan;
 };
 
-struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
+struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    struct atfft *fft;
+    struct atfft_dft *fft;
     int fftsDirection;
 #ifndef ATFFT_TYPE_FLOAT
     int inSize, outSize;
@@ -112,7 +112,7 @@ struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft
     return fft;
 }
 
-void atfft_destroy (struct atfft *fft)
+void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
     {
@@ -125,7 +125,7 @@ void atfft_destroy (struct atfft *fft)
     }
 }
 
-void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
@@ -139,7 +139,7 @@ void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_
 #endif
 }
 
-void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
@@ -153,7 +153,7 @@ void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, at
 #endif
 }
 
-void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));

@@ -13,7 +13,7 @@
 #include <math.h>
 #include <libavutil/mem.h>
 #include <libavcodec/avfft.h>
-#include <atfft.h>
+#include <atfft/atfft_dft.h>
 
 #ifndef ATFFT_TYPE_FLOAT
 #   ifdef _MSC_VER
@@ -27,7 +27,7 @@
 
 typedef void* (*init_context) (int, int);
 
-struct atfft
+struct atfft_dft
 {
     int size;
     enum atfft_direction direction;
@@ -36,9 +36,9 @@ struct atfft
     void *context;
 };
 
-struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
+struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    struct atfft *fft;
+    struct atfft_dft *fft;
 
     init_context initContext;
     size_t dataSize;
@@ -84,14 +84,14 @@ struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft
     /* clean up on failure */
     if (!(fft->data && fft->context))
     {
-        atfft_destroy (fft);
+        atfft_dft_destroy (fft);
         fft = NULL;
     }
 
     return fft;
 }
 
-void atfft_destroy (struct atfft *fft)
+void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
     {
@@ -111,7 +111,7 @@ void atfft_destroy (struct atfft *fft)
     }
 }
 
-void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_complex *out)
 {
 #ifdef ATFFT_TYPE_FLOAT
     size_t nBytes = fft->size * sizeof (*in);
@@ -154,7 +154,7 @@ void atfft_halfcomplex_ffmpeg_to_fftw (const FFTSample *in, atfft_complex *out, 
     ATFFT_IMAG (out [halfSize]) = 0;
 }
 
-void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
@@ -185,7 +185,7 @@ void atfft_halfcomplex_fftw_to_ffmpeg (const atfft_complex *in, FFTSample *out, 
     out [1] = 2.0 * ATFFT_REAL (in [halfSize]);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));

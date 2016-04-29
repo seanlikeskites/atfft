@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <Accelerate/Accelerate.h>
-#include <atfft.h>
+#include <atfft/atfft_dft.h>
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
 #   warning vDSP only supports double precision floating point, \
@@ -35,7 +35,7 @@
     typedef double atfft_vdsp_sample;
 #endif
 
-struct atfft
+struct atfft_dft
 {
     int size;
     enum atfft_direction direction;
@@ -61,9 +61,9 @@ int atfft_is_supported_length_vdsp (unsigned int length, enum atfft_format forma
         return 0;
 }
 
-struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
+struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    struct atfft *fft;
+    struct atfft_dft *fft;
     vDSP_DFT_Direction vdspDirection;
 
     /* vDSP only supports certain lengths */
@@ -99,14 +99,14 @@ struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft
 
     if (!(fft->inR && fft->inI && fft->outR && fft->outI && fft->setup))
     {
-        atfft_destroy (fft);
+        atfft_dft_destroy (fft);
         fft = NULL;
     }
 
     return fft;
 }
 
-void atfft_destroy (struct atfft *fft)
+void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
     {
@@ -143,7 +143,7 @@ void atfft_complex_vdsp_to_fftw (const atfft_vdsp_sample *real, const atfft_vdsp
     }
 }
 
-void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
@@ -184,7 +184,7 @@ void atfft_halfcomplex_vdsp_to_fftw (const atfft_vdsp_sample *inE, const atfft_v
     ATFFT_IMAG (out [halfSize]) = 0;
 }
 
-void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
@@ -223,7 +223,7 @@ void atfft_real_vdsp_to_fftw (const atfft_vdsp_sample *inE, const atfft_vdsp_sam
     }
 }
 
-void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));

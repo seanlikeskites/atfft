@@ -17,7 +17,7 @@
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
-#include <atfft.h>
+#include <atfft/atfft_dft.h>
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
 #   ifdef _MSC_VER
@@ -29,7 +29,7 @@
 #   endif
 #endif
 
-struct atfft
+struct atfft_dft
 {
     int size;
     enum atfft_direction direction;
@@ -40,9 +40,9 @@ struct atfft
     void *tables;
 };
 
-struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft_format format)
+struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    struct atfft *fft;
+    struct atfft_dft *fft;
 
     if (!(fft = malloc (sizeof (*fft))))
         return NULL;
@@ -81,14 +81,14 @@ struct atfft* atfft_create (int size, enum atfft_direction direction, enum atfft
     /* clean up on failure (might be bad for old versions of GSL) */
     if (!(fft->data && fft->workArea && fft->tables))
     {
-        atfft_destroy (fft);
+        atfft_dft_destroy (fft);
         fft = NULL;
     }
 
     return fft;
 }
 
-void atfft_destroy (struct atfft *fft)
+void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
     {
@@ -115,7 +115,7 @@ void atfft_destroy (struct atfft *fft)
     }
 }
 
-void atfft_complex_transform (struct atfft *fft, const atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_complex *out)
 {
 #ifdef ATFFT_TYPE_DOUBLE
     size_t nBytes = fft->size * sizeof (*in);
@@ -159,7 +159,7 @@ void atfft_halfcomplex_gsl_to_fftw (const double *in, atfft_complex *out, int si
     ATFFT_IMAG (out [halfSize]) = 0;
 }
 
-void atfft_real_forward_transform (struct atfft *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
 {
     double *data = fft->data->data;
 
@@ -192,7 +192,7 @@ void atfft_halfcomplex_fftw_to_gsl (const atfft_complex *in, double *out, int si
     out [size - 1] = ATFFT_REAL (in [halfSize]);
 }
 
-void atfft_real_backward_transform (struct atfft *fft, const atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_sample *out)
 {
     double *data = fft->data->data;
 
