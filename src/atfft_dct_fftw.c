@@ -106,7 +106,7 @@ void atfft_half (atfft_sample *data, int size)
 
     for (i = 0; i < size; ++i)
     {
-        data [i] /= 2;
+        data [i] /= 2.0;
     }
 }
 
