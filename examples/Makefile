@@ -1,4 +1,4 @@
-CC = gcc
+CC = gcc -g
 CFLAGS = -Wall
 LIBS = -lm
 INCLUDEDIRS = -I../include
@@ -19,7 +19,7 @@ ifeq (FFTW3, $(IMPL))
 		LIBS += -lfftw3
 	endif
 
-	FFT_SOURCES += ../src/atfft_dft_fftw.c
+	FFT_SOURCES += ../src/atfft_dft_fftw.c ../src/atfft_dct_fftw.c
 	
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
@@ -46,13 +46,13 @@ else ifeq (VDSP, $(IMPL))
 
 else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
-	FFT_SOURCES += ../src/atfft_dft_ffmpeg.c
+	FFT_SOURCES += ../src/atfft_dft_ffmpeg.c ../src/atfft_dct_ffmpeg.c
 
 else
-	FFT_SOURCES += ../src/atfft_dft_ooura.c
+	FFT_SOURCES += ../src/atfft_dft_ooura.c ../src/atfft_dct_ooura.c ../src/ooura/fft4g.c
 endif
 
-all: complex_transform real_transform
+all: complex_transform real_transform dct
 
 complex_transform: complex_transform.c
 	$(CC) -o $@ $< $(FFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
@@ -60,5 +60,8 @@ complex_transform: complex_transform.c
 real_transform: real_transform.c
 	$(CC) -o $@ $< $(FFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
+dct: dct.c
+	$(CC) -o $@ $< $(FFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+
 clean:
-	rm -f complex_transform real_transform
+	rm -f complex_transform real_transform dct

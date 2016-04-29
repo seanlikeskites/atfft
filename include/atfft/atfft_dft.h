@@ -8,11 +8,6 @@
  * the COPYING file for more details.
  */
 
-/**
- * \file 
- * The main header for atfft.
- */
-
 #ifndef ATFFT_DFT_H_INCLUDED
 #define ATFFT_DFT_H_INCLUDED
 

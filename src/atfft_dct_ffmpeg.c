@@ -1,0 +1,108 @@
+/*
+ * Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
+ *
+ * This program is free software. It comes without any warranty, to
+ * the extent permitted by applicable law. You can redistribute it 
+ * and/or modify it under the terms of the Do What The Fuck You Want 
+ * To Public License, Version 2, as published by Sam Hocevar. See 
+ * the COPYING file for more details.
+ */
+
+#include <stdlib.h>
+#include <assert.h>
+#include <libavutil/mem.h>
+#include <libavcodec/avfft.h>
+#include <atfft/atfft_dct.h>
+
+#ifndef ATFFT_TYPE_FLOAT
+#   ifdef _MSC_VER
+#       pragma message(": warning: FFmpeg only supports single precision floating point, " \
+                       "higher precision values will be demoted to float for FFT calculations.")
+#   else
+#       warning FFmpeg only supports single precision floating point, \
+                higher precision values will be demoted to float for FFT calculations.
+#   endif
+#endif
+
+struct atfft_dct
+{
+    int size;
+    enum atfft_direction direction;
+    FFTSample *data;
+    DCTContext *context;
+};
+
+struct atfft_dct* atfft_dct_create (int size, enum atfft_direction direction)
+{
+    struct atfft_dct *dct;
+    size_t dataSize;
+
+    /* ffmpeg only supports sizes which are a power of 2. */
+    assert (atfft_is_power_of_2 (size));
+
+    if (!(dct = malloc (sizeof (*dct))))
+        return NULL;
+
+    dct->size = size;
+    dct->direction = direction;
+    dataSize = size * sizeof (*(dct->data));
+    dct->data = av_malloc (dataSize);
+
+    if (direction == ATFFT_FORWARD)
+        dct->context = av_dct_init (log2 (size), DCT_II);
+    else
+        dct->context = av_dct_init (log2 (size), DCT_III);
+
+    /* clean up on failure */
+    if (!(dct->data && dct->context))
+    {
+        atfft_dct_destroy (dct);
+        dct = NULL;
+    }
+
+    return dct;
+}
+
+void atfft_dct_destroy (struct atfft_dct *dct)
+{
+    if (dct)
+    {
+        av_dct_end (dct->context);
+        av_free (dct->data);
+        free (dct);
+    }
+}
+
+void atfft_dct_ffmpeg_scale (float *data, int size)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        data [i] *= size;
+    }
+}
+
+void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
+{
+#ifdef ATFFT_TYPE_FLOAT
+    size_t nBytes = dct->size * sizeof (*in);
+#endif 
+
+#ifdef ATFFT_TYPE_FLOAT
+    memcpy (dct->data, in, nBytes);
+#else
+    atfft_sample_to_float_real (in, dct->data, dct->size);
+#endif
+
+    av_dct_calc (dct->context, dct->data);
+
+    if (dct->direction == ATFFT_BACKWARD)
+        atfft_dct_ffmpeg_scale (dct->data, dct->size);
+
+#ifdef ATFFT_TYPE_FLOAT
+    memcpy (out, dct->data, nBytes);
+#else
+    atfft_float_to_sample_real (dct->data, out, dct->size);
+#endif
+}

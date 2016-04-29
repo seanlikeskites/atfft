@@ -9,3 +9,4 @@
  */
 
 #include <atfft/atfft_dft.h>
+#include <atfft/atfft_dct.h>
