@@ -44,7 +44,7 @@ struct atfft_dft
     ATFFT_VDSP_DFT_SETUP setup;
 };
 
-int atfft_is_supported_length_vdsp (unsigned int length, enum atfft_format format)
+int atfft_is_supported_length_vdsp_dft (unsigned int length, enum atfft_format format)
 {
     int min = 8;
 
@@ -67,7 +67,7 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     vDSP_DFT_Direction vdspDirection;
 
     /* vDSP only supports certain lengths */
-    assert (atfft_is_supported_length_vdsp (size, format));
+    assert (atfft_is_supported_length_vdsp_dft (size, format));
 
     if (!(fft = malloc (sizeof (*fft))))
         return NULL;

@@ -42,7 +42,7 @@ else ifeq (KISS, $(IMPL))
 	
 else ifeq (VDSP, $(IMPL))
 	LIBS += -framework Accelerate
-	FFT_SOURCES += ../src/atfft_dft_vdsp.c
+	FFT_SOURCES += ../src/atfft_dft_vdsp.c ../src/atfft_dct_vdsp.c
 
 else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
