@@ -20,15 +20,15 @@ ifeq (FFTW3, $(IMPL))
 		LIBS += -lfftw3
 	endif
 
-	FFT_SOURCES += ../src/atfft_fftw.c
+	FFT_SOURCES += ../src/atfft_dft_fftw.c
 	
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
-	FFT_SOURCES += ../src/atfft_ffts.c
+	FFT_SOURCES += ../src/atfft_dft_ffts.c
 
 else ifeq (GSL, $(IMPL))
 	LIBS += -lgsl -lgslcblas
-	FFT_SOURCES += ../src/atfft_gsl.c
+	FFT_SOURCES += ../src/atfft_dft_gsl.c
 
 else ifeq (KISS, $(IMPL))
 	ifeq (FLOAT, $(TYPE))
@@ -39,18 +39,18 @@ else ifeq (KISS, $(IMPL))
 		LIBS += -lkissfft
 	endif
 
-	FFT_SOURCES += ../src/atfft_kiss.c
+	FFT_SOURCES += ../src/atfft_dft_kiss.c
 	
 else ifeq (VDSP, $(IMPL))
 	LIBS += -framework Accelerate
-	FFT_SOURCES += ../src/atfft_vdsp.c
+	FFT_SOURCES += ../src/atfft_dft_vdsp.c
 
 else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
-	FFT_SOURCES += ../src/atfft_ffmpeg.c
+	FFT_SOURCES += ../src/atfft_dft_ffmpeg.c
 
 else
-	FFT_SOURCES += ../src/atfft_ooura.c
+	FFT_SOURCES += ../src/atfft_dft_ooura.c
 endif
 
 FFT_TEMP = $(subst ../src/,, $(FFT_SOURCES))

@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <benchmark/benchmark.h>
-#include <atfft.h>
+#include <atfft/atfft.h>
 
 float randomFloat()
 {
@@ -13,7 +13,7 @@ static void complexTransform (benchmark::State &state)
     int size = state.range_x();
     atfft_complex *x = new atfft_complex [size];
     atfft_complex *y = new atfft_complex [size];
-    atfft *fft = static_cast <atfft*> (atfft_create (size, ATFFT_FORWARD, ATFFT_COMPLEX));
+    atfft_dft *fft = static_cast <atfft_dft*> (atfft_dft_create (size, ATFFT_FORWARD, ATFFT_COMPLEX));
 
     srand (time (NULL));
 
@@ -25,10 +25,10 @@ static void complexTransform (benchmark::State &state)
 
     while (state.KeepRunning())
     {
-        atfft_complex_transform (fft, x, y);
+        atfft_dft_complex_transform (fft, x, y);
     }
 
-    atfft_destroy (fft);
+    atfft_dft_destroy (fft);
     delete[] y;
     delete[] x;
 }
