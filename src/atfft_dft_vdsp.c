@@ -119,7 +119,7 @@ void atfft_dft_destroy (struct atfft_dft *fft)
     }
 }
 
-void atfft_complex_fftw_to_vdsp (const atfft_complex *in,
+void atfft_complex_fftw_to_vdsp (atfft_complex *in,
                                  atfft_vdsp_sample *real, atfft_vdsp_sample *imag, int size)
 {
     int i = 0;
@@ -143,7 +143,7 @@ void atfft_complex_vdsp_to_fftw (const atfft_vdsp_sample *real, const atfft_vdsp
     }
 }
 
-void atfft_dft_complex_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
@@ -194,7 +194,7 @@ void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample
     atfft_halfcomplex_vdsp_to_fftw (fft->outR, fft->outI, out, fft->size);
 }
 
-void atfft_halfcomplex_fftw_to_vdsp (const atfft_complex *in, 
+void atfft_halfcomplex_fftw_to_vdsp (atfft_complex *in, 
                                      atfft_vdsp_sample *outE, atfft_vdsp_sample *outO, int size)
 {
     int i = 0;
@@ -223,7 +223,7 @@ void atfft_real_vdsp_to_fftw (const atfft_vdsp_sample *inE, const atfft_vdsp_sam
     }
 }
 
-void atfft_dft_real_backward_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *fft, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));

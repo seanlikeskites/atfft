@@ -76,12 +76,12 @@ void atfft_dft_destroy (struct atfft_dft *fft)
     }
 }
 
-void atfft_dft_complex_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
 
-    kiss_fft ((kiss_fft_cfg) fft->cfg, (const kiss_fft_cpx*) in, (kiss_fft_cpx*) out);
+    kiss_fft ((kiss_fft_cfg) fft->cfg, (kiss_fft_cpx*) in, (kiss_fft_cpx*) out);
 }
 
 void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
@@ -92,10 +92,10 @@ void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample
     kiss_fftr (fft->cfg, in, (kiss_fft_cpx*) out);
 }
 
-void atfft_dft_real_backward_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *fft, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
 
-    kiss_fftri (fft->cfg, (const kiss_fft_cpx*) in, out);
+    kiss_fftri (fft->cfg, (kiss_fft_cpx*) in, out);
 }

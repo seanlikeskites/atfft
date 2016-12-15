@@ -2,7 +2,9 @@ CC = gcc -g
 CFLAGS = -Wall
 LIBS = -lm
 INCLUDEDIRS = -I../include
-FFT_SOURCES = ../src/atfft_shared.c
+DFT_SOURCES = ../src/atfft_shared.c
+DCT_SOURCES = ../src/atfft_shared.c
+PROGRAMS = complex_transform real_transform
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT
@@ -19,15 +21,17 @@ ifeq (FFTW3, $(IMPL))
 		LIBS += -lfftw3
 	endif
 
-	FFT_SOURCES += ../src/atfft_dft_fftw.c ../src/atfft_dct_fftw.c
+	DFT_SOURCES += ../src/atfft_dft_fftw.c
+	DCT_SOURCES += ../src/atfft_dct_fftw.c
+	PROGRAMS += dct
 	
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
-	FFT_SOURCES += ../src/atfft_dft_ffts.c
+	DFT_SOURCES += ../src/atfft_dft_ffts.c
 
 else ifeq (GSL, $(IMPL))
 	LIBS += -lgsl -lgslcblas
-	FFT_SOURCES += ../src/atfft_dft_gsl.c
+	DFT_SOURCES += ../src/atfft_dft_gsl.c
 
 else ifeq (KISS, $(IMPL))
 	ifeq (FLOAT, $(TYPE))
@@ -38,30 +42,37 @@ else ifeq (KISS, $(IMPL))
 		LIBS += -lkissfft
 	endif
 
-	FFT_SOURCES += ../src/atfft_dft_kiss.c
+	DFT_SOURCES += ../src/atfft_dft_kiss.c
+	PROGRAMS += dct
 	
 else ifeq (VDSP, $(IMPL))
 	LIBS += -framework Accelerate
-	FFT_SOURCES += ../src/atfft_dft_vdsp.c ../src/atfft_dct_vdsp.c
+	DFT_SOURCES += ../src/atfft_dft_vdsp.c
+	DCT_SOURCES += ../src/atfft_dct_vdsp.c
+	PROGRAMS += dct
 
 else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
-	FFT_SOURCES += ../src/atfft_dft_ffmpeg.c ../src/atfft_dct_ffmpeg.c
+	DFT_SOURCES += ../src/atfft_dft_ffmpeg.c
+	DCT_SOURCES += ../src/atfft_dct_ffmpeg.c
+	PROGRAMS += dct
 
 else
-	FFT_SOURCES += ../src/atfft_dft_ooura.c ../src/atfft_dct_ooura.c ../src/ooura/fft4g.c
+	DFT_SOURCES += ../src/atfft_dft_ooura.c ../src/ooura/fft4g.c
+	DCT_SOURCES += ../src/atfft_dct_ooura.c ../src/ooura/fft4g.c
+	PROGRAMS += dct
 endif
 
-all: complex_transform real_transform dct
+all: $(PROGRAMS)
 
 complex_transform: complex_transform.c
-	$(CC) -o $@ $< $(FFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
 real_transform: real_transform.c
-	$(CC) -o $@ $< $(FFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
 dct: dct.c
-	$(CC) -o $@ $< $(FFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+	$(CC) -o $@ $< $(DCT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
 clean:
 	rm -f complex_transform real_transform dct

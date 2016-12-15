@@ -56,7 +56,7 @@ void atfft_dft_destroy (struct atfft_dft *fft);
  * @param out the output signal 
  *            (should have the number of samples the fft was created for)
  */
-void atfft_dft_complex_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_complex *out);
+void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out);
 
 /**
  * Perform a real forward DFT.
@@ -84,7 +84,7 @@ void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample
  * @param out the output signal 
  *            (should have the number of samples the fft was created for)
  */
-void atfft_dft_real_backward_transform (struct atfft_dft *fft, const atfft_complex *in, atfft_sample *out);
+void atfft_dft_real_backward_transform (struct atfft_dft *fft, atfft_complex *in, atfft_sample *out);
 
 #ifdef __cplusplus
 }

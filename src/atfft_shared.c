@@ -61,7 +61,7 @@ atfft_sample atfft_arg (const atfft_complex x)
 }
 
 /* conversion functions */
-void atfft_real (const atfft_complex *in, atfft_sample *out, int size)
+void atfft_real (atfft_complex *in, atfft_sample *out, int size)
 {
     int i = 0;
 
@@ -71,7 +71,7 @@ void atfft_real (const atfft_complex *in, atfft_sample *out, int size)
     }
 }
 
-void atfft_imag (const atfft_complex *in, atfft_sample *out, int size)
+void atfft_imag (atfft_complex *in, atfft_sample *out, int size)
 {
     int i = 0;
 
@@ -92,7 +92,7 @@ void atfft_real_to_complex (const atfft_sample *in, atfft_complex *out, int size
     }
 }
 
-void atfft_halfcomplex_to_complex (const atfft_complex *in, atfft_complex *out, int size)
+void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int size)
 {
     int i = 0;
     int lastBin = size / 2 + 1;
@@ -130,7 +130,7 @@ void atfft_sample_to_float_real (const atfft_sample *in, float *out, int size)
     }
 }
 
-void atfft_float_to_sample_complex (const atfft_complex_f *in, atfft_complex *out, int size)
+void atfft_float_to_sample_complex (atfft_complex_f *in, atfft_complex *out, int size)
 {
     int i = 0;
 
@@ -141,7 +141,7 @@ void atfft_float_to_sample_complex (const atfft_complex_f *in, atfft_complex *ou
     }
 }
 
-void atfft_sample_to_float_complex (const atfft_complex *in, atfft_complex_f *out, int size)
+void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_f *out, int size)
 {
     int i = 0;
 
@@ -174,7 +174,7 @@ void atfft_sample_to_double_real (const atfft_sample *in, double *out, int size)
     }
 }
 
-void atfft_double_to_sample_complex (const atfft_complex_d *in, atfft_complex *out, int size)
+void atfft_double_to_sample_complex (atfft_complex_d *in, atfft_complex *out, int size)
 {
     int i = 0;
 
@@ -185,7 +185,7 @@ void atfft_double_to_sample_complex (const atfft_complex_d *in, atfft_complex *o
     }
 }
 
-void atfft_sample_to_double_complex (const atfft_complex *in, atfft_complex_d *out, int size)
+void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_d *out, int size)
 {
     int i = 0;
 
@@ -218,7 +218,7 @@ void atfft_sample_to_long_double_real (const atfft_sample *in, long double *out,
     }
 }
 
-void atfft_long_double_to_sample_complex (const atfft_complex_l *in, atfft_complex *out, int size)
+void atfft_long_double_to_sample_complex (atfft_complex_l *in, atfft_complex *out, int size)
 {
     int i = 0;
 
@@ -229,7 +229,7 @@ void atfft_long_double_to_sample_complex (const atfft_complex_l *in, atfft_compl
     }
 }
 
-void atfft_sample_to_long_double_complex (const atfft_complex *in, atfft_complex_l *out, int size)
+void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *out, int size)
 {
     int i = 0;
 
