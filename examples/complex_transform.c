@@ -63,7 +63,7 @@ void printComplexArray (atfft_complex *data, int size)
 
 int main()
 {
-    int nSamples = 16;
+    int nSamples = 32;
     atfft_sample *signal;
     atfft_complex *timeDomain, *freqDomain;
     struct atfft_dft *fftForward, *fftBackward;

@@ -41,7 +41,7 @@ void printSampleArray (atfft_sample *data, int size)
 
 int main()
 {
-    int nSamples = 16;
+    int nSamples = 32;
     atfft_sample *signal, *transform;
     struct atfft_dct *dctForward, *dctBackward;
     int i = 0;
