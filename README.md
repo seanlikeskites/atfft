@@ -54,7 +54,7 @@ the atfft interface:
   - Single and double precision only (no long doubles).
   - Signal lengths of 2^n (and some multiples thereof) only.
 
-* [PFFFT](www.bitbucket.org/jpommier/pffft)
+* [PFFFT](http://www.bitbucket.org/jpommier/pffft)
   - Single precision only.
   - Transform length must be multiple of 32 (16 for complex transforms.)
   - BDS-like licence.
