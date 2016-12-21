@@ -49,12 +49,18 @@ else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
 	FFT_SOURCES += ../src/atfft_dft_ffmpeg.c
 
+else ifeq (PFFFT, $(IMPL))
+	FFT_SOURCES += ../src/atfft_dft_pffft.c ../src/pffft/pffft.c
+	CFLAGS += -msse
+
 else
-	FFT_SOURCES += ../src/atfft_dft_ooura.c
+	FFT_SOURCES += ../src/atfft_dft_ooura.c ../src/ooura/fft4g.c
 endif
 
-FFT_TEMP = $(subst ../src/,, $(FFT_SOURCES))
-FFT_OBJECTS = $(subst .c,.o, $(FFT_TEMP))
+FFT_TEMP1 = $(subst ../src/,, $(FFT_SOURCES))
+FFT_TEMP2 = $(subst ooura/,, $(FFT_TEMP1))
+FFT_TEMP3 = $(subst pffft/,, $(FFT_TEMP2))
+FFT_OBJECTS = $(subst .c,.o, $(FFT_TEMP3))
 
 benchmark: benchmark.cpp $(FFT_SOURCES)
 	$(CC) -c $(FFT_SOURCES) $(INCLUDEDIRS) $(CFLAGS)
