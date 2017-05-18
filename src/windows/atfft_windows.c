@@ -56,7 +56,7 @@ void atfft_hamming_window (atfft_sample *window, int size, enum atfft_window_sym
 
     for (i = 0; i < size; ++i)
     {
-        atfft_sample x = cos (2 * M_PI * i / den);
+        atfft_sample x = cos (2.0 * M_PI * i / den);
         window [i] = 0.54 - 0.46 * x;
     }
 }
@@ -73,7 +73,7 @@ void atfft_blackman_window (atfft_sample *window, int size, enum atfft_window_sy
 
     for (i = 0; i < size; ++i)
     {
-        atfft_sample x = 2 * M_PI * i / den;
+        atfft_sample x = 2.0 * M_PI * i / den;
         window [i] = 0.42 - 0.5 * cos (x) + 0.08 * cos (2.0 * x);
     }
 }
