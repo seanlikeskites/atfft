@@ -4,7 +4,7 @@ LIBS = -lm
 INCLUDEDIRS = -I../include
 DFT_SOURCES = ../src/atfft_shared.c
 DCT_SOURCES = ../src/atfft_shared.c
-PROGRAMS = complex_transform real_transform
+PROGRAMS = complex_transform real_transform dct
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT
@@ -23,15 +23,16 @@ ifeq (FFTW3, $(IMPL))
 
 	DFT_SOURCES += ../src/atfft_dft_fftw.c
 	DCT_SOURCES += ../src/atfft_dct_fftw.c
-	PROGRAMS += dct
 	
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
 	DFT_SOURCES += ../src/atfft_dft_ffts.c
+	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_ffts.c
 
 else ifeq (GSL, $(IMPL))
 	LIBS += -lgsl -lgslcblas
 	DFT_SOURCES += ../src/atfft_dft_gsl.c
+	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_gsl.c
 
 else ifeq (KISS, $(IMPL))
 	ifeq (FLOAT, $(TYPE))
@@ -43,39 +44,37 @@ else ifeq (KISS, $(IMPL))
 	endif
 
 	DFT_SOURCES += ../src/atfft_dft_kiss.c
-	PROGRAMS += dct
+	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_kiss.c
 	
 else ifeq (VDSP, $(IMPL))
 	LIBS += -framework Accelerate
 	DFT_SOURCES += ../src/atfft_dft_vdsp.c
 	DCT_SOURCES += ../src/atfft_dct_vdsp.c
-	PROGRAMS += dct
 
 else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
 	DFT_SOURCES += ../src/atfft_dft_ffmpeg.c
 	DCT_SOURCES += ../src/atfft_dct_ffmpeg.c
-	PROGRAMS += dct
 
 else ifeq (PFFFT, $(IMPL))
 	DFT_SOURCES += ../src/atfft_dft_pffft.c ../src/pffft/pffft.c
+	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_pffft.c
 	CFLAGS += -msse
 
 else
 	DFT_SOURCES += ../src/atfft_dft_ooura.c ../src/ooura/fft4g.c
 	DCT_SOURCES += ../src/atfft_dct_ooura.c ../src/ooura/fft4g.c
-	PROGRAMS += dct
 endif
 
 all: $(PROGRAMS)
 
-complex_transform: complex_transform.c
+complex_transform: complex_transform.c $(DFT_SOURCES)
 	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
-real_transform: real_transform.c
+real_transform: real_transform.c $(DFT_SOURCES)
 	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
-dct: dct.c
+dct: dct.c $(DCT_SOURCES)
 	$(CC) -o $@ $< $(DCT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
 clean:
