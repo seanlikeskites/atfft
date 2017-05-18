@@ -44,10 +44,10 @@ struct atfft_dct* atfft_dct_create (int size, enum atfft_direction direction)
     dct->size = size;
     dct->direction = direction;
     dct->dft = atfft_dft_create (size, direction, ATFFT_COMPLEX);
-    dct->cosins = malloc (size * sizeof (*dct->cosins));
-    dct->sins = malloc (size * sizeof (*dct->sins));
-    dct->in = malloc (size * sizeof (*dct->in));
-    dct->out = malloc (size * sizeof (*dct->out));
+    dct->cosins = malloc (size * sizeof (*(dct->cosins)));
+    dct->sins = malloc (size * sizeof (*(dct->sins)));
+    dct->in = malloc (size * sizeof (*(dct->in)));
+    dct->out = malloc (size * sizeof (*(dct->out)));
 
     /* clean up on failure */
     if (!(dct->dft && dct->cosins && dct->sins && dct->in && dct->out))
