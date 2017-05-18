@@ -12,7 +12,7 @@
 #include <string.h>
 #include <assert.h>
 #include <atfft/atfft_dft.h>
-#include "pffft/pffft.h"
+#include "../pffft/pffft.h"
 
 #ifndef ATFFT_TYPE_FLOAT
 #   ifdef _MSC_VER

@@ -21,18 +21,18 @@ ifeq (FFTW3, $(IMPL))
 		LIBS += -lfftw3
 	endif
 
-	DFT_SOURCES += ../src/atfft_dft_fftw.c
-	DCT_SOURCES += ../src/atfft_dct_fftw.c
+	DFT_SOURCES += ../src/dft/atfft_dft_fftw.c
+	DCT_SOURCES += ../src/dct/atfft_dct_fftw.c
 	
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
-	DFT_SOURCES += ../src/atfft_dft_ffts.c
-	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_ffts.c
+	DFT_SOURCES += ../src/dft/atfft_dft_ffts.c
+	DCT_SOURCES += ../src/dct/atfft_dct.c ../src/dft/atfft_dft_ffts.c
 
 else ifeq (GSL, $(IMPL))
 	LIBS += -lgsl -lgslcblas
-	DFT_SOURCES += ../src/atfft_dft_gsl.c
-	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_gsl.c
+	DFT_SOURCES += ../src/dft/atfft_dft_gsl.c
+	DCT_SOURCES += ../src/dct/atfft_dct.c ../src/dft/atfft_dft_gsl.c
 
 else ifeq (KISS, $(IMPL))
 	ifeq (FLOAT, $(TYPE))
@@ -43,27 +43,27 @@ else ifeq (KISS, $(IMPL))
 		LIBS += -lkissfft
 	endif
 
-	DFT_SOURCES += ../src/atfft_dft_kiss.c
-	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_kiss.c
+	DFT_SOURCES += ../src/dft/atfft_dft_kiss.c
+	DCT_SOURCES += ../src/dct/atfft_dct.c ../src/dft/atfft_dft_kiss.c
 	
 else ifeq (VDSP, $(IMPL))
 	LIBS += -framework Accelerate
-	DFT_SOURCES += ../src/atfft_dft_vdsp.c
-	DCT_SOURCES += ../src/atfft_dct_vdsp.c
+	DFT_SOURCES += ../src/dft/atfft_dft_vdsp.c
+	DCT_SOURCES += ../src/dct/atfft_dct_vdsp.c
 
 else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
-	DFT_SOURCES += ../src/atfft_dft_ffmpeg.c
-	DCT_SOURCES += ../src/atfft_dct_ffmpeg.c
+	DFT_SOURCES += ../src/dft/atfft_dft_ffmpeg.c
+	DCT_SOURCES += ../src/dct/atfft_dct_ffmpeg.c
 
 else ifeq (PFFFT, $(IMPL))
-	DFT_SOURCES += ../src/atfft_dft_pffft.c ../src/pffft/pffft.c
-	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_pffft.c ../src/pffft/pffft.c
+	DFT_SOURCES += ../src/dft/atfft_dft_pffft.c ../src/pffft/pffft.c
+	DCT_SOURCES += ../src/dct/atfft_dct.c ../src/dft/atfft_dft_pffft.c ../src/pffft/pffft.c
 	CFLAGS += -msse
 
 else
-	DFT_SOURCES += ../src/atfft_dft_ooura.c ../src/ooura/fft4g.c
-	DCT_SOURCES += ../src/atfft_dct_ooura.c ../src/ooura/fft4g.c
+	DFT_SOURCES += ../src/dft/atfft_dft_ooura.c ../src/ooura/fft4g.c
+	DCT_SOURCES += ../src/dct/atfft_dct_ooura.c ../src/ooura/fft4g.c
 endif
 
 all: $(PROGRAMS)

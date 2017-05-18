@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <math.h>
 #include <atfft/atfft_dft.h>
-#include "ooura/ooura.h"
+#include "../ooura/ooura.h"
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
 #   ifdef _MSC_VER
