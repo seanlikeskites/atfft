@@ -58,7 +58,7 @@ else ifeq (FFMPEG, $(IMPL))
 
 else ifeq (PFFFT, $(IMPL))
 	DFT_SOURCES += ../src/atfft_dft_pffft.c ../src/pffft/pffft.c
-	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_pffft.c
+	DCT_SOURCES += ../src/atfft_dct.c ../src/atfft_dft_pffft.c ../src/pffft/pffft.c
 	CFLAGS += -msse
 
 else
