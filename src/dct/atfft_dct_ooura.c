@@ -88,16 +88,6 @@ void atfft_dct_destroy (struct atfft_dct *dct)
     }
 }
 
-void atfft_half (double *data, int size)
-{
-    int i = 0;
-
-    for (i = 0; i < size; ++i)
-    {
-        data [i] *= 2.0;
-    }
-}
-
 void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
 {
 #ifdef ATFFT_TYPE_DOUBLE
@@ -111,12 +101,12 @@ void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_s
 
     ddct (dct->size, dct->oouraDirection, dct->data, dct->workArea, dct->tables);
 
-    if (dct->direction == ATFFT_BACKWARD)
-        atfft_half (dct->data, dct->size);
-
 #ifdef ATFFT_TYPE_DOUBLE
     memcpy (out, dct->data, dct->dataSize);
 #else
     atfft_double_to_sample_real (dct->data, out, dct->size);
 #endif
+
+    if (dct->direction == ATFFT_BACKWARD)
+        atfft_scale_real (out, dct->size, 2.0);
 }

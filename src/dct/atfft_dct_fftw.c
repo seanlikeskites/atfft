@@ -100,16 +100,6 @@ void atfft_dct_destroy (struct atfft_dct *dct)
     }
 }
 
-void atfft_half (atfft_sample *data, int size)
-{
-    int i = 0;
-
-    for (i = 0; i < size; ++i)
-    {
-        data [i] /= 2.0;
-    }
-}
-
 void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
 {
     memcpy (dct->in, in, dct->dataSize);
@@ -117,5 +107,5 @@ void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_s
     memcpy (out, dct->out, dct->dataSize);
 
     if (dct->direction == ATFFT_FORWARD)
-        atfft_half (out, dct->size);
+        atfft_scale_real (out, dct->size, 0.5);
 }

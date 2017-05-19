@@ -29,25 +29,35 @@ int atfft_is_power_of_2 (unsigned int x)
 }
 
 /* normalisation */
-void atfft_normalise_real (atfft_sample *data, int size)
+void atfft_scale_real (atfft_sample *data, int size, atfft_sample scaleFactor)
 {
     int i = 0;
 
     for (i = 0; i < size; ++i)
     {
-        data [i] /= size;
+        data [i] *= scaleFactor;
+    }
+}
+
+void atfft_normalise_real (atfft_sample *data, int size)
+{
+    atfft_scale_real (data, size, 1.0 / size);
+}
+
+void atfft_scale_complex (atfft_complex *data, int size, atfft_sample scaleFactor)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        ATFFT_REAL (data [i]) *= scaleFactor;
+        ATFFT_IMAG (data [i]) *= scaleFactor;
     }
 }
 
 void atfft_normalise_complex (atfft_complex *data, int size)
 {
-    int i = 0;
-
-    for (i = 0; i < size; ++i)
-    {
-        ATFFT_REAL (data [i]) /= size;
-        ATFFT_IMAG (data [i]) /= size;
-    }
+    atfft_scale_complex (data, size, 1.0 / size);
 }
 
 atfft_sample atfft_abs (const atfft_complex x)

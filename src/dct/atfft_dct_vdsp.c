@@ -91,16 +91,6 @@ void atfft_dct_destroy (struct atfft_dct *dct)
     }
 }
 
-void atfft_double (atfft_sample *data, int size)
-{
-    int i = 0;
-
-    for (i = 0; i < size; ++i)
-    {
-        data [i] *= 2.0;
-    }
-}
-
 void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
 {
 #ifdef ATFFT_TYPE_FLOAT
@@ -112,5 +102,5 @@ void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_s
 #endif
 
     if (dct->direction == ATFFT_BACKWARD)
-        atfft_double (out, dct->size);
+        atfft_scale_real (out, dct->size, 2.0);
 }

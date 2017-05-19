@@ -80,6 +80,17 @@ int atfft_is_odd (unsigned int x);
 int atfft_is_power_of_2 (unsigned int x);
 
 /**
+ * Scale a real valued signal.
+ *
+ * Applies a multiplicative scaling to a real valued signal.
+ *
+ * @param data the signal to scale (should contain size elements)
+ * @param size the length of the signal
+ * @param scaleFactor the factor to scale by
+ */
+void atfft_scale_real (atfft_sample *data, int size, atfft_sample scaleFactor);
+
+/**
  * Normalise a real DFT output.
  *
  * Applies 1 / size scaling to a real valued signal.
@@ -88,6 +99,17 @@ int atfft_is_power_of_2 (unsigned int x);
  * @param size the length of the signal
  */
 void atfft_normalise_real (atfft_sample *data, int size);
+
+/**
+ * Scale a complex valued signal.
+ *
+ * Applies a multiplicative scaling to a complex valued signal.
+ *
+ * @param data the signal to scale (should contain size elements)
+ * @param size the length of the signal
+ * @param scaleFactor the factor to scale by
+ */
+void atfft_scale_complex (atfft_complex *data, int size, atfft_sample scaleFactor);
 
 /**
  * Normalise a complex DFT output.

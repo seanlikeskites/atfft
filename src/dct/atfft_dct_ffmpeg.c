@@ -74,16 +74,6 @@ void atfft_dct_destroy (struct atfft_dct *dct)
     }
 }
 
-void atfft_dct_ffmpeg_scale (float *data, int size)
-{
-    int i = 0;
-
-    for (i = 0; i < size; ++i)
-    {
-        data [i] *= size;
-    }
-}
-
 void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
 {
 #ifdef ATFFT_TYPE_FLOAT
@@ -98,12 +88,12 @@ void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_s
 
     av_dct_calc (dct->context, dct->data);
 
-    if (dct->direction == ATFFT_BACKWARD)
-        atfft_dct_ffmpeg_scale (dct->data, dct->size);
-
 #ifdef ATFFT_TYPE_FLOAT
     memcpy (out, dct->data, nBytes);
 #else
     atfft_float_to_sample_real (dct->data, out, dct->size);
 #endif
+
+    if (dct->direction == ATFFT_BACKWARD)
+        atfft_scale_real (out, dct->size, dct->size);
 }
