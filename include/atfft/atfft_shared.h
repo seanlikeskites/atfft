@@ -52,7 +52,9 @@ typedef long double atfft_complex_l [2];
     typedef atfft_complex_l atfft_complex;
 
 #else
-#   define ATFFT_TYPE_DOUBLE
+#   if !defined(ATFFT_TYPE_DOUBLE)
+#       define ATFFT_TYPE_DOUBLE
+#   endif
     typedef double atfft_sample;
     typedef atfft_complex_d atfft_complex;
 #endif
