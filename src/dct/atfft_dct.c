@@ -141,7 +141,7 @@ void atfft_dct_scale_backward (struct atfft_dct *dct, const atfft_sample *in)
     }
 }
 
-void atfft_dct_rearrange_backward (const atfft_complex *in, atfft_sample *out, int size)
+void atfft_dct_rearrange_backward (atfft_complex *in, atfft_sample *out, int size)
 {
     int i = 0, j = 0;
     int start = 0;
