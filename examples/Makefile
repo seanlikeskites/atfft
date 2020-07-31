@@ -61,9 +61,13 @@ else ifeq (PFFFT, $(IMPL))
 	DCT_SOURCES += ../src/dct/atfft_dct.c ../src/dft/atfft_dft_pffft.c ../src/pffft/pffft.c
 	CFLAGS += -msse
 
-else
+else ifeq (OOURA, $(IMPL))
 	DFT_SOURCES += ../src/dft/atfft_dft_ooura.c ../src/ooura/fft4g.c
 	DCT_SOURCES += ../src/dct/atfft_dct_ooura.c ../src/ooura/fft4g.c
+
+else
+	DFT_SOURCES += ../src/dft/atfft_dft.c
+	DCT_SOURCES += ../src/dct/atfft_dct.c ../src/dft/atfft_dft.c
 endif
 
 all: $(PROGRAMS)

@@ -1,6 +1,6 @@
 CC = gcc
 CPP = g++
-CFLAGS = -Wall
+CFLAGS = -Wall -O3
 LIBS = -lm -lpthread -lbenchmark
 INCLUDEDIRS = -I../include
 FFT_SOURCES = ../src/atfft_shared.c
@@ -53,8 +53,11 @@ else ifeq (PFFFT, $(IMPL))
 	FFT_SOURCES += ../src/dft/atfft_dft_pffft.c ../src/pffft/pffft.c
 	CFLAGS += -msse
 
-else
+else ifeq (OOURA, $(IMPL))
 	FFT_SOURCES += ../src/dft/atfft_dft_ooura.c ../src/ooura/fft4g.c
+
+else
+	FFT_SOURCES += ../src/dft/atfft_dft.c
 endif
 
 FFT_TEMP1 = $(subst ../src/,, $(FFT_SOURCES))

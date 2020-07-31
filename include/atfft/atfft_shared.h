@@ -129,6 +129,19 @@ atfft_sample atfft_abs (const atfft_complex x);
 /** Return the complex argument of a complex number. */
 atfft_sample atfft_arg (const atfft_complex x);
 
+/** Copy a complex number. */
+void atfft_copy_complex (const atfft_complex x, atfft_complex y);
+
+/** Calculate the sum of two complex numbers. */
+void atfft_sum_complex (const atfft_complex a,
+                        const atfft_complex b,
+                        atfft_complex s);
+
+/** Calculate the product of two complex numbers. */
+void atfft_product_complex (const atfft_complex a,
+                            const atfft_complex b,
+                            atfft_complex p);
+
 /**
  * Get the real part of a complex signal.
  *

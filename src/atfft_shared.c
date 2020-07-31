@@ -70,6 +70,30 @@ atfft_sample atfft_arg (const atfft_complex x)
     return atan2 (ATFFT_IMAG (x), ATFFT_REAL (x));
 }
 
+void atfft_copy_complex (const atfft_complex x, atfft_complex y)
+{
+    ATFFT_REAL (y) = ATFFT_REAL (x);
+    ATFFT_IMAG (y) = ATFFT_IMAG (x);
+}
+
+void atfft_sum_complex (const atfft_complex a,
+                        const atfft_complex b,
+                        atfft_complex s)
+{
+    ATFFT_REAL (s) = ATFFT_REAL (a) + ATFFT_REAL (b);
+    ATFFT_IMAG (s) = ATFFT_IMAG (a) + ATFFT_IMAG (b);
+}
+
+void atfft_product_complex (const atfft_complex a,
+                            const atfft_complex b,
+                            atfft_complex p)
+{
+    ATFFT_REAL (p) = ATFFT_REAL (a) * ATFFT_REAL (b) -
+                     ATFFT_IMAG (a) * ATFFT_IMAG (b);
+    ATFFT_IMAG (p) = ATFFT_REAL (a) * ATFFT_IMAG (b) +
+                     ATFFT_IMAG (a) * ATFFT_REAL (b);
+}
+
 /* conversion functions */
 void atfft_real (atfft_complex *in, atfft_sample *out, int size)
 {
