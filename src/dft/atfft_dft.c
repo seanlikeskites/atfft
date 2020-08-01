@@ -22,6 +22,39 @@
  */
 #define MAX_RADICES (sizeof (int) * CHAR_BIT - 1)
 
+/* Some inline functions for doing calculations with complex numbers */
+static inline void atfft_copy_complex (const atfft_complex x, atfft_complex y)
+{
+    ATFFT_REAL (y) = ATFFT_REAL (x);
+    ATFFT_IMAG (y) = ATFFT_IMAG (x);
+}
+
+static inline void atfft_sum_complex (const atfft_complex a,
+                                      const atfft_complex b,
+                                      atfft_complex s)
+{
+    ATFFT_REAL (s) = ATFFT_REAL (a) + ATFFT_REAL (b);
+    ATFFT_IMAG (s) = ATFFT_IMAG (a) + ATFFT_IMAG (b);
+}
+
+static inline void atfft_difference_complex (const atfft_complex a,
+                                             const atfft_complex b,
+                                             atfft_complex d)
+{
+    ATFFT_REAL (d) = ATFFT_REAL (a) - ATFFT_REAL (b);
+    ATFFT_IMAG (d) = ATFFT_IMAG (a) - ATFFT_IMAG (b);
+}
+
+static inline void atfft_product_complex (const atfft_complex a,
+                                          const atfft_complex b,
+                                          atfft_complex p)
+{
+    ATFFT_REAL (p) = ATFFT_REAL (a) * ATFFT_REAL (b) -
+                     ATFFT_IMAG (a) * ATFFT_IMAG (b);
+    ATFFT_IMAG (p) = ATFFT_REAL (a) * ATFFT_IMAG (b) +
+                     ATFFT_IMAG (a) * ATFFT_REAL (b);
+}
+
 struct atfft_dft
 {
     int size;
@@ -144,6 +177,33 @@ void atfft_dft_destroy (struct atfft_dft *fft)
     }
 }
 
+static void atfft_butterfly_2 (atfft_complex *out,
+                               int topSize,
+                               int subSize,
+                               int stride,
+                               atfft_complex *tFactors)
+{
+    /* The start of each block in the output DFT */
+    atfft_complex *bin1 = out;
+    atfft_complex *bin2 = bin1 + subSize;
+
+    while (subSize--)
+    {
+        atfft_complex t;
+
+        atfft_product_complex (*tFactors, *bin2, t);
+        atfft_difference_complex (*bin1, t, *bin2);
+        atfft_sum_complex (*bin1, t, *bin1);
+
+        /* get the next twiddle factor and 
+         * advance to the next output bins.
+         */
+        tFactors += stride;
+        ++bin1;
+        ++bin2;
+    }
+}
+
 static void atfft_butterfly_n (atfft_complex *out,
                                int topSize,
                                int subSize,
@@ -210,6 +270,24 @@ static void atfft_butterfly_n (atfft_complex *out,
     }
 }
 
+void atfft_butterfly (atfft_complex *out,
+                      int topSize,
+                      int subSize,
+                      int stride,
+                      int radix,
+                      atfft_complex *tFactors,
+                      atfft_complex *workSpace)
+{
+    switch (radix)
+    {
+        case 2:
+            atfft_butterfly_2 (out, topSize, subSize, stride, tFactors);
+            break;
+        default:
+            atfft_butterfly_n (out, topSize, subSize, stride, radix, tFactors, workSpace);
+    }
+}
+
 static void atfft_compute_dft_complex (atfft_complex *in,
                                        atfft_complex *out,
                                        int topSize,
@@ -261,7 +339,7 @@ static void atfft_compute_dft_complex (atfft_complex *in,
     }
 
     /* Apply butterfly for this stage of the transform. */
-    atfft_butterfly_n (out, topSize, nextSize, stride, R, tFactors, workSpace);
+    atfft_butterfly (out, topSize, nextSize, stride, R, tFactors, workSpace);
 }
 
 void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
