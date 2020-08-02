@@ -93,6 +93,8 @@ static int atfft_next_radix (int r)
 {
     switch (r)
     {
+        case 4:
+            return 2;
         case 2:
             return 3;
         default:
@@ -103,7 +105,7 @@ static int atfft_next_radix (int r)
 static int atfft_init_radices (int size, int *radices)
 {
     /* current radix */
-    int r = 2;
+    int r = 4;
     int maxR = 2;
     int sqrtSize = (int) sqrt ((double) size);
 
@@ -178,7 +180,6 @@ void atfft_dft_destroy (struct atfft_dft *fft)
 }
 
 static void atfft_butterfly_2 (atfft_complex *out,
-                               int topSize,
                                int subSize,
                                int stride,
                                atfft_complex *tFactors)
@@ -201,6 +202,60 @@ static void atfft_butterfly_2 (atfft_complex *out,
         tFactors += stride;
         ++bin1;
         ++bin2;
+    }
+}
+
+static void atfft_butterfly_4 (atfft_complex *out,
+                               int subSize,
+                               int stride,
+                               enum atfft_direction direction,
+                               atfft_complex *tFactors)
+{
+    int i = subSize;
+    int n = 0;
+
+    atfft_complex *bins [4];
+    bins [0] = out;
+    bins [1] = bins [0] + subSize;
+    bins [2] = bins [1] + subSize;
+    bins [3] = bins [2] + subSize;
+
+    atfft_complex *tfs [3] = {tFactors, tFactors, tFactors};
+    atfft_complex zs [3];
+    atfft_complex ts [4];
+
+    while (i--)
+    {
+        for (n = 0; n < 3; ++n)
+        {
+            atfft_product_complex (*tfs [n], *bins [n + 1], zs [n]);
+            tfs [n] += (n + 1) * stride;
+        }
+
+        atfft_sum_complex (*bins [0], zs [1], ts [0]);
+        atfft_sum_complex (zs [0], zs [2], ts [1]);
+        atfft_difference_complex (*bins [0], zs [1], ts [2]);
+
+        switch (direction)
+        {
+            case ATFFT_BACKWARD:
+                atfft_difference_complex (zs [2], zs [0], ts [3]);
+                break;
+            default:
+                atfft_difference_complex (zs [0], zs [2], ts [3]);
+        }
+
+        atfft_sum_complex (ts [0], ts[1], *bins [0]);
+        ATFFT_REAL (*bins [1]) = ATFFT_REAL (ts [2]) + ATFFT_IMAG (ts [3]);
+        ATFFT_IMAG (*bins [1]) = ATFFT_IMAG (ts [2]) - ATFFT_REAL (ts [3]);
+        atfft_difference_complex (ts [0], ts[1], *bins [2]);
+        ATFFT_REAL (*bins [3]) = ATFFT_REAL (ts [2]) - ATFFT_IMAG (ts [3]);
+        ATFFT_IMAG (*bins [3]) = ATFFT_IMAG (ts [2]) + ATFFT_REAL (ts [3]);
+
+        for (n = 0; n < 4; ++n)
+        {
+            ++(bins [n]);
+        }
     }
 }
 
@@ -270,32 +325,31 @@ static void atfft_butterfly_n (atfft_complex *out,
     }
 }
 
-void atfft_butterfly (atfft_complex *out,
-                      int topSize,
+void atfft_butterfly (const struct atfft_dft *fft,
+                      atfft_complex *out,
                       int subSize,
                       int stride,
-                      int radix,
-                      atfft_complex *tFactors,
-                      atfft_complex *workSpace)
+                      int radix)
 {
     switch (radix)
     {
         case 2:
-            atfft_butterfly_2 (out, topSize, subSize, stride, tFactors);
+            atfft_butterfly_2 (out, subSize, stride, fft->tFactors);
+            break;
+        case 4:
+            atfft_butterfly_4 (out, subSize, stride, fft->direction, fft->tFactors);
             break;
         default:
-            atfft_butterfly_n (out, topSize, subSize, stride, radix, tFactors, workSpace);
+            atfft_butterfly_n (out, fft->size, subSize, stride, radix, fft->tFactors, fft->workSpace);
     }
 }
 
-static void atfft_compute_dft_complex (atfft_complex *in,
+static void atfft_compute_dft_complex (const struct atfft_dft *fft,
+                                       atfft_complex *in,
                                        atfft_complex *out,
-                                       int topSize,
                                        int subSize,
                                        int stride,
-                                       const int *radices,
-                                       atfft_complex *tFactors,
-                                       atfft_complex *workSpace)
+                                       const int *radices)
 {
     /* Get the radix, R, for this stage of the transform.
      * We will split the transform into R sub-transforms
@@ -314,14 +368,12 @@ static void atfft_compute_dft_complex (atfft_complex *in,
 
         for (r = 0; r < R; ++r)
         {
-            atfft_compute_dft_complex (in + r * stride,
+            atfft_compute_dft_complex (fft, 
+                                       in + r * stride,
                                        out + r * nextSize,
-                                       topSize,
                                        nextSize,
                                        stride * R,
-                                       radices,
-                                       tFactors,
-                                       workSpace);
+                                       radices);
         }
     }
     else
@@ -339,7 +391,7 @@ static void atfft_compute_dft_complex (atfft_complex *in,
     }
 
     /* Apply butterfly for this stage of the transform. */
-    atfft_butterfly (out, topSize, nextSize, stride, R, tFactors, workSpace);
+    atfft_butterfly (fft, out, nextSize, stride, R);
 }
 
 void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
@@ -347,14 +399,12 @@ void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atff
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
 
-    atfft_compute_dft_complex (in,
+    atfft_compute_dft_complex (fft,
+                               in,
                                out,
                                fft->size,
-                               fft->size,
                                1,
-                               fft->radices,
-                               fft->tFactors,
-                               fft->workSpace);
+                               fft->radices);
 }
 
 void atfft_dft_calculate_bin_real (struct atfft_dft *fft,
