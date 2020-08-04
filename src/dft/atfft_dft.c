@@ -205,6 +205,53 @@ static void atfft_butterfly_2 (atfft_complex *out,
     }
 }
 
+static void atfft_butterfly_3 (atfft_complex *out,
+                               int subSize,
+                               int stride,
+                               atfft_complex *tFactors)
+{
+    int i = subSize;
+    int n = 0;
+
+    atfft_complex *bins [3];
+    bins [0] = out;
+    bins [1] = bins [0] + subSize;
+    bins [2] = bins [1] + subSize;
+
+    atfft_complex *tfs [2] = {tFactors, tFactors};
+    atfft_complex zs [2];
+    atfft_complex ts [3];
+
+    atfft_sample sinPiOn3 = ATFFT_IMAG (tFactors [subSize * stride]);
+
+    while (i--)
+    {
+        for (n = 0; n < 2; ++n)
+        {
+            atfft_product_complex (*tfs [n], *bins [n + 1], zs [n]);
+            tfs [n] += (n + 1) * stride;
+        }
+
+        atfft_sum_complex (zs [0], zs [1], ts [0]);
+        ATFFT_REAL (ts [1]) = ATFFT_REAL (*bins [0]) - ATFFT_REAL (ts [0]) / 2.0;
+        ATFFT_IMAG (ts [1]) = ATFFT_IMAG (*bins [0]) - ATFFT_IMAG (ts [0]) / 2.0;
+        atfft_difference_complex (zs [0], zs [1], ts [2]);
+        ATFFT_REAL (ts [2]) = sinPiOn3 * ATFFT_REAL (ts [2]);
+        ATFFT_IMAG (ts [2]) = sinPiOn3 * ATFFT_IMAG (ts [2]);
+
+        atfft_sum_complex (*bins [0], ts [0], *bins [0]);
+        ATFFT_REAL (*bins [1]) = ATFFT_REAL (ts [1]) - ATFFT_IMAG (ts [2]);
+        ATFFT_IMAG (*bins [1]) = ATFFT_IMAG (ts [1]) + ATFFT_REAL (ts [2]);
+        ATFFT_REAL (*bins [2]) = ATFFT_REAL (ts [1]) + ATFFT_IMAG (ts [2]);
+        ATFFT_IMAG (*bins [2]) = ATFFT_IMAG (ts [1]) - ATFFT_REAL (ts [2]);
+
+        for (n = 0; n < 3; ++n)
+        {
+            ++(bins [n]);
+        }
+    }
+}
+
 static void atfft_butterfly_4 (atfft_complex *out,
                                int subSize,
                                int stride,
@@ -335,6 +382,9 @@ void atfft_butterfly (const struct atfft_dft *fft,
     {
         case 2:
             atfft_butterfly_2 (out, subSize, stride, fft->tFactors);
+            break;
+        case 3:
+            atfft_butterfly_3 (out, subSize, stride, fft->tFactors);
             break;
         case 4:
             atfft_butterfly_4 (out, subSize, stride, fft->direction, fft->tFactors);
