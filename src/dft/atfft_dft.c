@@ -55,6 +55,18 @@ static inline void atfft_product_complex (const atfft_complex a,
                      ATFFT_IMAG (a) * ATFFT_REAL (b);
 }
 
+static inline void atfft_multiply_by_complex (atfft_complex a,
+                                              const atfft_complex b)
+{
+    atfft_complex temp;
+    atfft_copy_complex (a, temp);
+    
+    ATFFT_REAL (a) = ATFFT_REAL (temp) * ATFFT_REAL (b) -
+                     ATFFT_IMAG (temp) * ATFFT_IMAG (b);
+    ATFFT_IMAG (a) = ATFFT_REAL (temp) * ATFFT_IMAG (b) +
+                     ATFFT_IMAG (temp) * ATFFT_REAL (b);
+}
+
 struct atfft_dft
 {
     int size;
@@ -105,7 +117,7 @@ static int atfft_next_radix (int r)
 static int atfft_init_radices (int size, int *radices)
 {
     /* current radix */
-    int r = 4;
+    int r = 2;
     int maxR = 2;
     int sqrtSize = (int) sqrt ((double) size);
 
@@ -180,29 +192,16 @@ void atfft_dft_destroy (struct atfft_dft *fft)
 }
 
 static void atfft_butterfly_2 (atfft_complex *out,
-                               int subSize,
-                               int stride,
-                               atfft_complex *tFactors)
+                               int subSize)
 {
     /* The start of each block in the output DFT */
     atfft_complex *bin1 = out;
     atfft_complex *bin2 = bin1 + subSize;
+    atfft_complex t;
 
-    while (subSize--)
-    {
-        atfft_complex t;
-
-        atfft_product_complex (*tFactors, *bin2, t);
-        atfft_difference_complex (*bin1, t, *bin2);
-        atfft_sum_complex (*bin1, t, *bin1);
-
-        /* get the next twiddle factor and 
-         * advance to the next output bins.
-         */
-        tFactors += stride;
-        ++bin1;
-        ++bin2;
-    }
+    atfft_copy_complex (*bin2, t);
+    atfft_difference_complex (*bin1, t, *bin2);
+    atfft_sum_complex (*bin1, t, *bin1);
 }
 
 static void atfft_butterfly_3 (atfft_complex *out,
@@ -378,19 +377,33 @@ void atfft_butterfly (const struct atfft_dft *fft,
                       int stride,
                       int radix)
 {
-    switch (radix)
+    int i = 0;
+    int n = 0;
+
+    for (i = 0; i < subSize; ++i)
     {
-        case 2:
-            atfft_butterfly_2 (out, subSize, stride, fft->tFactors);
-            break;
-        case 3:
-            atfft_butterfly_3 (out, subSize, stride, fft->tFactors);
-            break;
-        case 4:
-            atfft_butterfly_4 (out, subSize, stride, fft->direction, fft->tFactors);
-            break;
-        default:
-            atfft_butterfly_n (out, fft->size, subSize, stride, radix, fft->tFactors, fft->workSpace);
+        for (n = 1; n < radix; ++n)
+        {
+            atfft_multiply_by_complex (out [n * subSize],
+                                       fft->tFactors [n * i * stride]);
+        }
+
+        switch (radix)
+        {
+            case 2:
+                atfft_butterfly_2 (out, subSize);
+                break;
+            //case 3:
+            //    atfft_butterfly_3 (out, subSize, stride, fft->tFactors);
+            //    break;
+            //case 4:
+            //    atfft_butterfly_4 (out, subSize, stride, fft->direction, fft->tFactors);
+            //    break;
+            default:
+                atfft_butterfly_n (out, fft->size, subSize, stride, radix, fft->tFactors, fft->workSpace);
+        }
+        
+        ++out;
     }
 }
 
