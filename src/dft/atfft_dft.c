@@ -336,26 +336,14 @@ static inline void atfft_butterfly_2 (const struct atfft_dft *fft,
                                       int subSize,
                                       int stride)
 {
-    int radix = 2;
     int i = 0;
-    int r = 0;
 
     atfft_dft_2 (out, subSize);
 
     for (i = stride; i < subSize * stride; i += stride)
     {
-        int m = subSize;
-        int n = i;
-        
         ++out;
-
-        for (r = 1; r < radix; ++r)
-        {
-            atfft_multiply_by_complex (out [m], fft->tFactors [n]);
-            m += subSize;
-            n += i;
-        }
-
+        atfft_multiply_by_complex (out [subSize], fft->tFactors [i]);
         atfft_dft_2 (out, subSize);
     }
 }
