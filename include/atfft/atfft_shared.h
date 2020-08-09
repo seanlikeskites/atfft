@@ -42,6 +42,11 @@ typedef long double atfft_complex_l [2];
 /** A macro to return the imaginary part of the complex types. */
 #define ATFFT_IMAG(x) ((x) [1])
 
+/** A macro to return the smallest of two values. */
+#define ATFFT_MIN(x, y) ((x) < (y) ? (x) : (y))
+/** A macro to return the largest of two values. */
+#define ATFFT_MAX(x, y) ((x) > (y) ? (x) : (y))
+
 /** Some typdefs for changing the type atfft works with. \cond */
 #if defined(ATFFT_TYPE_FLOAT)
     typedef float atfft_sample;
