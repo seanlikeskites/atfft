@@ -13,6 +13,18 @@
 #include <math.h>
 #include <limits.h>
 #include <atfft/atfft_dft.h>
+#include "../atfft_internal.h"
+
+extern void atfft_copy_complex (const atfft_complex x, atfft_complex y);
+extern void atfft_sum_complex (const atfft_complex a,
+                               const atfft_complex b,
+                               atfft_complex s);
+extern void atfft_difference_complex (const atfft_complex a,
+                                      const atfft_complex b,
+                                      atfft_complex d);
+extern void atfft_product_complex (const atfft_complex a,
+                                   const atfft_complex b,
+                                   atfft_complex p);
 
 /* Because an int is used to represent the size of the transform
  * valid sizes are anywhere between 0 and 2^(n - 1), where n is
@@ -21,39 +33,6 @@
  * are all 2s.
  */
 #define MAX_RADICES (sizeof (int) * CHAR_BIT - 1)
-
-/* Some inline functions for doing calculations with complex numbers */
-static inline void atfft_copy_complex (const atfft_complex x, atfft_complex y)
-{
-    ATFFT_REAL (y) = ATFFT_REAL (x);
-    ATFFT_IMAG (y) = ATFFT_IMAG (x);
-}
-
-static inline void atfft_sum_complex (const atfft_complex a,
-                                      const atfft_complex b,
-                                      atfft_complex s)
-{
-    ATFFT_REAL (s) = ATFFT_REAL (a) + ATFFT_REAL (b);
-    ATFFT_IMAG (s) = ATFFT_IMAG (a) + ATFFT_IMAG (b);
-}
-
-static inline void atfft_difference_complex (const atfft_complex a,
-                                             const atfft_complex b,
-                                             atfft_complex d)
-{
-    ATFFT_REAL (d) = ATFFT_REAL (a) - ATFFT_REAL (b);
-    ATFFT_IMAG (d) = ATFFT_IMAG (a) - ATFFT_IMAG (b);
-}
-
-static inline void atfft_product_complex (const atfft_complex a,
-                                          const atfft_complex b,
-                                          atfft_complex p)
-{
-    ATFFT_REAL (p) = ATFFT_REAL (a) * ATFFT_REAL (b) -
-                     ATFFT_IMAG (a) * ATFFT_IMAG (b);
-    ATFFT_IMAG (p) = ATFFT_REAL (a) * ATFFT_IMAG (b) +
-                     ATFFT_IMAG (a) * ATFFT_REAL (b);
-}
 
 struct atfft_dft
 {
@@ -71,9 +50,9 @@ struct atfft_dft
     atfft_complex *workSpace;
 };
 
-static void atfft_dft_init_twiddle_factors (atfft_complex *factors,
-                                            int size,
-                                            enum atfft_direction direction)
+static void atfft_init_twiddle_factors (atfft_complex *factors,
+                                        int size,
+                                        enum atfft_direction direction)
 {
     int i = 0;
     atfft_sample sinFactor = -1.0;
@@ -83,7 +62,7 @@ static void atfft_dft_init_twiddle_factors (atfft_complex *factors,
 
     for (i = 0; i < size; ++i)
     {
-        atfft_sample x = 2.0 * i * M_PI / (size);
+        atfft_sample x = 2.0 * i * M_PI / size;
         ATFFT_REAL (factors [i]) = cos (x);
         ATFFT_IMAG (factors [i]) = sinFactor * sin (x);
     }
@@ -151,7 +130,7 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     if (!fft->tFactors)
         goto failed;
     else
-        atfft_dft_init_twiddle_factors (fft->tFactors, size, direction);
+        atfft_init_twiddle_factors (fft->tFactors, size, direction);
 
     /* calculate radices */
     maxR = atfft_init_radices (size, fft->radices);

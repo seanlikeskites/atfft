@@ -11,15 +11,18 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 #include <atfft/atfft_dft.h>
+#include "atfft_dft_rader.h"
+#include "../atfft_internal.h"
 
-int atfft_mod (int a, int n)
+static int atfft_mod (int a, int n)
 {
     int r = a % n;
     return r < 0 ? r + n : r;
 }
 
-int atfft_is_prime (int x)
+static int atfft_is_prime (int x)
 {
     int sqrtX = (int) sqrt ((double) x);
     int i = 2;
@@ -36,7 +39,7 @@ int atfft_is_prime (int x)
     return 1;
 }
 
-int atfft_next_power_of_2 (int x)
+static int atfft_next_power_of_2 (int x)
 {
     if (x <= 0)
         return 0;
@@ -44,7 +47,7 @@ int atfft_next_power_of_2 (int x)
         return pow (2, (int) log2 (x) + 1);
 }
 
-int atfft_primitive_root_mod_n (int n)
+static int atfft_primitive_root_mod_n (int n)
 {
     int g = 2;
     int isRoot = 1;
@@ -78,7 +81,7 @@ int atfft_primitive_root_mod_n (int n)
     return -1;
 }
 
-void atfft_gcd (int a, int b, int *gcd, int *x, int *y)
+static void atfft_gcd (int a, int b, int *gcd, int *x, int *y)
 {
     int absA = abs (a);
     int absB = abs (b);
@@ -110,7 +113,7 @@ void atfft_gcd (int a, int b, int *gcd, int *x, int *y)
     *y = b < 0 ? -t0 : t0;
 }
 
-int atfft_mult_inverse_mod_n (int a, int n)
+static int atfft_mult_inverse_mod_n (int a, int n)
 {
     int gcd, x, y;
 
@@ -122,14 +125,12 @@ int atfft_mult_inverse_mod_n (int a, int n)
         return -1;
 }
 
-int atfft_rader_convolution_fft_size (int size)
+static int atfft_rader_convolution_fft_size (int raderSize)
 {
-    int raderSize = size = 1;
-
     if (atfft_is_power_of_2 (raderSize))
         return raderSize;
     else
-        return atfft_next_power_of_2 (raderSize);
+        return atfft_next_power_of_2 (2 * raderSize - 1);
 }
 
 struct atfft_dft_rader
@@ -140,11 +141,70 @@ struct atfft_dft_rader
     int pRoot1, pRoot2;
     int convSize;
     struct atfft_dft *convForward, *convBackward;
+    int *perm1, *perm2;
+    atfft_complex *sig, *sigDft, *convDft;
 };
+
+static void atfft_init_rader_permutations (int *perm, int size, int pRoot)
+{
+    int n = 0;
+    int i = 1;
+
+    for (n = 0; n < size - 1; ++n)
+    {
+        perm [n] = i;
+        i = atfft_mod (i * pRoot, size);
+    }
+}
+
+static int atfft_init_rader_convolution_dft (int size,
+                                             enum atfft_direction direction,
+                                             atfft_complex *convDft,
+                                             int convSize,
+                                             int *perm,
+                                             int permSize,
+                                             struct atfft_dft *fft)
+{
+    int i = 0;
+    atfft_sample sinFactor = -1.0;
+    atfft_complex *tFactors = calloc (convSize, sizeof (*tFactors));
+
+    if (!tFactors)
+        return -1;
+
+    if (direction == ATFFT_BACKWARD)
+        sinFactor = 1.0;
+
+    /* produce rader twiddle factors */
+    for (i = 0; i < permSize; ++i)
+    {
+        atfft_sample x = 2.0 * perm [i] * M_PI / size;
+        ATFFT_REAL (tFactors [i]) = cos (x);
+        ATFFT_IMAG (tFactors [i]) = sinFactor * sin (x);
+    }
+
+    /* replicate samples for circular convolution */
+    if (convSize > permSize)
+    {
+        size_t nReplications = permSize - 1;
+        atfft_complex *source = tFactors + 1;
+        atfft_complex *dest = tFactors + convSize - nReplications;
+
+        memcpy (dest, source, nReplications * sizeof (*dest));
+
+    }
+
+    /* take DFT of twiddle factors */
+    atfft_dft_complex_transform (fft, tFactors, convDft);
+
+    free (tFactors);
+    return 0;
+}
 
 struct atfft_dft_rader* atfft_dft_rader_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft_dft_rader *fft;
+    int raderSize = size - 1;
 
     /* we can only find primitive roots for prime numbers */
     assert (atfft_is_prime (size));
@@ -159,11 +219,39 @@ struct atfft_dft_rader* atfft_dft_rader_create (int size, enum atfft_direction d
     fft->pRoot2 = atfft_mult_inverse_mod_n (fft->pRoot1, size);
 
     /* allocate some regular dft objects for performing the convolution */
-    fft->convSize = atfft_rader_convolution_fft_size (size);
+    fft->convSize = atfft_rader_convolution_fft_size (raderSize);
     fft->convForward = atfft_dft_create (fft->convSize, ATFFT_FORWARD, ATFFT_COMPLEX);
     fft->convBackward = atfft_dft_create (fft->convSize, ATFFT_BACKWARD, ATFFT_COMPLEX);
 
     if (!(fft->convForward && fft->convBackward))
+        goto failed;
+
+    /* generate permutation indices */
+    fft->perm1 = malloc (raderSize * sizeof (*(fft->perm1)));
+    fft->perm2 = malloc (raderSize * sizeof (*(fft->perm2)));
+
+    if (!(fft->perm1 && fft->perm2))
+        goto failed;
+
+    atfft_init_rader_permutations (fft->perm1, size, fft->pRoot1);
+    atfft_init_rader_permutations (fft->perm2, size, fft->pRoot2);
+
+    /* allocate work space for performing the dft */
+    fft->sig = calloc (fft->convSize, sizeof (*(fft->sig))); /* set up for zero padding */
+    fft->sigDft = malloc (fft->convSize * sizeof (*(fft->sigDft)));
+    fft->convDft = malloc (fft->convSize * sizeof (*(fft->convDft)));
+
+    if (!(fft->sig && fft->sigDft && fft->convDft))
+        goto failed;
+
+    /* calculate the convolution dft */
+    if (atfft_init_rader_convolution_dft (size,
+                                          direction,
+                                          fft->convDft,
+                                          fft->convSize,
+                                          fft->perm2,
+                                          raderSize,
+                                          fft->convForward) < 0)
         goto failed;
 
     return fft;
@@ -177,6 +265,11 @@ void atfft_dft_rader_destroy (struct atfft_dft_rader *fft)
 {
     if (fft)
     {
+        free (fft->convDft);
+        free (fft->sigDft);
+        free (fft->sig);
+        free (fft->perm2);
+        free (fft->perm1);
         atfft_dft_destroy (fft->convBackward);
         atfft_dft_destroy (fft->convForward);
         free (fft);
