@@ -201,16 +201,9 @@ static inline void atfft_dft_3 (atfft_complex *out,
     ATFFT_IMAG (*bins [2]) = ATFFT_IMAG (ts [1]) - ATFFT_REAL (ts [2]);
 }
 
-static inline void atfft_dft_4 (atfft_complex *out,
-                                int subSize,
+static inline void atfft_dft_4 (atfft_complex **bins,
                                 enum atfft_direction direction)
 {
-    atfft_complex *bins [4];
-    bins [0] = out;
-    bins [1] = bins [0] + subSize;
-    bins [2] = bins [1] + subSize;
-    bins [3] = bins [2] + subSize;
-
     atfft_complex ts [4];
 
     atfft_sum_complex (*bins [0], *bins [2], ts [0]);
@@ -305,14 +298,17 @@ static inline void atfft_butterfly_2 (const struct atfft_dft *fft,
                                       int subSize,
                                       int stride)
 {
-    int i = 0;
+    int i = subSize;
+    int t = 0;
 
     atfft_dft_2 (out, subSize);
 
-    for (i = stride; i < subSize * stride; i += stride)
+    while (--i)
     {
         ++out;
-        atfft_multiply_by_complex (out [subSize], fft->tFactors [i]);
+        t += stride;
+
+        atfft_multiply_by_complex (out [subSize], fft->tFactors [t]);
         atfft_dft_2 (out, subSize);
     }
 }
@@ -351,11 +347,46 @@ static inline void atfft_butterfly_4 (const struct atfft_dft *fft,
                                       int subSize,
                                       int stride)
 {
+    int i = subSize;
     int radix = 4;
+
+    atfft_complex *bins [4];
+    atfft_complex *tfs [3] = {fft->tFactors, fft->tFactors, fft->tFactors};
+
+    bins [0] = out;
+    bins [1] = bins [0] + subSize;
+    bins [2] = bins [1] + subSize;
+    bins [3] = bins [2] + subSize;
+
+    atfft_dft_4 (bins, fft->direction);
+
+    while (--i)
+    {
+        int n = 0;
+
+        ++(bins [0]);
+
+        for (n = 1; n < radix; ++n)
+        {
+            ++(bins [n]);
+            tfs [n - 1] += n * stride;
+            atfft_multiply_by_complex (*bins [n], *tfs [n - 1]);
+        }
+
+        atfft_dft_4 (bins, fft->direction);
+    }
+}
+
+static inline void atfft_butterfly_rader (const struct atfft_dft *fft,
+                                          atfft_complex *out,
+                                          int subSize,
+                                          int stride,
+                                          int radix)
+{
     int i = 0;
     int r = 0;
 
-    atfft_dft_4 (out, subSize, fft->direction);
+    // perform a rader dft here
 
     for (i = stride; i < subSize * stride; i += stride)
     {
@@ -371,8 +402,7 @@ static inline void atfft_butterfly_4 (const struct atfft_dft *fft,
             n += i;
         }
 
-        atfft_dft_4 (out, subSize, fft->direction);
-
+        // perform a rader dft here
     }
 }
 
