@@ -16,8 +16,6 @@
 #include "atfft_dft_rader.h"
 #include "../atfft_internal.h"
 
-#include <stdio.h>
-
 static int atfft_mod (int a, int n)
 {
     int r = a % n;
