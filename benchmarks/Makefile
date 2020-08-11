@@ -57,7 +57,7 @@ else ifeq (OOURA, $(IMPL))
 	FFT_SOURCES += ../src/dft/atfft_dft_ooura.c ../src/ooura/fft4g.c
 
 else
-	FFT_SOURCES += ../src/dft/atfft_dft.c
+	FFT_SOURCES += ../src/dft/atfft_dft.c ../src/dft/atfft_dft_rader.c
 endif
 
 FFT_TEMP1 = $(subst ../src/,, $(FFT_SOURCES))

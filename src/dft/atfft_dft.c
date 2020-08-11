@@ -14,6 +14,19 @@
 #include <limits.h>
 #include <atfft/atfft_dft.h>
 #include "../atfft_internal.h"
+#include "atfft_dft_rader.h"
+
+/* Because an int is used to represent the size of the transform
+ * valid sizes are anywhere between 0 and 2^(n - 1), where n is
+ * the number of bits in an int. The maximum number of radices 
+ * will therefore be (n - 1) as it will occur when the radices
+ * are all 2s.
+ */
+#define MAX_RADICES (sizeof (int) * CHAR_BIT - 1)
+
+#ifndef ATFFT_RADER_THRESHOLD
+#define ATFFT_RADER_THRESHOLD 4
+#endif /* ATFFT_RADER_THRESHOLD */
 
 extern void atfft_copy_complex (const atfft_complex x, atfft_complex y);
 extern void atfft_sum_complex (const atfft_complex a,
@@ -28,13 +41,6 @@ extern void atfft_product_complex (const atfft_complex a,
 extern void atfft_multiply_by_complex (atfft_complex a,
                                        const atfft_complex b);
 
-/* Because an int is used to represent the size of the transform
- * valid sizes are anywhere between 0 and 2^(n - 1), where n is
- * the number of bits in an int. The maximum number of radices 
- * will therefore be (n - 1) as it will occur when the radices
- * are all 2s.
- */
-#define MAX_RADICES (sizeof (int) * CHAR_BIT - 1)
 
 struct atfft_dft
 {
@@ -50,6 +56,9 @@ struct atfft_dft
 
     /* working space for butterflies */
     atfft_complex *workSpace;
+
+    /* sub fft objects for Rader's algorithm */
+    struct atfft_dft_rader *raders [MAX_RADICES];
 };
 
 static void atfft_init_twiddle_factors (atfft_complex *factors,
@@ -113,6 +122,69 @@ static int atfft_init_radices (int size, int *radices)
     return maxR;
 }
 
+static int atfft_integer_is_in_array (const int *arr, int size, int member)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        if (arr [i] == member)
+            return 1;
+    }
+
+    return 0;
+}
+
+static int atfft_unique_integers (const int *in, int *unique, int size)
+{
+    int i = 0;
+    int nUnique = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        if (!atfft_integer_is_in_array (unique, nUnique, in [i]))
+            unique [nUnique++] = in [i];
+    }
+
+    return nUnique;
+}
+
+static void atfft_populate_rader (int radix,
+                                  const int *radices,
+                                  struct atfft_dft_rader **raders,
+                                  enum atfft_direction direction,
+                                  enum atfft_format format)
+{
+    struct atfft_dft_rader *rader = atfft_dft_rader_create (radix, direction, format);
+    int i = 0;
+
+    for (i = 0; i < MAX_RADICES; ++i)
+    {
+        if (radices [i] == radix)
+            raders [i] = rader;
+    }
+}
+
+static void atfft_init_raders (const int *radices,
+                               struct atfft_dft_rader **raders,
+                               enum atfft_direction direction,
+                               enum atfft_format format)
+{
+    int uniqueRadices [MAX_RADICES];
+    int nUnique = atfft_unique_integers (radices, uniqueRadices, MAX_RADICES);
+    int i = 0;
+
+    for (i = 0; i < nUnique; ++i)
+    {
+        int radix = uniqueRadices [i];
+
+        if (radix <= ATFFT_RADER_THRESHOLD)
+            continue;
+        else
+            atfft_populate_rader (radix, radices, raders, direction, format);
+    }
+}
+
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft_dft *fft;
@@ -143,6 +215,9 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     if (!fft->workSpace)
         goto failed;
 
+    /* create any necessary Rader's algorithm strucs */
+    atfft_init_raders (fft->radices, fft->raders, direction, format);
+
     return fft;
 
 failed:
@@ -154,6 +229,13 @@ void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
     {
+        int i = 0;
+
+        for (i = 0; i < sizeof (fft->raders) / sizeof (*(fft->raders)); ++i)
+        {
+            atfft_dft_rader_destroy (fft->raders [i]);
+        }
+
         free (fft->workSpace);
         free (fft->tFactors);
         free (fft);
@@ -381,12 +463,13 @@ static inline void atfft_butterfly_rader (const struct atfft_dft *fft,
                                           atfft_complex *out,
                                           int subSize,
                                           int stride,
-                                          int radix)
+                                          int radix,
+                                          struct atfft_dft_rader *rader)
 {
     int i = 0;
     int r = 0;
 
-    // perform a rader dft here
+    atfft_dft_rader_complex_transform (rader, out, out, subSize);
 
     for (i = stride; i < subSize * stride; i += stride)
     {
@@ -402,7 +485,7 @@ static inline void atfft_butterfly_rader (const struct atfft_dft *fft,
             n += i;
         }
 
-        // perform a rader dft here
+        atfft_dft_rader_complex_transform (rader, out, out, subSize);
     }
 }
 
@@ -410,7 +493,8 @@ void atfft_butterfly (const struct atfft_dft *fft,
                       atfft_complex *out,
                       int subSize,
                       int stride,
-                      int radix)
+                      int radix,
+                      struct atfft_dft_rader *rader)
 {
     switch (radix)
     {
@@ -424,7 +508,10 @@ void atfft_butterfly (const struct atfft_dft *fft,
             atfft_butterfly_4 (fft, out, subSize, stride);
             break;
         default:
-            atfft_butterfly_n (out, fft->size, subSize, stride, radix, fft->tFactors, fft->workSpace);
+            if (rader)
+                atfft_butterfly_rader (fft, out, subSize, stride, radix, rader);
+            else
+                atfft_butterfly_n (out, fft->size, subSize, stride, radix, fft->tFactors, fft->workSpace);
     }
 }
 
@@ -433,7 +520,8 @@ static void atfft_compute_dft_complex (const struct atfft_dft *fft,
                                        atfft_complex *out,
                                        int subSize,
                                        int stride,
-                                       const int *radices)
+                                       const int *radices,
+                                       struct atfft_dft_rader **raders)
 {
     /* Get the radix, R, for this stage of the transform.
      * We will split the transform into R sub-transforms
@@ -457,7 +545,8 @@ static void atfft_compute_dft_complex (const struct atfft_dft *fft,
                                        out + r * nextSize,
                                        nextSize,
                                        stride * R,
-                                       radices);
+                                       radices,
+                                       raders + 1);
         }
     }
     else
@@ -475,7 +564,7 @@ static void atfft_compute_dft_complex (const struct atfft_dft *fft,
     }
 
     /* Apply butterfly for this stage of the transform. */
-    atfft_butterfly (fft, out, nextSize, stride, R);
+    atfft_butterfly (fft, out, nextSize, stride, R, *raders);
 }
 
 void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
@@ -488,7 +577,8 @@ void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atff
                                out,
                                fft->size,
                                1,
-                               fft->radices);
+                               fft->radices,
+                               fft->raders);
 }
 
 void atfft_dft_calculate_bin_real (struct atfft_dft *fft,

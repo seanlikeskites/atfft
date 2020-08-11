@@ -202,7 +202,9 @@ static int atfft_init_rader_convolution_dft (int size,
     return 0;
 }
 
-struct atfft_dft_rader* atfft_dft_rader_create (int size, enum atfft_direction direction, enum atfft_format format)
+struct atfft_dft_rader* atfft_dft_rader_create (int size,
+                                                enum atfft_direction direction,
+                                                enum atfft_format format)
 {
     struct atfft_dft_rader *fft;
 
@@ -307,7 +309,10 @@ static void atfft_rader_permute_output (int *perm,
     }
 }
 
-void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft, atfft_complex *in, atfft_complex *out)
+void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
+                                        atfft_complex *in,
+                                        atfft_complex *out,
+                                        int stride)
 {
     int i = 0;
     atfft_complex in0, out0;
@@ -318,7 +323,7 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft, atfft_compl
     atfft_rader_permute_input (fft->perm1, 
                                fft->raderSize,
                                in,
-                               1,
+                               stride,
                                fft->sig);
 
     atfft_dft_complex_transform (fft->convForward, fft->sig, fft->sigDft);
@@ -339,7 +344,7 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft, atfft_compl
                                 fft->raderSize,
                                 fft->conv,
                                 out,
-                                1);
+                                stride);
 
     atfft_copy_complex (out0, out[0]);
 }

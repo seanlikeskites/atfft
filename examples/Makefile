@@ -1,5 +1,5 @@
 CC = gcc -g
-CFLAGS = -Wall
+CFLAGS = -Wall -O3
 LIBS = -lm
 INCLUDEDIRS = -I../include
 DFT_SOURCES = ../src/atfft_shared.c
@@ -66,8 +66,8 @@ else ifeq (OOURA, $(IMPL))
 	DCT_SOURCES += ../src/dct/atfft_dct_ooura.c ../src/ooura/fft4g.c
 
 else
-	DFT_SOURCES += ../src/dft/atfft_dft.c
-	DCT_SOURCES += ../src/dct/atfft_dct.c ../src/dft/atfft_dft.c
+	DFT_SOURCES += ../src/dft/atfft_dft.c ../src/dft/atfft_dft_rader.c
+	DCT_SOURCES += ../src/dct/atfft_dct.c ../src/dft/atfft_dft.c ../src/dft/atfft_dft_rader.c
 endif
 
 all: $(PROGRAMS)

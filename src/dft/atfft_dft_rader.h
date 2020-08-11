@@ -19,9 +19,17 @@ extern "C"
 #include <atfft/atfft_shared.h>
 
 struct atfft_dft_rader;
-struct atfft_dft_rader* atfft_dft_rader_create (int size, enum atfft_direction direction, enum atfft_format format);
+
+struct atfft_dft_rader* atfft_dft_rader_create (int size,
+                                                enum atfft_direction direction,
+                                                enum atfft_format format);
+
 void atfft_dft_rader_destroy (struct atfft_dft_rader *fft);
-void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft, atfft_complex *in, atfft_complex *out);
+
+void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
+                                        atfft_complex *in,
+                                        atfft_complex *out,
+                                        int stride);
 
 #ifdef __cplusplus
 }
