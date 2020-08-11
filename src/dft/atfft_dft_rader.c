@@ -180,8 +180,8 @@ static int atfft_init_rader_convolution_dft (int size,
     for (i = 0; i < permSize; ++i)
     {
         atfft_sample x = 2.0 * perm [i] * M_PI / size;
-        ATFFT_REAL (tFactors [i]) = cos (x);
-        ATFFT_IMAG (tFactors [i]) = sinFactor * sin (x);
+        ATFFT_REAL (tFactors [i]) = cos (x) / convSize;
+        ATFFT_IMAG (tFactors [i]) = sinFactor * sin (x) / convSize;
     }
 
     /* replicate samples for circular convolution */
@@ -334,11 +334,10 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
         atfft_sum_complex (out0, fft->sig [i], out0);
     }
 
-    ATFFT_REAL (fft->sigDft [0]) += ATFFT_REAL (in0) * fft->convSize;
-    ATFFT_IMAG (fft->sigDft [0]) += ATFFT_IMAG (in0) * fft->convSize;
+    ATFFT_REAL (fft->sigDft [0]) += ATFFT_REAL (in0);
+    ATFFT_IMAG (fft->sigDft [0]) += ATFFT_IMAG (in0);
 
     atfft_dft_complex_transform (fft->convBackward, fft->sigDft, fft->conv);
-    atfft_normalise_complex (fft->conv, fft->convSize); /* can probably move this into the setup */
 
     atfft_rader_permute_output (fft->perm2, 
                                 fft->raderSize,
