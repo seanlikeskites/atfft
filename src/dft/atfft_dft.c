@@ -25,6 +25,8 @@ extern void atfft_difference_complex (const atfft_complex a,
 extern void atfft_product_complex (const atfft_complex a,
                                    const atfft_complex b,
                                    atfft_complex p);
+extern void atfft_multiply_by_complex (atfft_complex a,
+                                       const atfft_complex b);
 
 /* Because an int is used to represent the size of the transform
  * valid sizes are anywhere between 0 and 2^(n - 1), where n is

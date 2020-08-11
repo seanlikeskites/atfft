@@ -16,6 +16,8 @@
 #include "atfft_dft_rader.h"
 #include "../atfft_internal.h"
 
+#include <stdio.h>
+
 static int atfft_mod (int a, int n)
 {
     int r = a % n;
@@ -309,6 +311,12 @@ static void atfft_rader_permute_output (int *perm,
 
 void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft, atfft_complex *in, atfft_complex *out)
 {
+    int i = 0;
+    atfft_complex in0, out0;
+
+    atfft_copy_complex (in [0], in0);
+    atfft_copy_complex (in0, out0);
+
     atfft_rader_permute_input (fft->perm1, 
                                fft->raderSize,
                                in,
@@ -317,11 +325,23 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft, atfft_compl
 
     atfft_dft_complex_transform (fft->convForward, fft->sig, fft->sigDft);
 
-    atfft_dft_complex_transform (fft->convBackward, fft->sigDft, fft->conv);
+    for (i = 0; i < fft->convSize; ++i)
+    {
+        atfft_multiply_by_complex (fft->sigDft [i], fft->convDft [i]);
+        atfft_sum_complex (out0, fft->sig [i], out0);
+    }
 
-    atfft_rader_permute_output (fft->perm1, 
+    ATFFT_REAL (fft->sigDft [0]) += ATFFT_REAL (in0) * fft->convSize;
+    ATFFT_IMAG (fft->sigDft [0]) += ATFFT_IMAG (in0) * fft->convSize;
+
+    atfft_dft_complex_transform (fft->convBackward, fft->sigDft, fft->conv);
+    atfft_normalise_complex (fft->conv, fft->convSize); /* can probably move this into the setup */
+
+    atfft_rader_permute_output (fft->perm2, 
                                 fft->raderSize,
                                 fft->conv,
                                 out,
                                 1);
+
+    atfft_copy_complex (out0, out[0]);
 }

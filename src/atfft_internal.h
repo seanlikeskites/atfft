@@ -46,4 +46,16 @@ inline void atfft_product_complex (const atfft_complex a,
                      ATFFT_IMAG (a) * ATFFT_REAL (b);
 }
 
+inline void atfft_multiply_by_complex (atfft_complex a,
+                                       const atfft_complex b)
+{
+    atfft_sample temp;
+    temp = ATFFT_REAL (a);
+
+    ATFFT_REAL (a) = temp * ATFFT_REAL (b) -
+                     ATFFT_IMAG (a) * ATFFT_IMAG (b);
+    ATFFT_IMAG (a) = temp * ATFFT_IMAG (b) +
+                     ATFFT_IMAG (a) * ATFFT_REAL (b);
+}
+
 #endif /* ATFFT_INTERNAL_H_INCLUDED */
