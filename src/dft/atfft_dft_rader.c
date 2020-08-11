@@ -136,13 +136,14 @@ static int atfft_rader_convolution_fft_size (int raderSize)
 struct atfft_dft_rader
 {
     int size;
+    int raderSize;
     enum atfft_direction direction;
     enum atfft_format format;
     int pRoot1, pRoot2;
     int convSize;
     struct atfft_dft *convForward, *convBackward;
     int *perm1, *perm2;
-    atfft_complex *sig, *sigDft, *convDft;
+    atfft_complex *sig, *sigDft, *conv, *convDft;
 };
 
 static void atfft_init_rader_permutations (int *perm, int size, int pRoot)
@@ -204,7 +205,6 @@ static int atfft_init_rader_convolution_dft (int size,
 struct atfft_dft_rader* atfft_dft_rader_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft_dft_rader *fft;
-    int raderSize = size - 1;
 
     /* we can only find primitive roots for prime numbers */
     assert (atfft_is_prime (size));
@@ -213,13 +213,14 @@ struct atfft_dft_rader* atfft_dft_rader_create (int size, enum atfft_direction d
         return NULL;
 
     fft->size = size;
+    fft->raderSize = size - 1;
     fft->direction = direction;
     fft->format = format;
     fft->pRoot1 = atfft_primitive_root_mod_n (size);
     fft->pRoot2 = atfft_mult_inverse_mod_n (fft->pRoot1, size);
 
     /* allocate some regular dft objects for performing the convolution */
-    fft->convSize = atfft_rader_convolution_fft_size (raderSize);
+    fft->convSize = atfft_rader_convolution_fft_size (fft->raderSize);
     fft->convForward = atfft_dft_create (fft->convSize, ATFFT_FORWARD, ATFFT_COMPLEX);
     fft->convBackward = atfft_dft_create (fft->convSize, ATFFT_BACKWARD, ATFFT_COMPLEX);
 
@@ -227,8 +228,8 @@ struct atfft_dft_rader* atfft_dft_rader_create (int size, enum atfft_direction d
         goto failed;
 
     /* generate permutation indices */
-    fft->perm1 = malloc (raderSize * sizeof (*(fft->perm1)));
-    fft->perm2 = malloc (raderSize * sizeof (*(fft->perm2)));
+    fft->perm1 = malloc (fft->raderSize * sizeof (*(fft->perm1)));
+    fft->perm2 = malloc (fft->raderSize * sizeof (*(fft->perm2)));
 
     if (!(fft->perm1 && fft->perm2))
         goto failed;
@@ -239,6 +240,7 @@ struct atfft_dft_rader* atfft_dft_rader_create (int size, enum atfft_direction d
     /* allocate work space for performing the dft */
     fft->sig = calloc (fft->convSize, sizeof (*(fft->sig))); /* set up for zero padding */
     fft->sigDft = malloc (fft->convSize * sizeof (*(fft->sigDft)));
+    fft->conv = malloc (fft->convSize * sizeof (*(fft->conv)));
     fft->convDft = malloc (fft->convSize * sizeof (*(fft->convDft)));
 
     if (!(fft->sig && fft->sigDft && fft->convDft))
@@ -250,7 +252,7 @@ struct atfft_dft_rader* atfft_dft_rader_create (int size, enum atfft_direction d
                                           fft->convDft,
                                           fft->convSize,
                                           fft->perm2,
-                                          raderSize,
+                                          fft->raderSize,
                                           fft->convForward) < 0)
         goto failed;
 
@@ -266,6 +268,7 @@ void atfft_dft_rader_destroy (struct atfft_dft_rader *fft)
     if (fft)
     {
         free (fft->convDft);
+        free (fft->conv);
         free (fft->sigDft);
         free (fft->sig);
         free (fft->perm2);
@@ -274,4 +277,51 @@ void atfft_dft_rader_destroy (struct atfft_dft_rader *fft)
         atfft_dft_destroy (fft->convForward);
         free (fft);
     }
+}
+
+static void atfft_rader_permute_input (int *perm,
+                                       int size,
+                                       atfft_complex *in, 
+                                       int inStride,
+                                       atfft_complex *out)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        atfft_copy_complex (in [inStride * perm [i]], out [i]);
+    }
+}
+
+static void atfft_rader_permute_output (int *perm,
+                                        int size,
+                                        atfft_complex *in, 
+                                        atfft_complex *out,
+                                        int outStride)
+{
+    int i = 0;
+
+    for (i = 0; i < size; ++i)
+    {
+        atfft_copy_complex (in [i], out [outStride * perm [i]]);
+    }
+}
+
+void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft, atfft_complex *in, atfft_complex *out)
+{
+    atfft_rader_permute_input (fft->perm1, 
+                               fft->raderSize,
+                               in,
+                               1,
+                               fft->sig);
+
+    atfft_dft_complex_transform (fft->convForward, fft->sig, fft->sigDft);
+
+    atfft_dft_complex_transform (fft->convBackward, fft->sigDft, fft->conv);
+
+    atfft_rader_permute_output (fft->perm1, 
+                                fft->raderSize,
+                                fft->conv,
+                                out,
+                                1);
 }
