@@ -58,7 +58,9 @@ struct atfft_dft
     atfft_complex *workSpace;
 
     /* sub fft objects for Rader's algorithm */
-    struct atfft_dft_rader *raders [MAX_RADICES];
+    int nRaders;
+    struct atfft_dft_rader **raders;
+    struct atfft_dft_rader *radixRaders [MAX_RADICES];
 };
 
 static void atfft_init_twiddle_factors (atfft_complex *factors,
@@ -135,54 +137,100 @@ static int atfft_integer_is_in_array (const int *arr, int size, int member)
     return 0;
 }
 
-static int atfft_unique_integers (const int *in, int *unique, int size)
+static int atfft_rader_radices (const int *radices, int *raderRadices, int size)
 {
     int i = 0;
-    int nUnique = 0;
+    int nRaders = 0;
 
     for (i = 0; i < size; ++i)
     {
-        if (!atfft_integer_is_in_array (unique, nUnique, in [i]))
-            unique [nUnique++] = in [i];
+        if (radices [i] > ATFFT_RADER_THRESHOLD && 
+            !atfft_integer_is_in_array (raderRadices, nRaders, radices [i]))
+            raderRadices [nRaders++] = radices [i];
     }
 
-    return nUnique;
+    return nRaders;
 }
 
-static void atfft_populate_rader (int radix,
-                                  const int *radices,
-                                  struct atfft_dft_rader **raders,
-                                  enum atfft_direction direction,
-                                  enum atfft_format format)
+static struct atfft_dft_rader* atfft_populate_rader (int radix,
+                                                     const int *radices,
+                                                     struct atfft_dft_rader **radixRaders,
+                                                     enum atfft_direction direction,
+                                                     enum atfft_format format)
 {
     struct atfft_dft_rader *rader = atfft_dft_rader_create (radix, direction, format);
     int i = 0;
 
+    if (!rader)
+        return NULL;
+
     for (i = 0; i < MAX_RADICES; ++i)
     {
         if (radices [i] == radix)
-            raders [i] = rader;
+            radixRaders [i] = rader;
+    }
+
+    return rader;
+}
+
+static void atfft_free_raders (struct atfft_dft_rader **raders,
+                               int size)
+{
+    if (raders)
+    {
+        int i = 0;
+
+        for (i = 0; i < size; ++i)
+        {
+            atfft_dft_rader_destroy (raders [i]);
+        }
+
+        free (raders);
     }
 }
 
-static void atfft_init_raders (const int *radices,
-                               struct atfft_dft_rader **raders,
-                               enum atfft_direction direction,
-                               enum atfft_format format)
+static struct atfft_dft_rader** atfft_init_raders (const int *radices,
+                                                   int *nRaders,
+                                                   struct atfft_dft_rader **radixRaders,
+                                                   enum atfft_direction direction,
+                                                   enum atfft_format format)
 {
-    int uniqueRadices [MAX_RADICES];
-    int nUnique = atfft_unique_integers (radices, uniqueRadices, MAX_RADICES);
+    int raderRadices [MAX_RADICES];
+    struct atfft_dft_rader **raders = NULL;
     int i = 0;
 
-    for (i = 0; i < nUnique; ++i)
-    {
-        int radix = uniqueRadices [i];
+    /* get unique radices for which Rader's algorithm is required */
+    *nRaders = atfft_rader_radices (radices, raderRadices, MAX_RADICES);
 
-        if (radix <= ATFFT_RADER_THRESHOLD)
-            continue;
-        else
-            atfft_populate_rader (radix, radices, raders, direction, format);
+    if (*nRaders == 0)
+        return NULL;
+
+    /* allocate some space for them */
+    raders = calloc (*nRaders, sizeof (*raders));
+
+    if (!raders)
+        return NULL;
+
+    /* create the rader dft structs */
+    for (i = 0; i < *nRaders; ++i)
+    {
+        struct atfft_dft_rader *rader = atfft_populate_rader (raderRadices [i],
+                                                              radices,
+                                                              radixRaders,
+                                                              direction,
+                                                              format);
+
+        if (!rader)
+            goto failed;
+
+        raders [i] = rader;
     }
+
+    return raders;
+
+failed:
+    atfft_free_raders (raders, *nRaders);
+    return NULL;
 }
 
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
@@ -216,7 +264,14 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
         goto failed;
 
     /* create any necessary Rader's algorithm strucs */
-    atfft_init_raders (fft->radices, fft->raders, direction, format);
+    fft->raders = atfft_init_raders (fft->radices,
+                                     &(fft->nRaders),
+                                     fft->radixRaders,
+                                     direction,
+                                     format);
+
+    if (fft->nRaders > 0 && !fft->raders)
+        goto failed;
 
     return fft;
 
@@ -229,13 +284,7 @@ void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
     {
-        int i = 0;
-
-        for (i = 0; i < sizeof (fft->raders) / sizeof (*(fft->raders)); ++i)
-        {
-            atfft_dft_rader_destroy (fft->raders [i]);
-        }
-
+        atfft_free_raders (fft->raders, fft->nRaders);
         free (fft->workSpace);
         free (fft->tFactors);
         free (fft);
@@ -578,7 +627,7 @@ void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atff
                                fft->size,
                                1,
                                fft->radices,
-                               fft->raders);
+                               fft->radixRaders);
 }
 
 void atfft_dft_calculate_bin_real (struct atfft_dft *fft,
