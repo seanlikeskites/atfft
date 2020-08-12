@@ -13,49 +13,66 @@
 
 #include <atfft/atfft_shared.h>
 
-/* Some inline functions for doing calculations with complex numbers */
-inline void atfft_copy_complex (const atfft_complex x, atfft_complex y)
-{
-    ATFFT_REAL (y) = ATFFT_REAL (x);
-    ATFFT_IMAG (y) = ATFFT_IMAG (x);
-}
+/**
+ * Copy the complex value x into the complex value y.
+ */
+#define ATFFT_COPY_COMPLEX(x, y) \
+    do \
+    { \
+        ATFFT_REAL (y) = ATFFT_REAL (x); \
+        ATFFT_IMAG (y) = ATFFT_IMAG (x); \
+    } \
+    while (0)
 
-inline void atfft_sum_complex (const atfft_complex a,
-                               const atfft_complex b,
-                               atfft_complex s)
-{
-    ATFFT_REAL (s) = ATFFT_REAL (a) + ATFFT_REAL (b);
-    ATFFT_IMAG (s) = ATFFT_IMAG (a) + ATFFT_IMAG (b);
-}
+/**
+ * Sum two complex numbers: s = a + b
+ */
+#define ATFFT_SUM_COMPLEX(a, b, s) \
+    do \
+    { \
+        ATFFT_REAL (s) = ATFFT_REAL (a) + ATFFT_REAL (b); \
+        ATFFT_IMAG (s) = ATFFT_IMAG (a) + ATFFT_IMAG (b); \
+    } \
+    while (0)
 
-inline void atfft_difference_complex (const atfft_complex a,
-                                      const atfft_complex b,
-                                      atfft_complex d)
-{
-    ATFFT_REAL (d) = ATFFT_REAL (a) - ATFFT_REAL (b);
-    ATFFT_IMAG (d) = ATFFT_IMAG (a) - ATFFT_IMAG (b);
-}
+/**
+ * Take the difference of two complex numbers: d = a - b
+ */
+#define ATFFT_DIFFERENCE_COMPLEX(a, b, d) \
+    do \
+    { \
+        ATFFT_REAL (d) = ATFFT_REAL (a) - ATFFT_REAL (b); \
+        ATFFT_IMAG (d) = ATFFT_IMAG (a) - ATFFT_IMAG (b); \
+    } \
+    while (0)
 
-inline void atfft_product_complex (const atfft_complex a,
-                                   const atfft_complex b,
-                                   atfft_complex p)
-{
-    ATFFT_REAL (p) = ATFFT_REAL (a) * ATFFT_REAL (b) -
-                     ATFFT_IMAG (a) * ATFFT_IMAG (b);
-    ATFFT_IMAG (p) = ATFFT_REAL (a) * ATFFT_IMAG (b) +
-                     ATFFT_IMAG (a) * ATFFT_REAL (b);
-}
+/**
+ * Find the product of two complex numbers: p = ab
+ */
+#define ATFFT_PRODUCT_COMPLEX(a, b, p) \
+    do \
+    { \
+        ATFFT_REAL (p) = ATFFT_REAL (a) * ATFFT_REAL (b) - \
+                         ATFFT_IMAG (a) * ATFFT_IMAG (b); \
+        ATFFT_IMAG (p) = ATFFT_REAL (a) * ATFFT_IMAG (b) + \
+                         ATFFT_IMAG (a) * ATFFT_REAL (b); \
+    } \
+    while (0)
 
-inline void atfft_multiply_by_complex (atfft_complex a,
-                                       const atfft_complex b)
-{
-    atfft_sample temp;
-    temp = ATFFT_REAL (a);
-
-    ATFFT_REAL (a) = temp * ATFFT_REAL (b) -
-                     ATFFT_IMAG (a) * ATFFT_IMAG (b);
-    ATFFT_IMAG (a) = temp * ATFFT_IMAG (b) +
-                     ATFFT_IMAG (a) * ATFFT_REAL (b);
-}
+/**
+ * Multiply a complex variable by another: a *= b
+ */
+#define ATFFT_MULTIPLY_BY_COMPLEX(a, b) \
+    do \
+    { \
+        atfft_sample temp; \
+        temp = ATFFT_REAL (a); \
+        \
+        ATFFT_REAL (a) = temp * ATFFT_REAL (b) - \
+                         ATFFT_IMAG (a) * ATFFT_IMAG (b); \
+        ATFFT_IMAG (a) = temp * ATFFT_IMAG (b) + \
+                         ATFFT_IMAG (a) * ATFFT_REAL (b); \
+    } \
+    while (0)
 
 #endif /* ATFFT_INTERNAL_H_INCLUDED */
