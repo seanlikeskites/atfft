@@ -87,7 +87,9 @@ static int atfft_init_radices (int size, int *radices)
     int maxR = 2;
     int sqrtSize = (int) sqrt ((double) size);
 
-    /* factor out 2s, then other primes */
+    /* Factor out specific even radices first,
+     * then any other prime factors.
+     */
     do
     {
         while (size % r)
@@ -277,8 +279,8 @@ void atfft_dft_destroy (struct atfft_dft *fft)
     }
 }
 
-static inline void atfft_dft_2 (atfft_complex *out,
-                                int subSize)
+static void atfft_dft_2 (atfft_complex *out,
+                         int subSize)
 {
     /* The start of each block in the output DFT */
     atfft_complex *bin1 = out;
@@ -290,10 +292,10 @@ static inline void atfft_dft_2 (atfft_complex *out,
     ATFFT_SUM_COMPLEX (*bin1, t, *bin1);
 }
 
-static inline void atfft_dft_3 (atfft_complex *out,
-                                int subSize,
-                                int stride,
-                                atfft_complex *tFactors)
+static void atfft_dft_3 (atfft_complex *out,
+                         int subSize,
+                         int stride,
+                         atfft_complex *tFactors)
 {
     atfft_complex *bins [3];
     bins [0] = out;
@@ -318,8 +320,8 @@ static inline void atfft_dft_3 (atfft_complex *out,
     ATFFT_IMAG (*bins [2]) = ATFFT_IMAG (ts [1]) - ATFFT_REAL (ts [2]);
 }
 
-static inline void atfft_dft_4 (atfft_complex **bins,
-                                enum atfft_direction direction)
+static void atfft_dft_4 (atfft_complex **bins,
+                         enum atfft_direction direction)
 {
     atfft_complex ts [4];
 
@@ -410,10 +412,10 @@ static void atfft_butterfly_n (atfft_complex *out,
     }
 }
 
-static inline void atfft_butterfly_2 (const struct atfft_dft *fft,
-                                      atfft_complex *out,
-                                      int subSize,
-                                      int stride)
+static void atfft_butterfly_2 (const struct atfft_dft *fft,
+                               atfft_complex *out,
+                               int subSize,
+                               int stride)
 {
     int i = subSize;
     int t = 0;
@@ -430,10 +432,10 @@ static inline void atfft_butterfly_2 (const struct atfft_dft *fft,
     }
 }
 
-static inline void atfft_butterfly_3 (const struct atfft_dft *fft,
-                                      atfft_complex *out,
-                                      int subSize,
-                                      int stride)
+static void atfft_butterfly_3 (const struct atfft_dft *fft,
+                               atfft_complex *out,
+                               int subSize,
+                               int stride)
 {
     int radix = 3;
     int i = 0;
@@ -459,10 +461,10 @@ static inline void atfft_butterfly_3 (const struct atfft_dft *fft,
     }
 }
 
-static inline void atfft_butterfly_4 (const struct atfft_dft *fft,
-                                      atfft_complex *out,
-                                      int subSize,
-                                      int stride)
+static void atfft_butterfly_4 (const struct atfft_dft *fft,
+                               atfft_complex *out,
+                               int subSize,
+                               int stride)
 {
     int i = subSize;
     int radix = 4;
@@ -494,12 +496,12 @@ static inline void atfft_butterfly_4 (const struct atfft_dft *fft,
     }
 }
 
-static inline void atfft_butterfly_rader (const struct atfft_dft *fft,
-                                          atfft_complex *out,
-                                          int subSize,
-                                          int stride,
-                                          int radix,
-                                          struct atfft_dft_rader *rader)
+static void atfft_butterfly_rader (const struct atfft_dft *fft,
+                                   atfft_complex *out,
+                                   int subSize,
+                                   int stride,
+                                   int radix,
+                                   struct atfft_dft_rader *rader)
 {
     int i = 0;
     int r = 0;
@@ -524,12 +526,12 @@ static inline void atfft_butterfly_rader (const struct atfft_dft *fft,
     }
 }
 
-void atfft_butterfly (const struct atfft_dft *fft,
-                      atfft_complex *out,
-                      int subSize,
-                      int stride,
-                      int radix,
-                      struct atfft_dft_rader *rader)
+static void atfft_butterfly (const struct atfft_dft *fft,
+                             atfft_complex *out,
+                             int subSize,
+                             int stride,
+                             int radix,
+                             struct atfft_dft_rader *rader)
 {
     switch (radix)
     {
