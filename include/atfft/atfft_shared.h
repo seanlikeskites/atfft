@@ -93,9 +93,9 @@ int atfft_is_power_of_2 (unsigned int x);
  *
  * @param data the signal to scale (should contain size elements)
  * @param size the length of the signal
- * @param scaleFactor the factor to scale by
+ * @param scale_factor the factor to scale by
  */
-void atfft_scale_real (atfft_sample *data, int size, atfft_sample scaleFactor);
+void atfft_scale_real (atfft_sample *data, int size, atfft_sample scale_factor);
 
 /**
  * Normalise a real DFT output.
@@ -114,9 +114,9 @@ void atfft_normalise_real (atfft_sample *data, int size);
  *
  * @param data the signal to scale (should contain size elements)
  * @param size the length of the signal
- * @param scaleFactor the factor to scale by
+ * @param scale_factor the factor to scale by
  */
-void atfft_scale_complex (atfft_complex *data, int size, atfft_sample scaleFactor);
+void atfft_scale_complex (atfft_complex *data, int size, atfft_sample scale_factor);
 
 /**
  * Normalise a complex DFT output.

@@ -24,9 +24,7 @@ struct atfft_dct
 
 void atfft_dct_init_sins (atfft_sample *cosins, atfft_sample *sins, int size)
 {
-    int i = 0;
-
-    for (i = 0; i < size; ++i)
+    for (int i = 0; i < size; ++i)
     {
         atfft_sample x = i * M_PI / (2.0 * size);
         cosins [i] = cos (x);
@@ -101,9 +99,7 @@ void atfft_dct_rearrange_forward (const atfft_sample *in, atfft_complex *out, in
 
 void atfft_dct_scale_forward (struct atfft_dct *dct, atfft_sample *out)
 {
-    int i = 0;
-
-    for (i = 0; i < dct->size; ++i)
+    for (int i = 0; i < dct->size; ++i)
     {
         atfft_sample cosComponent = ATFFT_REAL (dct->out [i]) * dct->cosins [i];
         atfft_sample sinComponent = ATFFT_IMAG (dct->out [i]) * dct->sins [i];
@@ -120,12 +116,10 @@ void atfft_dct_forward_transform (struct atfft_dct *dct, const atfft_sample *in,
 
 void atfft_dct_scale_backward (struct atfft_dct *dct, const atfft_sample *in)
 {
-    int i = 0;
-
     ATFFT_REAL (dct->in [0]) = in [0];
     ATFFT_IMAG (dct->in [0]) = 0.0;
 
-    for (i = 1; i < dct->size; ++i)
+    for (int i = 1; i < dct->size; ++i)
     {
         atfft_sample realPart = in [i];
         atfft_sample imagPart = -in [dct->size - i];
