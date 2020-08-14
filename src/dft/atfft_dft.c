@@ -39,6 +39,7 @@ struct atfft_dft
 
     /* twiddle factors */
     atfft_complex *tFactors;
+    atfft_complex *tFactorsStages [MAX_RADICES];
 
     /* working space for butterflies */
     atfft_complex *workSpace;
@@ -67,6 +68,56 @@ static void atfft_init_twiddle_factors (atfft_complex *factors,
     }
 }
 
+static void atfft_free_twiddle_factors (atfft_complex **factors)
+{
+    if (factors)
+    {
+        int i = 0;
+
+        for (i = 0; i < MAX_RADICES; ++i)
+        {
+            free (factors [i]);
+        }
+    }
+}
+
+static void atfft_init_stage_twiddle_factors (atfft_complex **factors,
+                                              int *radices,
+                                              int *subSizes,
+                                              int nRadices,
+                                              enum atfft_direction direction)
+{
+    int i = 0;
+    atfft_sample sinFactor = -1.0;
+
+    if (direction == ATFFT_BACKWARD)
+        sinFactor = 1.0;
+
+    for (i = 0; i < nRadices; ++i)
+    {
+        int radix = radices [i];
+        int subSize = subSizes [i];
+        int size = radix * subSize;
+        int nFactors = size - subSize;
+        atfft_complex *f = malloc (nFactors * sizeof (*f));
+        int n = 0;
+
+        for (int k = 0; k < subSize; ++k)
+        {
+            for (int r = 1; r < radix; ++r)
+            {
+                atfft_sample x = 2.0 * k * r * M_PI / size;
+                ATFFT_REAL (f [n]) = cos (x);
+                ATFFT_IMAG (f [n]) = sinFactor * sin (x);
+
+                ++n;
+            }
+        }
+
+        factors [i] = f;
+    }
+}
+
 static int atfft_next_radix (int r)
 {
     switch (r)
@@ -80,12 +131,14 @@ static int atfft_next_radix (int r)
     }
 }
 
-static int atfft_init_radices (int size, int *radices)
+static int atfft_init_radices (int size, int *radices, int *subSizes, int *maxR)
 {
     /* current radix */
     int r = 4;
-    int maxR = 2;
+    int nRadices = 0;
     int sqrtSize = (int) sqrt ((double) size);
+
+    *maxR = 2;
 
     /* Factor out specific even radices first,
      * then any other prime factors.
@@ -101,15 +154,19 @@ static int atfft_init_radices (int size, int *radices)
                 r = size;
         }
 
-        *radices++ = r;
         size /= r;
 
-        if (r > maxR)
-            maxR = r;
+        radices [nRadices] = r;
+        subSizes [nRadices] = size;
+
+        if (r > *maxR)
+            *maxR = r;
+
+        ++nRadices;
     }
     while (size > 1);
 
-    return maxR;
+    return nRadices;
 }
 
 static int atfft_integer_is_in_array (const int *arr, int size, int member)
@@ -225,6 +282,8 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
 {
     struct atfft_dft *fft;
     int maxR = 0;
+    int nRadices = 0;
+    int subSizes [MAX_RADICES];
 
     if (!(fft = calloc (1, sizeof (*fft))))
         return NULL;
@@ -233,17 +292,22 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     fft->direction = direction;
     fft->format = format;
 
+    /* calculate radices */
+    nRadices = atfft_init_radices (size, fft->radices, subSizes, &maxR);
+
     /* calculate twiddle factors */
     fft->tFactors = malloc (size * sizeof (*(fft->tFactors)));
+    atfft_init_stage_twiddle_factors (fft->tFactorsStages,
+                                      fft->radices,
+                                      subSizes,
+                                      nRadices,
+                                      direction);
 
     /* clean up on failure */
     if (!fft->tFactors)
         goto failed;
     else
         atfft_init_twiddle_factors (fft->tFactors, size, direction);
-
-    /* calculate radices */
-    maxR = atfft_init_radices (size, fft->radices);
 
     /* allocate some working space */
     fft->workSpace = malloc (maxR * sizeof (*(fft->workSpace)));
@@ -274,6 +338,7 @@ void atfft_dft_destroy (struct atfft_dft *fft)
     {
         atfft_free_raders (fft->raders, fft->nRaders);
         free (fft->workSpace);
+        atfft_free_twiddle_factors (fft->tFactorsStages);
         free (fft->tFactors);
         free (fft);
     }
@@ -412,117 +477,110 @@ static void atfft_butterfly_n (atfft_complex *out,
     }
 }
 
-static void atfft_butterfly_2 (const struct atfft_dft *fft,
-                               atfft_complex *out,
+static void atfft_butterfly_2 (atfft_complex *out,
                                int subSize,
-                               int stride)
+                               atfft_complex *tFactors)
 {
     int i = subSize;
     int t = 0;
 
-    atfft_dft_2 (out, subSize);
-
-    while (--i)
+    while (i--)
     {
-        ++out;
-        t += stride;
-
-        ATFFT_MULTIPLY_BY_COMPLEX (out [subSize], fft->tFactors [t]);
+        ATFFT_MULTIPLY_BY_COMPLEX (out [subSize], tFactors [t]);
         atfft_dft_2 (out, subSize);
+
+        ++out;
+        ++t;
     }
 }
 
 static void atfft_butterfly_3 (const struct atfft_dft *fft,
                                atfft_complex *out,
                                int subSize,
-                               int stride)
+                               int stride,
+                               atfft_complex *tFactors)
 {
+    int i = subSize;
     int radix = 3;
-    int i = 0;
-    int r = 0;
+    int t = 0;
 
-    atfft_dft_3 (out, subSize, stride, fft->tFactors);
-
-    for (i = stride; i < subSize * stride; i += stride)
+    while (i--)
     {
+        int n = 0;
         int m = subSize;
-        int n = i;
-        
-        ++out;
 
-        for (r = 1; r < radix; ++r)
+        for (n = 1; n < radix; ++n)
         {
-            ATFFT_MULTIPLY_BY_COMPLEX (out [m], fft->tFactors [n]);
+            ATFFT_MULTIPLY_BY_COMPLEX (out [m], tFactors [t]);
             m += subSize;
-            n += i;
+            ++t;
         }
 
         atfft_dft_3 (out, subSize, stride, fft->tFactors);
+
+        ++out;
     }
 }
 
-static void atfft_butterfly_4 (const struct atfft_dft *fft,
-                               atfft_complex *out,
+static void atfft_butterfly_4 (atfft_complex *out,
                                int subSize,
-                               int stride)
+                               enum atfft_direction direction,
+                               atfft_complex *tFactors)
 {
     int i = subSize;
     int radix = 4;
+    int t = 0;
 
     atfft_complex *bins [4];
-    atfft_complex *tfs [3] = {fft->tFactors, fft->tFactors, fft->tFactors};
 
     bins [0] = out;
     bins [1] = bins [0] + subSize;
     bins [2] = bins [1] + subSize;
     bins [3] = bins [2] + subSize;
 
-    atfft_dft_4 (bins, fft->direction);
-
-    while (--i)
+    while (i--)
     {
         int n = 0;
 
-        ++(bins [0]);
-
         for (n = 1; n < radix; ++n)
         {
-            ++(bins [n]);
-            tfs [n - 1] += n * stride;
-            ATFFT_MULTIPLY_BY_COMPLEX (*bins [n], *tfs [n - 1]);
+            ATFFT_MULTIPLY_BY_COMPLEX (*bins [n], tFactors [t]);
+            ++t;
         }
 
-        atfft_dft_4 (bins, fft->direction);
+        atfft_dft_4 (bins, direction);
+
+        for (n = 0; n < radix; ++n)
+        {
+            ++(bins [n]);
+        }
     }
 }
 
-static void atfft_butterfly_rader (const struct atfft_dft *fft,
-                                   atfft_complex *out,
+static void atfft_butterfly_rader (atfft_complex *out,
                                    int subSize,
-                                   int stride,
                                    int radix,
+                                   atfft_complex *tFactors,
                                    struct atfft_dft_rader *rader)
 {
-    int i = 0;
-    int r = 0;
+    int i = subSize;
+    int t = 0;
 
-    atfft_dft_rader_complex_transform (rader, out, out, subSize);
-
-    for (i = stride; i < subSize * stride; i += stride)
+    while (i--)
     {
+        int n = 0;
         int m = subSize;
-        int n = i;
-        
-        ++out;
 
-        for (r = 1; r < radix; ++r)
+        for (n = 1; n < radix; ++n)
         {
-            ATFFT_MULTIPLY_BY_COMPLEX (out [m], fft->tFactors [n]);
+            ATFFT_MULTIPLY_BY_COMPLEX (out [m], tFactors [t]);
             m += subSize;
-            n += i;
+            ++t;
         }
 
         atfft_dft_rader_complex_transform (rader, out, out, subSize);
+
+        ++out;
     }
 }
 
@@ -531,22 +589,23 @@ static void atfft_butterfly (const struct atfft_dft *fft,
                              int subSize,
                              int stride,
                              int radix,
-                             struct atfft_dft_rader *rader)
+                             struct atfft_dft_rader *rader,
+                             atfft_complex *tFactors)
 {
     switch (radix)
     {
         case 2:
-            atfft_butterfly_2 (fft, out, subSize, stride);
+            atfft_butterfly_2 (out, subSize, tFactors);
             break;
         case 3:
-            atfft_butterfly_3 (fft, out, subSize, stride);
+            atfft_butterfly_3 (fft, out, subSize, stride, tFactors);
             break;
         case 4:
-            atfft_butterfly_4 (fft, out, subSize, stride);
+            atfft_butterfly_4 (out, subSize, fft->direction, tFactors);
             break;
         default:
             if (rader)
-                atfft_butterfly_rader (fft, out, subSize, stride, radix, rader);
+                atfft_butterfly_rader (out, subSize, radix, tFactors, rader);
             else
                 atfft_butterfly_n (out, fft->size, subSize, stride, radix, fft->tFactors, fft->workSpace);
     }
@@ -558,7 +617,8 @@ static void atfft_compute_dft_complex (const struct atfft_dft *fft,
                                        int subSize,
                                        int stride,
                                        const int *radices,
-                                       struct atfft_dft_rader **raders)
+                                       struct atfft_dft_rader **raders,
+                                       atfft_complex **tFactors)
 {
     /* Get the radix, R, for this stage of the transform.
      * We will split the transform into R sub-transforms
@@ -583,7 +643,8 @@ static void atfft_compute_dft_complex (const struct atfft_dft *fft,
                                        nextSize,
                                        stride * R,
                                        radices,
-                                       raders + 1);
+                                       raders + 1,
+                                       tFactors + 1);
         }
     }
     else
@@ -601,7 +662,7 @@ static void atfft_compute_dft_complex (const struct atfft_dft *fft,
     }
 
     /* Apply butterfly for this stage of the transform. */
-    atfft_butterfly (fft, out, nextSize, stride, R, *raders);
+    atfft_butterfly (fft, out, nextSize, stride, R, *raders, *tFactors);
 }
 
 void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
@@ -615,7 +676,8 @@ void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atff
                                fft->size,
                                1,
                                fft->radices,
-                               fft->radixRaders);
+                               fft->radixRaders,
+                               fft->tFactorsStages);
 }
 
 void atfft_dft_calculate_bin_real (struct atfft_dft *fft,
