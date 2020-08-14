@@ -359,8 +359,7 @@ static void atfft_dft_2 (atfft_complex *out,
 
 static void atfft_dft_3 (atfft_complex *out,
                          int subSize,
-                         int stride,
-                         atfft_complex *tFactors)
+                         atfft_sample sin2PiOn3)
 {
     atfft_complex *bins [3];
     bins [0] = out;
@@ -369,14 +368,12 @@ static void atfft_dft_3 (atfft_complex *out,
 
     atfft_complex ts [3];
 
-    atfft_sample sinPiOn3 = ATFFT_IMAG (tFactors [subSize * stride]);
-
     ATFFT_SUM_COMPLEX (*bins [1], *bins [2], ts [0]);
     ATFFT_REAL (ts [1]) = ATFFT_REAL (*bins [0]) - ATFFT_REAL (ts [0]) / 2.0;
     ATFFT_IMAG (ts [1]) = ATFFT_IMAG (*bins [0]) - ATFFT_IMAG (ts [0]) / 2.0;
     ATFFT_DIFFERENCE_COMPLEX (*bins [1], *bins [2], ts [2]);
-    ATFFT_REAL (ts [2]) = sinPiOn3 * ATFFT_REAL (ts [2]);
-    ATFFT_IMAG (ts [2]) = sinPiOn3 * ATFFT_IMAG (ts [2]);
+    ATFFT_REAL (ts [2]) = sin2PiOn3 * ATFFT_REAL (ts [2]);
+    ATFFT_IMAG (ts [2]) = sin2PiOn3 * ATFFT_IMAG (ts [2]);
 
     ATFFT_SUM_COMPLEX (*bins [0], ts [0], *bins [0]);
     ATFFT_REAL (*bins [1]) = ATFFT_REAL (ts [1]) - ATFFT_IMAG (ts [2]);
@@ -504,6 +501,8 @@ static void atfft_butterfly_3 (const struct atfft_dft *fft,
     int radix = 3;
     int t = 0;
 
+    atfft_sample sin2PiOn3 = ATFFT_IMAG (fft->tFactors [subSize * stride]);
+
     while (i--)
     {
         int n = 0;
@@ -516,7 +515,7 @@ static void atfft_butterfly_3 (const struct atfft_dft *fft,
             ++t;
         }
 
-        atfft_dft_3 (out, subSize, stride, fft->tFactors);
+        atfft_dft_3 (out, subSize, sin2PiOn3);
 
         ++out;
     }
