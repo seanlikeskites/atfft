@@ -41,7 +41,7 @@ struct atfft_dft
 
     /* twiddle factors */
     atfft_complex *t_factors;
-    atfft_complex *stage_t_factors [MAX_RADICES];
+    atfft_complex **stage_t_factors;
 
     /* working space for length-n butterflies */
     atfft_complex *work_space;
@@ -111,6 +111,13 @@ static int atfft_init_radices (int size, int *radices, int *sub_sizes, int *max_
  * Functions for pre-calculating twiddle
  * factors.
  ******************************************/
+static void atfft_t_factor (int t, int size, atfft_sample sin_factor, atfft_complex *f)
+{
+    atfft_sample x = 2.0 * t * M_PI / size;
+    ATFFT_REAL (*f) = cos (x);
+    ATFFT_IMAG (*f) = sin_factor * sin (x);
+}
+
 static void atfft_init_twiddle_factors (atfft_complex *factors,
                                         int size,
                                         enum atfft_direction direction)
@@ -122,29 +129,59 @@ static void atfft_init_twiddle_factors (atfft_complex *factors,
 
     for (int i = 0; i < size; ++i)
     {
-        atfft_sample x = 2.0 * i * M_PI / size;
-        ATFFT_REAL (factors [i]) = cos (x);
-        ATFFT_IMAG (factors [i]) = sin_factor * sin (x);
+        atfft_t_factor (i, size, sin_factor, factors + i);
     }
 }
 
-static void atfft_free_twiddle_factors (atfft_complex **factors)
+static void atfft_free_stage_twiddle_factors (atfft_complex **factors,
+                                              int n_radices)
 {
     if (factors)
     {
-        for (int i = 0; i < MAX_RADICES; ++i)
+        for (int i = 0; i < n_radices; ++i)
         {
             free (factors [i]);
         }
+
+        free (factors);
     }
 }
 
-static void atfft_init_stage_twiddle_factors (atfft_complex **factors,
-                                              int *radices,
-                                              int *sub_sizes,
-                                              int n_radices,
-                                              enum atfft_direction direction)
+static atfft_complex* atfft_generate_stage_twiddle_factors (int radix,
+                                                            int sub_size,
+                                                            atfft_sample sin_factor)
 {
+    int size = radix * sub_size;
+    int n_factors = size - sub_size;
+    atfft_complex *f = malloc (n_factors * sizeof (*f));
+
+    if (!f)
+        return NULL;
+
+    int n = 0;
+
+    for (int k = 0; k < sub_size; ++k)
+    {
+        for (int r = 1; r < radix; ++r)
+        {
+            atfft_t_factor (k * r, size, sin_factor, f + n);
+            ++n;
+        }
+    }
+
+    return f;
+}
+
+static atfft_complex** atfft_init_stage_twiddle_factors (int *radices,
+                                                         int *sub_sizes,
+                                                         int n_radices,
+                                                         enum atfft_direction direction)
+{
+    atfft_complex **factors = calloc (n_radices, sizeof (*factors));
+
+    if (!factors)
+        return NULL;
+
     atfft_sample sin_factor = -1.0;
 
     if (direction == ATFFT_BACKWARD)
@@ -152,26 +189,21 @@ static void atfft_init_stage_twiddle_factors (atfft_complex **factors,
 
     for (int i = 0; i < n_radices; ++i)
     {
-        int radix = radices [i];
-        int sub_size = sub_sizes [i];
-        int size = radix * sub_size;
-        int n_factors = size - sub_size;
-        atfft_complex *f = malloc (n_factors * sizeof (*f));
-        int n = 0;
+        atfft_complex *f = atfft_generate_stage_twiddle_factors (radices [i],
+                                                                 sub_sizes [i],
+                                                                 sin_factor);
 
-        for (int k = 0; k < sub_size; ++k)
-        {
-            for (int r = 1; r < radix; ++r)
-            {
-                atfft_sample x = 2.0 * k * r * M_PI / size;
-                ATFFT_REAL (f [n]) = cos (x);
-                ATFFT_IMAG (f [n]) = sin_factor * sin (x);
-                ++n;
-            }
-        }
+        if (!f)
+            goto failed;
 
         factors [i] = f;
     }
+
+    return factors;
+
+failed:
+    atfft_free_stage_twiddle_factors (factors, n_radices);
+    return NULL;
 }
 
 /******************************************
@@ -300,14 +332,13 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
 
     /* calculate twiddle factors */
     fft->t_factors = malloc (size * sizeof (*(fft->t_factors)));
-    atfft_init_stage_twiddle_factors (fft->stage_t_factors,
-                                      fft->radices,
-                                      fft->sub_sizes,
-                                      fft->n_radices,
-                                      direction);
+    fft->stage_t_factors = atfft_init_stage_twiddle_factors (fft->radices,
+                                                             fft->sub_sizes,
+                                                             fft->n_radices,
+                                                             direction);
 
     /* clean up on failure */
-    if (!fft->t_factors)
+    if (!(fft->t_factors && fft->stage_t_factors))
         goto failed;
     else
         atfft_init_twiddle_factors (fft->t_factors, size, direction);
@@ -341,7 +372,7 @@ void atfft_dft_destroy (struct atfft_dft *fft)
     {
         atfft_free_raders (fft->raders, fft->n_raders);
         free (fft->work_space);
-        atfft_free_twiddle_factors (fft->stage_t_factors);
+        atfft_free_stage_twiddle_factors (fft->stage_t_factors, fft->n_radices);
         free (fft->t_factors);
         free (fft);
     }
