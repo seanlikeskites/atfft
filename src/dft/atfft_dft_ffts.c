@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 #include <ffts/ffts.h>
 #include <atfft/atfft_dft.h>
 
@@ -37,13 +38,6 @@ struct atfft_dft
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     struct atfft_dft *fft;
-    int fftsDirection;
-#ifndef ATFFT_TYPE_FLOAT
-    int inSize, outSize;
-#endif
-
-    /* FFTS only supports sizes which are a power of 2. */
-    assert (atfft_is_power_of_2 (size));
 
     if (!(fft = malloc (sizeof (*fft))))
         return NULL;
@@ -52,42 +46,49 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     fft->direction = direction;
     fft->format = format;
 
+    int ffts_direction = 0;
+
     if (direction == ATFFT_FORWARD)
-        fftsDirection = -1;
+        ffts_direction = -1;
     else
-        fftsDirection = 1;
+        ffts_direction = 1;
+
+#ifndef ATFFT_TYPE_FLOAT
+    int in_size = 0;
+    int out_size = 0;
+#endif
 
     switch (format)
     {
         case ATFFT_COMPLEX:
 #ifndef ATFFT_TYPE_FLOAT
-            inSize = 2 * size * sizeof (*(fft->in));
-            outSize = 2 * size * sizeof (*(fft->out));
+            in_size = 2 * size * sizeof (*(fft->in));
+            out_size = 2 * size * sizeof (*(fft->out));
 #endif
-            fft->plan = ffts_init_1d (size, fftsDirection);
+            fft->plan = ffts_init_1d (size, ffts_direction);
             break;
 
         case ATFFT_REAL:
 #ifndef ATFFT_TYPE_FLOAT
             if (direction == ATFFT_FORWARD)
             {
-                inSize = size * sizeof (*(fft->in));
-                outSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->out));
+                in_size = size * sizeof (*(fft->in));
+                out_size = 2 * (floor (size / 2) + 1) * sizeof (*(fft->out));
             }
             else
             {
-                inSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->in));
-                outSize = size * sizeof (*(fft->out));
+                in_size = 2 * (floor (size / 2) + 1) * sizeof (*(fft->in));
+                out_size = size * sizeof (*(fft->out));
             }
 #endif
 
-            fft->plan = ffts_init_1d_real (size, fftsDirection);
+            fft->plan = ffts_init_1d_real (size, ffts_direction);
             break;
     }
 
 #ifndef ATFFT_TYPE_FLOAT
-    fft->in = malloc (inSize);
-    fft->out = malloc (outSize);
+    fft->in = malloc (in_size);
+    fft->out = malloc (out_size);
 #endif
 
 #ifndef ATFFT_TYPE_FLOAT
