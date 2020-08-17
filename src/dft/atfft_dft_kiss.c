@@ -28,10 +28,10 @@ struct atfft_dft
 
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    struct atfft_dft *fft;
-
     /* kiss_fft only does even length real transforms */
     assert ((format == ATFFT_COMPLEX) || atfft_is_even (size));
+
+    struct atfft_dft *fft;
 
     if (!(fft = malloc (sizeof (*fft))))
         return NULL;

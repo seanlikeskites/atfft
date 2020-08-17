@@ -42,7 +42,7 @@ struct atfft_dct
 {
     int size;
     enum atfft_direction direction;
-    int dataSize;
+    int data_size;
     atfft_sample *in, *out;
     atfft_fftw_plan plan;
 };
@@ -56,9 +56,9 @@ struct atfft_dct* atfft_dct_create (int size, enum atfft_direction direction)
 
     dct->size = size;
     dct->direction = direction;
-    dct->dataSize = size * sizeof (*(dct->in));
-    dct->in = ATFFT_FFTW_MALLOC (dct->dataSize);
-    dct->out = ATFFT_FFTW_MALLOC (dct->dataSize);
+    dct->data_size = size * sizeof (*(dct->in));
+    dct->in = ATFFT_FFTW_MALLOC (dct->data_size);
+    dct->out = ATFFT_FFTW_MALLOC (dct->data_size);
 
     switch (direction)
     {
@@ -102,9 +102,9 @@ void atfft_dct_destroy (struct atfft_dct *dct)
 
 void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
 {
-    memcpy (dct->in, in, dct->dataSize);
+    memcpy (dct->in, in, dct->data_size);
     ATFFT_FFTW_EXECUTE (dct->plan);
-    memcpy (out, dct->out, dct->dataSize);
+    memcpy (out, dct->out, dct->data_size);
 
     if (dct->direction == ATFFT_FORWARD)
         atfft_scale_real (out, dct->size, 0.5);

@@ -38,14 +38,10 @@ struct atfft_dft
 
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    struct atfft_dft *fft;
-
-    init_context initContext;
-    size_t dataSize;
-    int initDirection;
-
     /* ffmpeg only supports sizes which are a power of 2. */
     assert (atfft_is_power_of_2 (size));
+
+    struct atfft_dft *fft = NULL;
 
     if (!(fft = malloc (sizeof (*fft))))
         return NULL;
@@ -54,32 +50,36 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     fft->direction = direction;
     fft->format = format;
 
+    init_context init_ctx = NULL;
+    size_t data_size = 0;
+    int init_direction = 0;
+
     switch (format)
     {
         case ATFFT_COMPLEX:
-            dataSize = 2 * size * sizeof (*(fft->data));
-            initContext = (init_context) av_fft_init;
+            data_size = 2 * size * sizeof (*(fft->data));
+            init_ctx = (init_context) av_fft_init;
 
             if (direction == ATFFT_FORWARD)
-                initDirection = 0;
+                init_direction = 0;
             else
-                initDirection = 1;
+                init_direction = 1;
             break;
 
         case ATFFT_REAL:
-            dataSize = size * sizeof (*(fft->data));
-            initContext = (init_context) av_rdft_init;
+            data_size = size * sizeof (*(fft->data));
+            init_ctx = (init_context) av_rdft_init;
 
             if (direction == ATFFT_FORWARD)
-                initDirection = DFT_R2C;
+                init_direction = DFT_R2C;
             else
-                initDirection = IDFT_C2R;
+                init_direction = IDFT_C2R;
             break;
     }
 
     /* allocate some fft stuff */
-    fft->data = av_malloc (dataSize);
-    fft->context = initContext (log2 (size), initDirection);
+    fft->data = av_malloc (data_size);
+    fft->context = init_ctx (log2 (size), init_direction);
 
     /* clean up on failure */
     if (!(fft->data && fft->context))
@@ -114,14 +114,14 @@ void atfft_dft_destroy (struct atfft_dft *fft)
 void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
 {
 #ifdef ATFFT_TYPE_FLOAT
-    size_t nBytes = fft->size * sizeof (*in);
+    size_t n_bytes = fft->size * sizeof (*in);
 #endif 
 
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (fft->data, in, nBytes);
+    memcpy (fft->data, in, n_bytes);
 #else
     atfft_sample_to_float_complex (in, (atfft_complex_f*) fft->data, fft->size);
 #endif
@@ -130,28 +130,27 @@ void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atff
     av_fft_calc (fft->context, (FFTComplex*) fft->data);
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (out, fft->data, nBytes);
+    memcpy (out, fft->data, n_bytes);
 #else
     atfft_float_to_sample_complex ((atfft_complex_f*) fft->data, out, fft->size);
 #endif
 }
 
-void atfft_halfcomplex_ffmpeg_to_fftw (const FFTSample *in, atfft_complex *out, int size)
+static void atfft_halfcomplex_ffmpeg_to_fftw (const FFTSample *in, atfft_complex *out, int size)
 {
-    int i = 0;
-    int halfSize = size / 2;
+    int half_size = size / 2;
 
     ATFFT_REAL (out [0]) = in [0];
     ATFFT_IMAG (out [0]) = 0;
 
-    for (i = 1; i < halfSize; ++i)
+    for (int i = 1; i < half_size; ++i)
     {
         ATFFT_REAL (out [i]) = in [2 * i];
         ATFFT_IMAG (out [i]) = in [2 * i + 1];
     }
 
-    ATFFT_REAL (out [halfSize]) = in [1];
-    ATFFT_IMAG (out [halfSize]) = 0;
+    ATFFT_REAL (out [half_size]) = in [1];
+    ATFFT_IMAG (out [half_size]) = 0;
 }
 
 void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
@@ -169,20 +168,19 @@ void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample
     atfft_halfcomplex_ffmpeg_to_fftw (fft->data, out, fft->size);
 }
 
-void atfft_halfcomplex_fftw_to_ffmpeg (atfft_complex *in, FFTSample *out, int size)
+static void atfft_halfcomplex_fftw_to_ffmpeg (atfft_complex *in, FFTSample *out, int size)
 {
-    int i = 0;
-    int halfSize = size / 2;
+    int half_size = size / 2;
 
     out [0] = 2.0 * ATFFT_REAL (in [0]);
 
-    for (i = 1; i < halfSize; ++i)
+    for (int i = 1; i < half_size; ++i)
     {
         out [2 * i] = 2.0 * ATFFT_REAL (in [i]);
         out [2 * i + 1] = 2.0 * ATFFT_IMAG (in [i]);
     }
 
-    out [1] = 2.0 * ATFFT_REAL (in [halfSize]);
+    out [1] = 2.0 * ATFFT_REAL (in [half_size]);
 }
 
 void atfft_dft_real_backward_transform (struct atfft_dft *fft, atfft_complex *in, atfft_sample *out)

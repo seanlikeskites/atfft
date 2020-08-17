@@ -51,7 +51,7 @@ struct atfft_dft
     int size;
     enum atfft_direction direction;
     enum atfft_format format;
-    int inSize, outSize;
+    int in_size, out_size;
     atfft_sample *in, *out;
     atfft_fftw_plan plan;
 };
@@ -70,11 +70,11 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     switch (format)
     {
         case ATFFT_COMPLEX:
-            fft->inSize = 2 * size * sizeof (*(fft->in));
-            fft->in = ATFFT_FFTW_MALLOC (fft->inSize);
+            fft->in_size = 2 * size * sizeof (*(fft->in));
+            fft->in = ATFFT_FFTW_MALLOC (fft->in_size);
 
-            fft->outSize = 2 * size * sizeof (*(fft->out));
-            fft->out = ATFFT_FFTW_MALLOC (fft->outSize);
+            fft->out_size = 2 * size * sizeof (*(fft->out));
+            fft->out = ATFFT_FFTW_MALLOC (fft->out_size);
 
             if (direction == ATFFT_FORWARD)
                 fft->plan = ATFFT_FFTW_PLAN_DFT_1D (size,
@@ -93,11 +93,11 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
         case ATFFT_REAL:
             if (direction == ATFFT_FORWARD)
             {
-                fft->inSize = size * sizeof (*(fft->in));
-                fft->in = ATFFT_FFTW_MALLOC (fft->inSize);
+                fft->in_size = size * sizeof (*(fft->in));
+                fft->in = ATFFT_FFTW_MALLOC (fft->in_size);
 
-                fft->outSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->out));
-                fft->out = ATFFT_FFTW_MALLOC (fft->outSize);
+                fft->out_size = 2 * (floor (size / 2) + 1) * sizeof (*(fft->out));
+                fft->out = ATFFT_FFTW_MALLOC (fft->out_size);
 
                 fft->plan = ATFFT_FFTW_PLAN_DFT_R2C_1D (size, 
                                                         fft->in,
@@ -106,11 +106,11 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
             }
             else
             {
-                fft->inSize = 2 * (floor (size / 2) + 1) * sizeof (*(fft->in));
-                fft->in = ATFFT_FFTW_MALLOC (fft->inSize);
+                fft->in_size = 2 * (floor (size / 2) + 1) * sizeof (*(fft->in));
+                fft->in = ATFFT_FFTW_MALLOC (fft->in_size);
 
-                fft->outSize = size * sizeof (*(fft->out));
-                fft->out = ATFFT_FFTW_MALLOC (fft->outSize);
+                fft->out_size = size * sizeof (*(fft->out));
+                fft->out = ATFFT_FFTW_MALLOC (fft->out_size);
 
                 fft->plan = ATFFT_FFTW_PLAN_DFT_C2R_1D (size,
                                                         (atfft_complex*) fft->in,
@@ -141,11 +141,11 @@ void atfft_dft_destroy (struct atfft_dft *fft)
     }
 }
 
-void atfft_dft_fftw_apply_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_sample *out)
+static void atfft_dft_fftw_apply_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_sample *out)
 {
-    memcpy (fft->in, in, fft->inSize);
+    memcpy (fft->in, in, fft->in_size);
     ATFFT_FFTW_EXECUTE (fft->plan);
-    memcpy (out, fft->out, fft->outSize);
+    memcpy (out, fft->out, fft->out_size);
 }
 
 void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)

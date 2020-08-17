@@ -35,19 +35,19 @@ struct atfft_dct
 
 struct atfft_dct* atfft_dct_create (int size, enum atfft_direction direction)
 {
-    struct atfft_dct *dct;
-    size_t dataSize;
-
     /* ffmpeg only supports sizes which are a power of 2. */
     assert (atfft_is_power_of_2 (size));
+
+    struct atfft_dct *dct = NULL;
 
     if (!(dct = malloc (sizeof (*dct))))
         return NULL;
 
     dct->size = size;
     dct->direction = direction;
-    dataSize = size * sizeof (*(dct->data));
-    dct->data = av_malloc (dataSize);
+
+    size_t data_size = size * sizeof (*(dct->data));
+    dct->data = av_malloc (data_size);
 
     if (direction == ATFFT_FORWARD)
         dct->context = av_dct_init (log2 (size), DCT_II);
@@ -77,11 +77,11 @@ void atfft_dct_destroy (struct atfft_dct *dct)
 void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
 {
 #ifdef ATFFT_TYPE_FLOAT
-    size_t nBytes = dct->size * sizeof (*in);
+    size_t n_bytes = dct->size * sizeof (*in);
 #endif 
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (dct->data, in, nBytes);
+    memcpy (dct->data, in, n_bytes);
 #else
     atfft_sample_to_float_real (in, dct->data, dct->size);
 #endif
@@ -89,7 +89,7 @@ void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_s
     av_dct_calc (dct->context, dct->data);
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (out, dct->data, nBytes);
+    memcpy (out, dct->data, n_bytes);
 #else
     atfft_float_to_sample_real (dct->data, out, dct->size);
 #endif
