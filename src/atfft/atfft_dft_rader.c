@@ -13,8 +13,8 @@
 #include <assert.h>
 #include <string.h>
 #include <atfft/atfft_dft.h>
+#include "atfft_internal.h"
 #include "atfft_dft_rader.h"
-#include "../atfft_internal.h"
 
 static int atfft_mod (int a, int n)
 {

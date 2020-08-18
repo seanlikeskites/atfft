@@ -13,7 +13,7 @@
 #include <math.h>
 #include <limits.h>
 #include <atfft/atfft_dft.h>
-#include "../atfft_internal.h"
+#include "atfft_internal.h"
 #include "atfft_dft_rader.h"
 
 /* Because an int is used to represent the size of the transform

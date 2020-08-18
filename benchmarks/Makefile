@@ -3,7 +3,7 @@ CPP = g++
 CFLAGS = -Wall -O3
 LIBS = -lm -lpthread -lbenchmark
 INCLUDEDIRS = -I../include
-FFT_SOURCES = ../src/atfft_shared.c
+FFT_SOURCES = ../src/atfft/atfft_shared.c
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT
@@ -20,15 +20,15 @@ ifeq (FFTW3, $(IMPL))
 		LIBS += -lfftw3
 	endif
 
-	FFT_SOURCES += ../src/dft/atfft_dft_fftw.c
+	FFT_SOURCES += ../src/fftw/atfft_dft_fftw.c
 	
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
-	FFT_SOURCES += ../src/dft/atfft_dft_ffts.c
+	FFT_SOURCES += ../src/ffts/atfft_dft_ffts.c
 
 else ifeq (GSL, $(IMPL))
 	LIBS += -lgsl -lgslcblas
-	FFT_SOURCES += ../src/dft/atfft_dft_gsl.c
+	FFT_SOURCES += ../src/gsl/atfft_dft_gsl.c
 
 else ifeq (KISS, $(IMPL))
 	ifeq (FLOAT, $(TYPE))
@@ -39,32 +39,29 @@ else ifeq (KISS, $(IMPL))
 		LIBS += -lkissfft
 	endif
 
-	FFT_SOURCES += ../src/dft/atfft_dft_kiss.c
+	FFT_SOURCES += ../src/kiss/atfft_dft_kiss.c
 	
 else ifeq (VDSP, $(IMPL))
 	LIBS += -framework Accelerate
-	FFT_SOURCES += ../src/dft/atfft_dft_vdsp.c
+	FFT_SOURCES += ../src/vdsp/atfft_dft_vdsp.c
 
 else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
-	FFT_SOURCES += ../src/dft/atfft_dft_ffmpeg.c
+	FFT_SOURCES += ../src/ffmpeg/atfft_dft_ffmpeg.c
 
 else ifeq (PFFFT, $(IMPL))
-	FFT_SOURCES += ../src/dft/atfft_dft_pffft.c ../src/pffft/pffft.c
+	FFT_SOURCES += ../src/pffft/atfft_dft_pffft.c ../src/pffft/pffft.c
 	CFLAGS += -msse
 
 else ifeq (OOURA, $(IMPL))
-	FFT_SOURCES += ../src/dft/atfft_dft_ooura.c ../src/ooura/fft4g.c
+	FFT_SOURCES += ../src/ooura/atfft_dft_ooura.c ../src/ooura/fft4g.c
 
 else
-	FFT_SOURCES += ../src/dft/atfft_dft.c ../src/dft/atfft_dft_rader.c
+	FFT_SOURCES += ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c
 endif
 
-FFT_TEMP1 = $(subst ../src/,, $(FFT_SOURCES))
-FFT_TEMP2 = $(subst dft/,, $(FFT_TEMP1))
-FFT_TEMP3 = $(subst ooura/,, $(FFT_TEMP2))
-FFT_TEMP4 = $(subst pffft/,, $(FFT_TEMP3))
-FFT_OBJECTS = $(subst .c,.o, $(FFT_TEMP4))
+FFT_TEMP1 = $(notdir $(FFT_SOURCES))
+FFT_OBJECTS = $(subst .c,.o, $(FFT_TEMP1))
 
 benchmark: benchmark.cpp $(FFT_SOURCES)
 	$(CC) -c $(FFT_SOURCES) $(INCLUDEDIRS) $(CFLAGS)

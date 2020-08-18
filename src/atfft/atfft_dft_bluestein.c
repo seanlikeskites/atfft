@@ -12,8 +12,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <atfft/atfft_dft.h>
+#include "atfft_internal.h"
 #include "atfft_dft_bluestein.h"
-#include "../atfft_internal.h"
 
 struct atfft_dft_bluestein
 {
