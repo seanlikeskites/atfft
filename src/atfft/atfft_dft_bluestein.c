@@ -21,7 +21,8 @@ struct atfft_dft_bluestein
     enum atfft_direction direction;
     enum atfft_format format;
     int conv_size;
-    struct atfft_dft *conv_forward, *conv_backward;
+    //struct atfft_dft *conv_forward, *conv_backward;
+    struct atfft_dft *fft;
     atfft_complex *sig, *sig_dft, *conv, *conv_dft, *factors;
 };
 
@@ -97,10 +98,12 @@ struct atfft_dft_bluestein* atfft_dft_bluestein_create (int size,
 
     /* allocate some regular dft objects for performing the convolution */
     fft->conv_size = atfft_bluestein_convolution_fft_size (size);
-    fft->conv_forward = atfft_dft_create (fft->conv_size, ATFFT_FORWARD, ATFFT_COMPLEX);
-    fft->conv_backward = atfft_dft_create (fft->conv_size, ATFFT_BACKWARD, ATFFT_COMPLEX);
+    fft->fft = atfft_dft_create (fft->conv_size, ATFFT_FORWARD, ATFFT_COMPLEX);
+    //fft->conv_forward = atfft_dft_create (fft->conv_size, ATFFT_FORWARD, ATFFT_COMPLEX);
+    //fft->conv_backward = atfft_dft_create (fft->conv_size, ATFFT_BACKWARD, ATFFT_COMPLEX);
 
-    if (!(fft->conv_forward && fft->conv_backward))
+    //if (!(fft->conv_forward && fft->conv_backward))
+    if (!fft->fft)
         goto failed;
 
     /* allocate work space for performing the dft */
@@ -119,7 +122,8 @@ struct atfft_dft_bluestein* atfft_dft_bluestein_create (int size,
                                               fft->conv_dft,
                                               fft->conv_size,
                                               fft->factors,
-                                              fft->conv_forward) < 0)
+                                              //fft->conv_forward) < 0)
+                                              fft->fft) < 0)
         goto failed;
 
     return fft;
@@ -138,8 +142,9 @@ void atfft_dft_bluestein_destroy (struct atfft_dft_bluestein *fft)
         free (fft->conv);
         free (fft->sig_dft);
         free (fft->sig);
-        atfft_dft_destroy (fft->conv_backward);
-        atfft_dft_destroy (fft->conv_forward);
+        atfft_dft_destroy (fft->fft);
+        //atfft_dft_destroy (fft->conv_backward);
+        //atfft_dft_destroy (fft->conv_forward);
         free (fft);
     }
 }
@@ -156,20 +161,40 @@ void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
     }
 
     /* take DFT of the result */
-    atfft_dft_complex_transform (fft->conv_forward, fft->sig, fft->sig_dft);
+    //atfft_dft_complex_transform (fft->conv_forward, fft->sig, fft->sig_dft);
+    atfft_dft_complex_transform (fft->fft, fft->sig, fft->sig_dft);
 
     /* perform convolution in the frequency domain */
     for (int i = 0; i < fft->conv_size; ++i)
     {
-        ATFFT_MULTIPLY_BY_COMPLEX (fft->sig_dft [i], fft->conv_dft [i]);
+        //ATFFT_MULTIPLY_BY_COMPLEX (fft->sig_dft [i], fft->conv_dft [i]);
+        atfft_sample temp;
+        atfft_complex *a = fft->sig_dft + i;
+        atfft_complex *b = fft->conv_dft + i;
+
+        temp = ATFFT_REAL (*a);
+        ATFFT_REAL (*a) = temp * ATFFT_IMAG (*b) +
+                          ATFFT_IMAG (*a) * ATFFT_REAL (*b);
+        ATFFT_IMAG (*a) = temp * ATFFT_REAL (*b) -
+                          ATFFT_IMAG (*a) * ATFFT_IMAG (*b);
     }
 
     /* take the inverse DFT of the result */
-    atfft_dft_complex_transform (fft->conv_backward, fft->sig_dft, fft->conv);
+    //atfft_dft_complex_transform (fft->conv_backward, fft->sig_dft, fft->conv);
+    atfft_dft_complex_transform (fft->fft, fft->sig_dft, fft->conv);
 
     /* multiply the output transform with the factors */
     for (int i = 0; i < fft->size; ++i)
     {
-        ATFFT_PRODUCT_COMPLEX (fft->conv [i], fft->factors [i], out [i * stride]);
+        //ATFFT_PRODUCT_COMPLEX (fft->conv [i], fft->factors [i], out [i * stride]);
+
+        atfft_complex *a = fft->conv + i;
+        atfft_complex *b = fft->factors + i;
+        atfft_complex *p = out + i * stride;
+
+        ATFFT_REAL (*p) = ATFFT_IMAG (*a) * ATFFT_REAL (*b) - \
+                          ATFFT_REAL (*a) * ATFFT_IMAG (*b); \
+        ATFFT_IMAG (*p) = ATFFT_REAL (*a) * ATFFT_REAL (*b) + \
+                          ATFFT_IMAG (*a) * ATFFT_IMAG (*b); \
     }
 }
