@@ -38,14 +38,6 @@ static int atfft_is_prime (int x)
     return 1;
 }
 
-static int atfft_next_power_of_2 (int x)
-{
-    if (x <= 0)
-        return 0;
-    else
-        return pow (2, (int) log2 (x) + 1);
-}
-
 static int atfft_primitive_root_mod_n (int n)
 {
     /* this algorithm will only work for prime numbers */

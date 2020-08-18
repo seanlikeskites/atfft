@@ -75,4 +75,6 @@
     } \
     while (0)
 
+int atfft_next_power_of_2 (int x);
+
 #endif /* ATFFT_INTERNAL_H_INCLUDED */
