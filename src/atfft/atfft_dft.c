@@ -111,25 +111,13 @@ static int atfft_init_radices (int size, int *radices, int *sub_sizes, int *max_
  * Functions for pre-calculating twiddle
  * factors.
  ******************************************/
-static void atfft_t_factor (int t, int size, atfft_sample sin_factor, atfft_complex *f)
-{
-    atfft_sample x = 2.0 * t * M_PI / size;
-    ATFFT_REAL (*f) = cos (x);
-    ATFFT_IMAG (*f) = sin_factor * sin (x);
-}
-
 static void atfft_init_twiddle_factors (atfft_complex *factors,
                                         int size,
                                         enum atfft_direction direction)
 {
-    atfft_sample sin_factor = -1.0;
-
-    if (direction == ATFFT_BACKWARD)
-        sin_factor = 1.0;
-
     for (int i = 0; i < size; ++i)
     {
-        atfft_t_factor (i, size, sin_factor, factors + i);
+        atfft_twiddle_factor (i, size, direction, factors + i);
     }
 }
 
@@ -149,7 +137,7 @@ static void atfft_free_stage_twiddle_factors (atfft_complex **factors,
 
 static atfft_complex* atfft_generate_stage_twiddle_factors (int radix,
                                                             int sub_size,
-                                                            atfft_sample sin_factor)
+                                                            enum atfft_direction direction)
 {
     int size = radix * sub_size;
     int n_factors = size - sub_size;
@@ -164,7 +152,7 @@ static atfft_complex* atfft_generate_stage_twiddle_factors (int radix,
     {
         for (int r = 1; r < radix; ++r)
         {
-            atfft_t_factor (k * r, size, sin_factor, f + n);
+            atfft_twiddle_factor (k * r, size, direction, f + n);
             ++n;
         }
     }
@@ -182,16 +170,11 @@ static atfft_complex** atfft_init_stage_twiddle_factors (int *radices,
     if (!factors)
         return NULL;
 
-    atfft_sample sin_factor = -1.0;
-
-    if (direction == ATFFT_BACKWARD)
-        sin_factor = 1.0;
-
     for (int i = 0; i < n_radices; ++i)
     {
         atfft_complex *f = atfft_generate_stage_twiddle_factors (radices [i],
                                                                  sub_sizes [i],
-                                                                 sin_factor);
+                                                                 direction);
 
         if (!f)
             goto failed;

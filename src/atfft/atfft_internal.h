@@ -75,6 +75,38 @@
     } \
     while (0)
 
+/**
+ * Find the next power of 2 which is greater than x.
+ */
 int atfft_next_power_of_2 (int x);
+
+/**
+ * Compute a twiddle factor.
+ *
+ * When d == ATFFT_FORWARD:
+ *     t = e^(-2*pi*j*n/N)
+ *
+ * When d == ATFFT_BACKWARD:
+ *     t = e^(2*pi*j*n/N)
+ */
+void atfft_twiddle_factor (int n,
+                           int N,
+                           enum atfft_direction d,
+                           atfft_complex *t);
+
+/**
+ * Compute a scaled twiddle factor.
+ *
+ * When d == ATFFT_FORWARD:
+ *     t = e^(-2*pi*j*n/N) / s
+ *
+ * When d == ATFFT_BACKWARD:
+ *     t = e^(2*pi*j*n/N) / s
+ */
+void atfft_scaled_twiddle_factor (int n,
+                                  int N,
+                                  enum atfft_direction d,
+                                  atfft_sample s,
+                                  atfft_complex *t);
 
 #endif /* ATFFT_INTERNAL_H_INCLUDED */

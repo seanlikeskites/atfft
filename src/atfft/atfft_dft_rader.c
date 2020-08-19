@@ -158,17 +158,10 @@ static int atfft_init_rader_convolution_dft (int size,
     if (!t_factors)
         return -1;
 
-    atfft_sample sin_factor = -1.0;
-
-    if (direction == ATFFT_BACKWARD)
-        sin_factor = 1.0;
-
     /* produce rader twiddle factors */
     for (int i = 0; i < perm_size; ++i)
     {
-        atfft_sample x = 2.0 * perm [i] * M_PI / size;
-        ATFFT_REAL (t_factors [i]) = cos (x) / conv_size;
-        ATFFT_IMAG (t_factors [i]) = sin_factor * sin (x) / conv_size;
+        atfft_scaled_twiddle_factor (perm [i], size, direction, conv_size, t_factors + i);
     }
 
     /* replicate samples for circular convolution */
@@ -179,7 +172,6 @@ static int atfft_init_rader_convolution_dft (int size,
         atfft_complex *dest = t_factors + conv_size - n_replications;
 
         memcpy (dest, source, n_replications * sizeof (*dest));
-
     }
 
     /* take DFT of twiddle factors */

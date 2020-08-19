@@ -18,3 +18,25 @@ int atfft_next_power_of_2 (int x)
     else
         return pow (2, (int) log2 (x) + 1);
 }
+
+void atfft_twiddle_factor (int n,
+                           int N,
+                           enum atfft_direction d,
+                           atfft_complex *t)
+{
+    atfft_scaled_twiddle_factor (n, N, d, 1.0, t);
+}
+
+void atfft_scaled_twiddle_factor (int n,
+                                  int N,
+                                  enum atfft_direction d,
+                                  atfft_sample s,
+                                  atfft_complex *t)
+{
+    atfft_sample x = 2.0 * n * M_PI / N;
+    ATFFT_REAL (*t) = cos (x) / s;
+    ATFFT_IMAG (*t) = sin (x) / s;
+
+    if (d == ATFFT_FORWARD)
+        ATFFT_IMAG (*t) *= -1.0;
+}
