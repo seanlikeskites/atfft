@@ -34,9 +34,9 @@ void atfft_scaled_twiddle_factor (int n,
                                   atfft_complex *t)
 {
     atfft_sample x = 2.0 * n * M_PI / N;
-    ATFFT_REAL (*t) = cos (x) / s;
-    ATFFT_IMAG (*t) = sin (x) / s;
+    ATFFT_RE (*t) = cos (x) / s;
+    ATFFT_IM (*t) = sin (x) / s;
 
     if (d == ATFFT_FORWARD)
-        ATFFT_IMAG (*t) *= -1.0;
+        ATFFT_IM (*t) *= -1.0;
 }

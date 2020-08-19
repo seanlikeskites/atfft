@@ -81,8 +81,8 @@ void atfft_dct_rearrange_forward (const atfft_sample *in, atfft_complex *out, in
 
     for (i = 0, j = 0; i < size; i+=2, ++j)
     {
-        ATFFT_REAL (out [j]) = in [i];
-        ATFFT_IMAG (out [j]) = 0.0;
+        ATFFT_RE (out [j]) = in [i];
+        ATFFT_IM (out [j]) = 0.0;
     }
 
     if (atfft_is_even (size))
@@ -92,8 +92,8 @@ void atfft_dct_rearrange_forward (const atfft_sample *in, atfft_complex *out, in
 
     for (i = start; i > 0; i-=2, ++j)
     {
-        ATFFT_REAL (out [j]) = in [i];
-        ATFFT_IMAG (out [j]) = 0.0;
+        ATFFT_RE (out [j]) = in [i];
+        ATFFT_IM (out [j]) = 0.0;
     }
 }
 
@@ -101,8 +101,8 @@ void atfft_dct_scale_forward (struct atfft_dct *dct, atfft_sample *out)
 {
     for (int i = 0; i < dct->size; ++i)
     {
-        atfft_sample cosComponent = ATFFT_REAL (dct->out [i]) * dct->cosins [i];
-        atfft_sample sinComponent = ATFFT_IMAG (dct->out [i]) * dct->sins [i];
+        atfft_sample cosComponent = ATFFT_RE (dct->out [i]) * dct->cosins [i];
+        atfft_sample sinComponent = ATFFT_IM (dct->out [i]) * dct->sins [i];
         out [i] = cosComponent + sinComponent;
     }
 }
@@ -116,8 +116,8 @@ void atfft_dct_forward_transform (struct atfft_dct *dct, const atfft_sample *in,
 
 void atfft_dct_scale_backward (struct atfft_dct *dct, const atfft_sample *in)
 {
-    ATFFT_REAL (dct->in [0]) = in [0];
-    ATFFT_IMAG (dct->in [0]) = 0.0;
+    ATFFT_RE (dct->in [0]) = in [0];
+    ATFFT_IM (dct->in [0]) = 0.0;
 
     for (int i = 1; i < dct->size; ++i)
     {
@@ -130,8 +130,8 @@ void atfft_dct_scale_backward (struct atfft_dct *dct, const atfft_sample *in)
         atfft_sample imagCosComponent = dct->sins [i] * realPart;
         atfft_sample imagSinComponent = dct->cosins [i] * imagPart;
 
-        ATFFT_REAL (dct->in [i]) = realCosComponent + realSinComponent;
-        ATFFT_IMAG (dct->in [i]) = imagCosComponent + imagSinComponent;
+        ATFFT_RE (dct->in [i]) = realCosComponent + realSinComponent;
+        ATFFT_IM (dct->in [i]) = imagCosComponent + imagSinComponent;
     }
 }
 
@@ -142,7 +142,7 @@ void atfft_dct_rearrange_backward (atfft_complex *in, atfft_sample *out, int siz
 
     for (i = 0, j = 0; i < size; i+=2, ++j)
     {
-        out [i] = ATFFT_REAL (in [j]);
+        out [i] = ATFFT_RE (in [j]);
     }
 
     if (atfft_is_even (size))
@@ -152,7 +152,7 @@ void atfft_dct_rearrange_backward (atfft_complex *in, atfft_sample *out, int siz
 
     for (i = start; i > 0; i-=2, ++j)
     {
-        out [i] = ATFFT_REAL (in [j]);
+        out [i] = ATFFT_RE (in [j]);
     }
 }
 

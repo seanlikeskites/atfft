@@ -126,8 +126,8 @@ void atfft_complex_fftw_to_vdsp (atfft_complex *in,
 
     for (i = 0; i < size; ++i)
     {
-        real [i] = ATFFT_REAL (in [i]);
-        imag [i] = ATFFT_IMAG (in [i]);
+        real [i] = ATFFT_RE (in [i]);
+        imag [i] = ATFFT_IM (in [i]);
     }
 }
 
@@ -138,8 +138,8 @@ void atfft_complex_vdsp_to_fftw (const atfft_vdsp_sample *real, const atfft_vdsp
 
     for (i = 0; i < size; ++i)
     {
-        ATFFT_REAL (out [i]) = real [i];
-        ATFFT_IMAG (out [i]) = imag [i];
+        ATFFT_RE (out [i]) = real [i];
+        ATFFT_IM (out [i]) = imag [i];
     }
 }
 
@@ -171,17 +171,17 @@ void atfft_halfcomplex_vdsp_to_fftw (const atfft_vdsp_sample *inE, const atfft_v
     int i = 0;
     int halfSize = size / 2;
 
-    ATFFT_REAL (out [0]) = inE [0] / 2.0;
-    ATFFT_IMAG (out [0]) = 0;
+    ATFFT_RE (out [0]) = inE [0] / 2.0;
+    ATFFT_IM (out [0]) = 0;
 
     for (i = 1; i < halfSize; ++i)
     {
-        ATFFT_REAL (out [i]) = inE [i] / 2.0;
-        ATFFT_IMAG (out [i]) = inO [i] / 2.0;
+        ATFFT_RE (out [i]) = inE [i] / 2.0;
+        ATFFT_IM (out [i]) = inO [i] / 2.0;
     }
 
-    ATFFT_REAL (out [halfSize]) = inO [0] / 2.0;
-    ATFFT_IMAG (out [halfSize]) = 0;
+    ATFFT_RE (out [halfSize]) = inO [0] / 2.0;
+    ATFFT_IM (out [halfSize]) = 0;
 }
 
 void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
@@ -200,15 +200,15 @@ void atfft_halfcomplex_fftw_to_vdsp (atfft_complex *in,
     int i = 0;
     int halfSize = size / 2;
 
-    outE [0] = ATFFT_REAL (in [0]);
+    outE [0] = ATFFT_RE (in [0]);
 
     for (i = 1; i < halfSize; ++i)
     {
-        outE [i] = ATFFT_REAL (in [i]);
-        outO [i] = ATFFT_IMAG (in [i]);
+        outE [i] = ATFFT_RE (in [i]);
+        outO [i] = ATFFT_IM (in [i]);
     }
 
-    outO [0] = ATFFT_REAL (in [halfSize]);
+    outO [0] = ATFFT_RE (in [halfSize]);
 }
 
 void atfft_real_vdsp_to_fftw (const atfft_vdsp_sample *inE, const atfft_vdsp_sample *inO,

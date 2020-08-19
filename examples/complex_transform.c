@@ -44,17 +44,17 @@ void printComplexArray (atfft_complex *data, int size)
     int i = 0;
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
-    printf ("(%Lf, %Lf)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
+    printf ("(%Lf, %Lf)", ATFFT_RE (data [i]), ATFFT_IM (data [i]));
 #else
-    printf ("(%f, %f)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
+    printf ("(%f, %f)", ATFFT_RE (data [i]), ATFFT_IM (data [i]));
 #endif
 
     for (i = 1; i < size; ++i)
     {
 #ifdef ATFFT_TYPE_LONG_DOUBLE
-        printf (", (%Lf, %Lf)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
+        printf (", (%Lf, %Lf)", ATFFT_RE (data [i]), ATFFT_IM (data [i]));
 #else
-        printf (", (%f, %f)", ATFFT_REAL (data [i]), ATFFT_IMAG (data [i]));
+        printf (", (%f, %f)", ATFFT_RE (data [i]), ATFFT_IM (data [i]));
 #endif
     }
 

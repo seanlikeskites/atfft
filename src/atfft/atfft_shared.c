@@ -46,8 +46,8 @@ void atfft_scale_complex (atfft_complex *data, int size, atfft_sample scale_fact
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_REAL (data [i]) *= scale_factor;
-        ATFFT_IMAG (data [i]) *= scale_factor;
+        ATFFT_RE (data [i]) *= scale_factor;
+        ATFFT_IM (data [i]) *= scale_factor;
     }
 }
 
@@ -58,12 +58,12 @@ void atfft_normalise_complex (atfft_complex *data, int size)
 
 atfft_sample atfft_abs (const atfft_complex x)
 {
-    return sqrt (ATFFT_REAL (x) * ATFFT_REAL (x) + ATFFT_IMAG (x) * ATFFT_IMAG (x));
+    return sqrt (ATFFT_RE (x) * ATFFT_RE (x) + ATFFT_IM (x) * ATFFT_IM (x));
 }
 
 atfft_sample atfft_arg (const atfft_complex x)
 {
-    return atan2 (ATFFT_IMAG (x), ATFFT_REAL (x));
+    return atan2 (ATFFT_IM (x), ATFFT_RE (x));
 }
 
 /* conversion functions */
@@ -71,7 +71,7 @@ void atfft_real (atfft_complex *in, atfft_sample *out, int size)
 {
     for (int i = 0; i < size; ++i)
     {
-        out [i] = ATFFT_REAL (in [i]);
+        out [i] = ATFFT_RE (in [i]);
     }
 }
 
@@ -79,7 +79,7 @@ void atfft_imag (atfft_complex *in, atfft_sample *out, int size)
 {
     for (int i = 0; i < size; ++i)
     {
-        out [i] = ATFFT_IMAG (in [i]);
+        out [i] = ATFFT_IM (in [i]);
     }
 }
 
@@ -87,8 +87,8 @@ void atfft_real_to_complex (const atfft_sample *in, atfft_complex *out, int size
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_REAL (out [i]) = in [i];
-        ATFFT_IMAG (out [i]) = 0;
+        ATFFT_RE (out [i]) = in [i];
+        ATFFT_IM (out [i]) = 0;
     }
 }
 
@@ -103,8 +103,8 @@ void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int si
 
     for (int i = 1; i < last_bin; ++i)
     {
-        ATFFT_REAL (out [size - i]) = ATFFT_REAL (in [i]);
-        ATFFT_IMAG (out [size - i]) = - ATFFT_IMAG (in [i]);
+        ATFFT_RE (out [size - i]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [size - i]) = - ATFFT_IM (in [i]);
     }
 }
 
@@ -129,8 +129,8 @@ void atfft_float_to_sample_complex (atfft_complex_f *in, atfft_complex *out, int
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
-        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
+        ATFFT_RE (out [i]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [i]) = ATFFT_IM (in [i]);
     }
 }
 
@@ -138,8 +138,8 @@ void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_f *out, int
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
-        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
+        ATFFT_RE (out [i]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [i]) = ATFFT_IM (in [i]);
     }
 }
 #endif
@@ -165,8 +165,8 @@ void atfft_double_to_sample_complex (atfft_complex_d *in, atfft_complex *out, in
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
-        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
+        ATFFT_RE (out [i]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [i]) = ATFFT_IM (in [i]);
     }
 }
 
@@ -174,8 +174,8 @@ void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_d *out, in
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
-        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
+        ATFFT_RE (out [i]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [i]) = ATFFT_IM (in [i]);
     }
 }
 #endif
@@ -201,8 +201,8 @@ void atfft_long_double_to_sample_complex (atfft_complex_l *in, atfft_complex *ou
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
-        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
+        ATFFT_RE (out [i]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [i]) = ATFFT_IM (in [i]);
     }
 }
 
@@ -210,8 +210,8 @@ void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *ou
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_REAL (out [i]) = ATFFT_REAL (in [i]);
-        ATFFT_IMAG (out [i]) = ATFFT_IMAG (in [i]);
+        ATFFT_RE (out [i]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [i]) = ATFFT_IM (in [i]);
     }
 }
 #endif

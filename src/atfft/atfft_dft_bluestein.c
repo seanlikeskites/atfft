@@ -65,8 +65,8 @@ static int atfft_init_bluestein_convolution_dft (int size,
     /* take conjugate of the sequence for use later */
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_REAL (factors [i]) = ATFFT_REAL (sequence [i]);
-        ATFFT_IMAG (factors [i]) = - ATFFT_IMAG (sequence [i]);
+        ATFFT_RE (factors [i]) = ATFFT_RE (sequence [i]);
+        ATFFT_IM (factors [i]) = - ATFFT_IM (sequence [i]);
     }
 
     free (sequence);
@@ -154,11 +154,11 @@ void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
         atfft_complex *a = fft->sig_dft + i;
         atfft_complex *b = fft->conv_dft + i;
 
-        temp = ATFFT_REAL (*a);
-        ATFFT_REAL (*a) = temp * ATFFT_IMAG (*b) +
-                          ATFFT_IMAG (*a) * ATFFT_REAL (*b);
-        ATFFT_IMAG (*a) = temp * ATFFT_REAL (*b) -
-                          ATFFT_IMAG (*a) * ATFFT_IMAG (*b);
+        temp = ATFFT_RE (*a);
+        ATFFT_RE (*a) = temp * ATFFT_IM (*b) +
+                          ATFFT_IM (*a) * ATFFT_RE (*b);
+        ATFFT_IM (*a) = temp * ATFFT_RE (*b) -
+                          ATFFT_IM (*a) * ATFFT_IM (*b);
     }
 
     /* take the inverse DFT of the result */
@@ -171,9 +171,9 @@ void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
         atfft_complex *b = fft->factors + i;
         atfft_complex *p = out + i * stride;
 
-        ATFFT_REAL (*p) = ATFFT_IMAG (*a) * ATFFT_REAL (*b) - \
-                          ATFFT_REAL (*a) * ATFFT_IMAG (*b); \
-        ATFFT_IMAG (*p) = ATFFT_REAL (*a) * ATFFT_REAL (*b) + \
-                          ATFFT_IMAG (*a) * ATFFT_IMAG (*b); \
+        ATFFT_RE (*p) = ATFFT_IM (*a) * ATFFT_RE (*b) - \
+                          ATFFT_RE (*a) * ATFFT_IM (*b); \
+        ATFFT_IM (*p) = ATFFT_RE (*a) * ATFFT_RE (*b) + \
+                          ATFFT_IM (*a) * ATFFT_IM (*b); \
     }
 }

@@ -38,9 +38,9 @@ typedef double atfft_complex_d [2];
 typedef long double atfft_complex_l [2];
 
 /** A macro to return the real part of the complex types. */
-#define ATFFT_REAL(x) ((x) [0])
+#define ATFFT_RE(x) ((x) [0])
 /** A macro to return the imaginary part of the complex types. */
-#define ATFFT_IMAG(x) ((x) [1])
+#define ATFFT_IM(x) ((x) [1])
 
 /** A macro to return the smallest of two values. */
 #define ATFFT_MIN(x, y) ((x) < (y) ? (x) : (y))

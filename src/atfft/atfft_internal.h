@@ -19,8 +19,8 @@
 #define ATFFT_COPY_COMPLEX(x, y) \
     do \
     { \
-        ATFFT_REAL (y) = ATFFT_REAL (x); \
-        ATFFT_IMAG (y) = ATFFT_IMAG (x); \
+        ATFFT_RE (y) = ATFFT_RE (x); \
+        ATFFT_IM (y) = ATFFT_IM (x); \
     } \
     while (0)
 
@@ -30,8 +30,8 @@
 #define ATFFT_SUM_COMPLEX(a, b, s) \
     do \
     { \
-        ATFFT_REAL (s) = ATFFT_REAL (a) + ATFFT_REAL (b); \
-        ATFFT_IMAG (s) = ATFFT_IMAG (a) + ATFFT_IMAG (b); \
+        ATFFT_RE (s) = ATFFT_RE (a) + ATFFT_RE (b); \
+        ATFFT_IM (s) = ATFFT_IM (a) + ATFFT_IM (b); \
     } \
     while (0)
 
@@ -41,8 +41,8 @@
 #define ATFFT_DIFFERENCE_COMPLEX(a, b, d) \
     do \
     { \
-        ATFFT_REAL (d) = ATFFT_REAL (a) - ATFFT_REAL (b); \
-        ATFFT_IMAG (d) = ATFFT_IMAG (a) - ATFFT_IMAG (b); \
+        ATFFT_RE (d) = ATFFT_RE (a) - ATFFT_RE (b); \
+        ATFFT_IM (d) = ATFFT_IM (a) - ATFFT_IM (b); \
     } \
     while (0)
 
@@ -52,10 +52,10 @@
 #define ATFFT_PRODUCT_COMPLEX(a, b, p) \
     do \
     { \
-        ATFFT_REAL (p) = ATFFT_REAL (a) * ATFFT_REAL (b) - \
-                         ATFFT_IMAG (a) * ATFFT_IMAG (b); \
-        ATFFT_IMAG (p) = ATFFT_REAL (a) * ATFFT_IMAG (b) + \
-                         ATFFT_IMAG (a) * ATFFT_REAL (b); \
+        ATFFT_RE (p) = ATFFT_RE (a) * ATFFT_RE (b) - \
+                         ATFFT_IM (a) * ATFFT_IM (b); \
+        ATFFT_IM (p) = ATFFT_RE (a) * ATFFT_IM (b) + \
+                         ATFFT_IM (a) * ATFFT_RE (b); \
     } \
     while (0)
 
@@ -66,12 +66,12 @@
     do \
     { \
         atfft_sample temp; \
-        temp = ATFFT_REAL (a); \
+        temp = ATFFT_RE (a); \
         \
-        ATFFT_REAL (a) = temp * ATFFT_REAL (b) - \
-                         ATFFT_IMAG (a) * ATFFT_IMAG (b); \
-        ATFFT_IMAG (a) = temp * ATFFT_IMAG (b) + \
-                         ATFFT_IMAG (a) * ATFFT_REAL (b); \
+        ATFFT_RE (a) = temp * ATFFT_RE (b) - \
+                         ATFFT_IM (a) * ATFFT_IM (b); \
+        ATFFT_IM (a) = temp * ATFFT_IM (b) + \
+                         ATFFT_IM (a) * ATFFT_RE (b); \
     } \
     while (0)
 

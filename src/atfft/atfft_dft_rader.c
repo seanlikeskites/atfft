@@ -308,8 +308,8 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
         ATFFT_SUM_COMPLEX (out0, fft->sig [i], out0);
     }
 
-    ATFFT_REAL (fft->sig_dft [0]) += ATFFT_REAL (in0);
-    ATFFT_IMAG (fft->sig_dft [0]) += ATFFT_IMAG (in0);
+    ATFFT_RE (fft->sig_dft [0]) += ATFFT_RE (in0);
+    ATFFT_IM (fft->sig_dft [0]) += ATFFT_IM (in0);
 
     atfft_dft_complex_transform (fft->conv_backward, fft->sig_dft, fft->conv);
 
