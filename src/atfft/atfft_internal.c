@@ -15,6 +15,7 @@
  * External definitions of inline functions.
  ******************************************/
 extern inline void atfft_copy_complex (const atfft_complex x, atfft_complex *y);
+extern inline void atfft_swap_complex (const atfft_complex x, atfft_complex *y);
 extern inline void atfft_sum_complex (const atfft_complex a,
                                       const atfft_complex b,
                                       atfft_complex *s);
@@ -25,6 +26,7 @@ extern inline void atfft_product_complex (const atfft_complex a,
                                           const atfft_complex b,
                                           atfft_complex *p);
 extern inline void atfft_multiply_by_complex (atfft_complex *a, const atfft_complex b);
+extern inline void atfft_multiply_by_and_swap_complex (atfft_complex *a, const atfft_complex b);
 
 /******************************************
  * Other functions.

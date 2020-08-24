@@ -13,6 +13,22 @@
 #include "atfft_internal.h"
 #include "atfft_dft_bluestein.h"
 
+/**
+ * Swap the real and imaginary parts of a and then multiply by b:
+ *
+ * p = j * conj(a) * b
+ */
+static void atfft_swap_and_product_complex (const atfft_complex a,
+                                            const atfft_complex b,
+                                            atfft_complex *p)
+{
+    ATFFT_RE (*p) = ATFFT_IM (a) * ATFFT_RE (b) -
+                    ATFFT_RE (a) * ATFFT_IM (b);
+    ATFFT_IM (*p) = ATFFT_IM (a) * ATFFT_IM (b) +
+                    ATFFT_RE (a) * ATFFT_RE (b);
+}
+
+
 struct atfft_dft_bluestein
 {
     int size;
@@ -150,15 +166,7 @@ void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
     /* perform convolution in the frequency domain */
     for (int i = 0; i < fft->conv_size; ++i)
     {
-        atfft_sample temp;
-        atfft_complex *a = fft->sig_dft + i;
-        atfft_complex *b = fft->conv_dft + i;
-
-        temp = ATFFT_RE (*a);
-        ATFFT_RE (*a) = temp * ATFFT_IM (*b) +
-                          ATFFT_IM (*a) * ATFFT_RE (*b);
-        ATFFT_IM (*a) = temp * ATFFT_RE (*b) -
-                          ATFFT_IM (*a) * ATFFT_IM (*b);
+        atfft_multiply_by_and_swap_complex (fft->sig_dft + i, fft->conv_dft [i]);
     }
 
     /* take the inverse DFT of the result */
@@ -167,13 +175,6 @@ void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
     /* multiply the output transform with the factors */
     for (int i = 0; i < fft->size; ++i)
     {
-        atfft_complex *a = fft->conv + i;
-        atfft_complex *b = fft->factors + i;
-        atfft_complex *p = out + i * stride;
-
-        ATFFT_RE (*p) = ATFFT_IM (*a) * ATFFT_RE (*b) - \
-                          ATFFT_RE (*a) * ATFFT_IM (*b); \
-        ATFFT_IM (*p) = ATFFT_RE (*a) * ATFFT_RE (*b) + \
-                          ATFFT_IM (*a) * ATFFT_IM (*b); \
+        atfft_swap_and_product_complex (fft->conv [i], fft->factors [i], out + i * stride);
     }
 }

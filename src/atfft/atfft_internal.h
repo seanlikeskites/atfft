@@ -23,6 +23,15 @@ inline void atfft_copy_complex (const atfft_complex x, atfft_complex *y)
 }
 
 /**
+ * Swap the real and imaginary part of a complex number: y = j * conj (x)
+ */
+inline void atfft_swap_complex (const atfft_complex x, atfft_complex *y)
+{
+    ATFFT_RE (*y) = ATFFT_IM (x);
+    ATFFT_IM (*y) = ATFFT_RE (x);
+}
+
+/**
  * Sum two complex numbers: s = a + b
  */
 inline void atfft_sum_complex (const atfft_complex a,
@@ -69,6 +78,22 @@ inline void atfft_multiply_by_complex (atfft_complex *a, const atfft_complex b)
                     ATFFT_IM (*a) * ATFFT_IM (b);
     ATFFT_IM (*a) = temp * ATFFT_IM (b) +
                     ATFFT_IM (*a) * ATFFT_RE (b);
+}
+
+/**
+ * Multiply a complex variable by another and swap real and imaginary parts:
+ *
+ * a = j * conj(ab)
+ */
+inline void atfft_multiply_by_and_swap_complex (atfft_complex *a, const atfft_complex b)
+{
+    atfft_sample temp;
+    temp = ATFFT_RE (*a);
+
+    ATFFT_RE (*a) = temp * ATFFT_IM (b) +
+                    ATFFT_IM (*a) * ATFFT_RE (b);
+    ATFFT_IM (*a) = temp * ATFFT_RE (b) -
+                    ATFFT_IM (*a) * ATFFT_IM (b);
 }
 
 /**
