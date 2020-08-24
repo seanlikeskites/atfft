@@ -130,4 +130,10 @@ void atfft_scaled_twiddle_factor (int n,
                                   atfft_sample s,
                                   atfft_complex *t);
 
+/**
+ * Return 1 if x is prime, 0 otherwise.
+ */
+int atfft_is_prime (int x);
+
+
 #endif /* ATFFT_INTERNAL_H_INCLUDED */

@@ -22,22 +22,6 @@ static int atfft_mod (int a, int n)
     return r < 0 ? r + n : r;
 }
 
-static int atfft_is_prime (int x)
-{
-    if (x <= 1 || (atfft_is_even (x) && x > 2))
-        return 0;
-
-    int sqrt_x = (int) sqrt ((double) x);
-
-    for (int i = 2; i <= sqrt_x; ++i)
-    {
-        if ((x % i) == 0)
-            return 0;
-    }
-
-    return 1;
-}
-
 static int atfft_primitive_root_mod_n (int n)
 {
     /* this algorithm will only work for prime numbers */
@@ -175,7 +159,7 @@ static int atfft_init_rader_convolution_dft (int size,
     }
 
     /* take DFT of twiddle factors */
-    atfft_dft_complex_transform (fft, t_factors, conv_dft);
+    atfft_dft_complex_transform (fft, t_factors, conv_dft, 1);
 
     free (t_factors);
     return 0;
@@ -298,7 +282,7 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
                                stride,
                                fft->sig);
 
-    atfft_dft_complex_transform (fft->fft, fft->sig, fft->sig_dft);
+    atfft_dft_complex_transform (fft->fft, fft->sig, fft->sig_dft, 1);
 
     for (int i = 0; i < fft->conv_size; ++i)
     {
@@ -311,7 +295,7 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
     ATFFT_RE (fft->sig_dft [0]) += ATFFT_IM (in0);
     ATFFT_IM (fft->sig_dft [0]) += ATFFT_RE (in0);
 
-    atfft_dft_complex_transform (fft->fft, fft->sig_dft, fft->conv);
+    atfft_dft_complex_transform (fft->fft, fft->sig_dft, fft->conv, 1);
 
     atfft_rader_permute_output (fft->perm2, 
                                 fft->rader_size,

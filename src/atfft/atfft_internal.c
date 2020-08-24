@@ -60,3 +60,19 @@ void atfft_scaled_twiddle_factor (int n,
     if (d == ATFFT_FORWARD)
         ATFFT_IM (*t) *= -1.0;
 }
+
+int atfft_is_prime (int x)
+{
+    if (x <= 1 || (atfft_is_even (x) && x > 2))
+        return 0;
+
+    int sqrt_x = (int) sqrt ((double) x);
+
+    for (int i = 2; i <= sqrt_x; ++i)
+    {
+        if ((x % i) == 0)
+            return 0;
+    }
+
+    return 1;
+}
