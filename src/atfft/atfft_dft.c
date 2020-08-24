@@ -395,11 +395,12 @@ static void atfft_dft_3 (atfft_complex *out,
     ATFFT_RE (ts [2]) = sin_2pi_on_3 * ATFFT_RE (ts [2]);
     ATFFT_IM (ts [2]) = sin_2pi_on_3 * ATFFT_IM (ts [2]);
 
-    atfft_sum_complex (*bins [1], ts [0], bins [0]);
+    atfft_sum_complex (*bins [0], ts [0], bins [0]);
     ATFFT_RE (*bins [1]) = ATFFT_RE (ts [1]) - ATFFT_IM (ts [2]);
     ATFFT_IM (*bins [1]) = ATFFT_IM (ts [1]) + ATFFT_RE (ts [2]);
     ATFFT_RE (*bins [2]) = ATFFT_RE (ts [1]) + ATFFT_IM (ts [2]);
     ATFFT_IM (*bins [2]) = ATFFT_IM (ts [1]) - ATFFT_RE (ts [2]);
+
 }
 
 static void atfft_dft_4 (atfft_complex **bins,
