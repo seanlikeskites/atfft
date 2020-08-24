@@ -16,64 +16,60 @@
 /**
  * Copy the complex value x into the complex value y.
  */
-#define ATFFT_COPY_COMPLEX(x, y) \
-    do \
-    { \
-        ATFFT_RE (y) = ATFFT_RE (x); \
-        ATFFT_IM (y) = ATFFT_IM (x); \
-    } \
-    while (0)
+inline void atfft_copy_complex (const atfft_complex x, atfft_complex *y)
+{
+    ATFFT_RE (*y) = ATFFT_RE (x);
+    ATFFT_IM (*y) = ATFFT_IM (x);
+}
 
 /**
  * Sum two complex numbers: s = a + b
  */
-#define ATFFT_SUM_COMPLEX(a, b, s) \
-    do \
-    { \
-        ATFFT_RE (s) = ATFFT_RE (a) + ATFFT_RE (b); \
-        ATFFT_IM (s) = ATFFT_IM (a) + ATFFT_IM (b); \
-    } \
-    while (0)
+inline void atfft_sum_complex (const atfft_complex a,
+                               const atfft_complex b,
+                               atfft_complex *s)
+{
+    ATFFT_RE (*s) = ATFFT_RE (a) + ATFFT_RE (b);
+    ATFFT_IM (*s) = ATFFT_IM (a) + ATFFT_IM (b);
+}
 
 /**
  * Take the difference of two complex numbers: d = a - b
  */
-#define ATFFT_DIFFERENCE_COMPLEX(a, b, d) \
-    do \
-    { \
-        ATFFT_RE (d) = ATFFT_RE (a) - ATFFT_RE (b); \
-        ATFFT_IM (d) = ATFFT_IM (a) - ATFFT_IM (b); \
-    } \
-    while (0)
+inline void atfft_difference_complex (const atfft_complex a,
+                                      const atfft_complex b,
+                                      atfft_complex *d)
+{
+    ATFFT_RE (*d) = ATFFT_RE (a) - ATFFT_RE (b);
+    ATFFT_IM (*d) = ATFFT_IM (a) - ATFFT_IM (b);
+}
 
 /**
  * Find the product of two complex numbers: p = ab
  */
-#define ATFFT_PRODUCT_COMPLEX(a, b, p) \
-    do \
-    { \
-        ATFFT_RE (p) = ATFFT_RE (a) * ATFFT_RE (b) - \
-                         ATFFT_IM (a) * ATFFT_IM (b); \
-        ATFFT_IM (p) = ATFFT_RE (a) * ATFFT_IM (b) + \
-                         ATFFT_IM (a) * ATFFT_RE (b); \
-    } \
-    while (0)
+inline void atfft_product_complex (const atfft_complex a,
+                                   const atfft_complex b,
+                                   atfft_complex *p)
+{
+    ATFFT_RE (*p) = ATFFT_RE (a) * ATFFT_RE (b) -
+                    ATFFT_IM (a) * ATFFT_IM (b);
+    ATFFT_IM (*p) = ATFFT_RE (a) * ATFFT_IM (b) +
+                    ATFFT_IM (a) * ATFFT_RE (b);
+}
 
 /**
  * Multiply a complex variable by another: a *= b
  */
-#define ATFFT_MULTIPLY_BY_COMPLEX(a, b) \
-    do \
-    { \
-        atfft_sample temp; \
-        temp = ATFFT_RE (a); \
-        \
-        ATFFT_RE (a) = temp * ATFFT_RE (b) - \
-                         ATFFT_IM (a) * ATFFT_IM (b); \
-        ATFFT_IM (a) = temp * ATFFT_IM (b) + \
-                         ATFFT_IM (a) * ATFFT_RE (b); \
-    } \
-    while (0)
+inline void atfft_multiply_by_complex (atfft_complex *a, const atfft_complex b)
+{
+    atfft_sample temp;
+    temp = ATFFT_RE (*a);
+
+    ATFFT_RE (*a) = temp * ATFFT_RE (b) -
+                    ATFFT_IM (*a) * ATFFT_IM (b);
+    ATFFT_IM (*a) = temp * ATFFT_IM (b) +
+                    ATFFT_IM (*a) * ATFFT_RE (b);
+}
 
 /**
  * Find the next power of 2 which is greater than x.

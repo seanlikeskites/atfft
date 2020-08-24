@@ -54,7 +54,7 @@ static int atfft_init_bluestein_convolution_dft (int size,
     {
         for (int i = 1; i < size; ++i)
         {
-            ATFFT_COPY_COMPLEX (sequence [i], sequence [conv_size - i]);
+            atfft_copy_complex (sequence [i], &sequence [conv_size - i]);
         }
     }
 

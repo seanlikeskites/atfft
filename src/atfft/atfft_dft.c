@@ -372,9 +372,9 @@ static void atfft_dft_2 (atfft_complex *out,
     atfft_complex *bin2 = bin1 + sub_size;
     atfft_complex t;
 
-    ATFFT_COPY_COMPLEX (*bin2, t);
-    ATFFT_DIFFERENCE_COMPLEX (*bin1, t, *bin2);
-    ATFFT_SUM_COMPLEX (*bin1, t, *bin1);
+    atfft_copy_complex (*bin2, &t);
+    atfft_difference_complex (*bin1, t, bin2);
+    atfft_sum_complex (*bin1, t, bin1);
 }
 
 static void atfft_dft_3 (atfft_complex *out,
@@ -388,14 +388,14 @@ static void atfft_dft_3 (atfft_complex *out,
 
     atfft_complex ts [3];
 
-    ATFFT_SUM_COMPLEX (*bins [1], *bins [2], ts [0]);
+    atfft_sum_complex (*bins [1], *bins [2], &ts [0]);
     ATFFT_RE (ts [1]) = ATFFT_RE (*bins [0]) - ATFFT_RE (ts [0]) / 2.0;
     ATFFT_IM (ts [1]) = ATFFT_IM (*bins [0]) - ATFFT_IM (ts [0]) / 2.0;
-    ATFFT_DIFFERENCE_COMPLEX (*bins [1], *bins [2], ts [2]);
+    atfft_difference_complex (*bins [1], *bins [2], &ts [2]);
     ATFFT_RE (ts [2]) = sin_2pi_on_3 * ATFFT_RE (ts [2]);
     ATFFT_IM (ts [2]) = sin_2pi_on_3 * ATFFT_IM (ts [2]);
 
-    ATFFT_SUM_COMPLEX (*bins [0], ts [0], *bins [0]);
+    atfft_sum_complex (*bins [1], ts [0], bins [0]);
     ATFFT_RE (*bins [1]) = ATFFT_RE (ts [1]) - ATFFT_IM (ts [2]);
     ATFFT_IM (*bins [1]) = ATFFT_IM (ts [1]) + ATFFT_RE (ts [2]);
     ATFFT_RE (*bins [2]) = ATFFT_RE (ts [1]) + ATFFT_IM (ts [2]);
@@ -407,23 +407,23 @@ static void atfft_dft_4 (atfft_complex **bins,
 {
     atfft_complex ts [4];
 
-    ATFFT_SUM_COMPLEX (*bins [0], *bins [2], ts [0]);
-    ATFFT_SUM_COMPLEX (*bins [1], *bins [3], ts [1]);
-    ATFFT_DIFFERENCE_COMPLEX (*bins [0], *bins [2], ts [2]);
+    atfft_sum_complex (*bins [0], *bins [2], &ts [0]);
+    atfft_sum_complex (*bins [1], *bins [3], &ts [1]);
+    atfft_difference_complex (*bins [0], *bins [2], &ts [2]);
 
     switch (direction)
     {
         case ATFFT_BACKWARD:
-            ATFFT_DIFFERENCE_COMPLEX (*bins [3], *bins [1], ts [3]);
+            atfft_difference_complex (*bins [3], *bins [1], &ts [3]);
             break;
         default:
-            ATFFT_DIFFERENCE_COMPLEX (*bins [1], *bins [3], ts [3]);
+            atfft_difference_complex (*bins [1], *bins [3], &ts [3]);
     }
 
-    ATFFT_SUM_COMPLEX (ts [0], ts[1], *bins [0]);
+    atfft_sum_complex (ts [0], ts[1], bins [0]);
     ATFFT_RE (*bins [1]) = ATFFT_RE (ts [2]) + ATFFT_IM (ts [3]);
     ATFFT_IM (*bins [1]) = ATFFT_IM (ts [2]) - ATFFT_RE (ts [3]);
-    ATFFT_DIFFERENCE_COMPLEX (ts [0], ts[1], *bins [2]);
+    atfft_difference_complex (ts [0], ts[1], bins [2]);
     ATFFT_RE (*bins [3]) = ATFFT_RE (ts [2]) - ATFFT_IM (ts [3]);
     ATFFT_IM (*bins [3]) = ATFFT_IM (ts [2]) + ATFFT_RE (ts [3]);
 }
@@ -440,7 +440,7 @@ static void atfft_butterfly_2 (atfft_complex *out,
 
     while (i--)
     {
-        ATFFT_MULTIPLY_BY_COMPLEX (out [sub_size], t_factors [t]);
+        atfft_multiply_by_complex (out + sub_size, t_factors [t]);
         atfft_dft_2 (out, sub_size);
 
         ++out;
@@ -466,7 +466,7 @@ static void atfft_butterfly_3 (const struct atfft_dft *fft,
 
         for (int n = 1; n < radix; ++n)
         {
-            ATFFT_MULTIPLY_BY_COMPLEX (out [m], t_factors [t]);
+            atfft_multiply_by_complex (out + m, t_factors [t]);
             m += sub_size;
             ++t;
         }
@@ -497,7 +497,7 @@ static void atfft_butterfly_4 (atfft_complex *out,
     {
         for (int n = 1; n < radix; ++n)
         {
-            ATFFT_MULTIPLY_BY_COMPLEX (*bins [n], t_factors [t]);
+            atfft_multiply_by_complex (bins [n], t_factors [t]);
             ++t;
         }
 
@@ -525,7 +525,7 @@ static void atfft_butterfly_rader (atfft_complex *out,
 
         for (int n = 1; n < radix; ++n)
         {
-            ATFFT_MULTIPLY_BY_COMPLEX (out [m], t_factors [t]);
+            atfft_multiply_by_complex (out + m, t_factors [t]);
             m += sub_size;
             ++t;
         }
@@ -554,7 +554,7 @@ static void atfft_butterfly_n (atfft_complex *out,
         /* Copy ith bin from each sub-transform into work_space. */
         for (int n = 0; n < radix; ++n)
         {
-            ATFFT_COPY_COMPLEX (out [n * sub_size + i], work_space [n]);
+            atfft_copy_complex (out [n * sub_size + i], work_space + n);
         }
 
         /* Calculate the output bins. */
@@ -578,7 +578,7 @@ static void atfft_butterfly_n (atfft_complex *out,
             /* copy the ith bin of the first sub-transform to the current
              * output bin.
              */
-            ATFFT_COPY_COMPLEX (work_space [0], out [k]);
+            atfft_copy_complex (work_space [0], out + k);
 
             /* Sum in the ith bins from the remaining sub-transforms,
              * multiplied by their respective twiddle factor.
@@ -665,7 +665,7 @@ static void atfft_compute_dft_complex (const struct atfft_dft *fft,
          */
         for (int i = 0; i < sub_size * R; ++i)
         {
-            ATFFT_COPY_COMPLEX (in [i * stride], out [i]);
+            atfft_copy_complex (in [i * stride], out + i);
         }
     }
 

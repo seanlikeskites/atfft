@@ -268,7 +268,7 @@ static void atfft_rader_permute_input (int *perm,
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_COPY_COMPLEX (in [in_stride * perm [i]], out [i]);
+        atfft_copy_complex (in [in_stride * perm [i]], out + i);
     }
 }
 
@@ -280,7 +280,7 @@ static void atfft_rader_permute_output (int *perm,
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_COPY_COMPLEX (in [i], out [out_stride * perm [i]]);
+        atfft_copy_complex (in [i], out + (out_stride * perm [i]));
     }
 }
 
@@ -291,8 +291,8 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
 {
     atfft_complex in0, out0;
 
-    ATFFT_COPY_COMPLEX (in [0], in0);
-    ATFFT_COPY_COMPLEX (in0, out0);
+    atfft_copy_complex (in [0], &in0);
+    atfft_copy_complex (in0, &out0);
 
     atfft_rader_permute_input (fft->perm1, 
                                fft->rader_size,
@@ -304,8 +304,8 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
 
     for (int i = 0; i < fft->conv_size; ++i)
     {
-        ATFFT_MULTIPLY_BY_COMPLEX (fft->sig_dft [i], fft->conv_dft [i]);
-        ATFFT_SUM_COMPLEX (out0, fft->sig [i], out0);
+        atfft_multiply_by_complex (fft->sig_dft + i, fft->conv_dft [i]);
+        atfft_sum_complex (out0, fft->sig [i], &out0);
     }
 
     ATFFT_RE (fft->sig_dft [0]) += ATFFT_RE (in0);
@@ -319,5 +319,5 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
                                 out,
                                 stride);
 
-    ATFFT_COPY_COMPLEX (out0, out[0]);
+    atfft_copy_complex (out0, &out[0]);
 }

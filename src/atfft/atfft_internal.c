@@ -11,6 +11,24 @@
 #include "atfft_internal.h"
 #include <math.h>
 
+/******************************************
+ * External definitions of inline functions.
+ ******************************************/
+extern inline void atfft_copy_complex (const atfft_complex x, atfft_complex *y);
+extern inline void atfft_sum_complex (const atfft_complex a,
+                                      const atfft_complex b,
+                                      atfft_complex *s);
+extern inline void atfft_difference_complex (const atfft_complex a,
+                                             const atfft_complex b,
+                                             atfft_complex *d);
+extern inline void atfft_product_complex (const atfft_complex a,
+                                          const atfft_complex b,
+                                          atfft_complex *p);
+extern inline void atfft_multiply_by_complex (atfft_complex *a, const atfft_complex b);
+
+/******************************************
+ * Other functions.
+ ******************************************/
 int atfft_next_power_of_2 (int x)
 {
     if (x <= 0)
