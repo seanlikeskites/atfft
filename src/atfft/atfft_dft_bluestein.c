@@ -141,7 +141,7 @@ void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
     /* multiply the input signal with the factors */
     for (int i = 0; i < fft->size; ++i)
     {
-        ATFFT_PRODUCT_COMPLEX (in [i * stride], fft->factors [i], fft->sig [i]);
+        atfft_product_complex (in [i * stride], fft->factors [i], fft->sig + i);
     }
 
     /* take DFT of the result */
