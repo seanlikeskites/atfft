@@ -636,6 +636,7 @@ static void atfft_butterfly (const struct atfft_dft_cooley_tukey *fft,
 static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
                                        atfft_complex *in,
                                        atfft_complex *out,
+                                       int input_stride,
                                        int stage,
                                        int stride)
 {
@@ -655,8 +656,9 @@ static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
         for (int r = 0; r < R; ++r)
         {
             atfft_compute_dft_complex (fft, 
-                                       in + r * stride,
+                                       in + r * stride * input_stride,
                                        out + r * sub_size,
+                                       input_stride,
                                        stage + 1,
                                        stride * R);
         }
@@ -669,7 +671,7 @@ static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
          */
         for (int i = 0; i < sub_size * R; ++i)
         {
-            atfft_copy_complex (in [i * stride], out + i);
+            atfft_copy_complex (in [i * stride * input_stride], out + i);
         }
     }
 
@@ -694,6 +696,7 @@ void atfft_dft_cooley_tukey_complex_transform (struct atfft_dft_cooley_tukey *ff
     atfft_compute_dft_complex (fft,
                                in,
                                out,
+                               stride,
                                0,
                                1);
 }
