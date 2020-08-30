@@ -40,9 +40,11 @@ struct atfft_dft_cooley_tukey
     int radices [MAX_RADICES];
     int sub_sizes [MAX_RADICES];
 
+    /* complex sinusoids */
+    atfft_complex *sinusoids;
+
     /* twiddle factors */
-    atfft_complex *t_factors;
-    atfft_complex **stage_t_factors;
+    atfft_complex **t_factors;
 
     /* working space for length-n butterflies */
     atfft_complex *work_space;
@@ -112,18 +114,18 @@ static int atfft_init_radices (int size, int *radices, int *sub_sizes, int *max_
  * Functions for pre-calculating twiddle
  * factors.
  ******************************************/
-static void atfft_init_twiddle_factors (atfft_complex *factors,
-                                        int size,
-                                        enum atfft_direction direction)
+static void atfft_init_complex_sinusoids (atfft_complex *sinusoids,
+                                          int size,
+                                          enum atfft_direction direction)
 {
     for (int i = 0; i < size; ++i)
     {
-        atfft_twiddle_factor (i, size, direction, factors + i);
+        atfft_twiddle_factor (i, size, direction, sinusoids + i);
     }
 }
 
-static void atfft_free_stage_twiddle_factors (atfft_complex **factors,
-                                              int n_radices)
+static void atfft_free_twiddle_factors (atfft_complex **factors,
+                                        int n_radices)
 {
     if (factors)
     {
@@ -136,9 +138,9 @@ static void atfft_free_stage_twiddle_factors (atfft_complex **factors,
     }
 }
 
-static atfft_complex* atfft_generate_stage_twiddle_factors (int radix,
-                                                            int sub_size,
-                                                            enum atfft_direction direction)
+static atfft_complex* atfft_generate_twiddle_factors (int radix,
+                                                      int sub_size,
+                                                      enum atfft_direction direction)
 {
     int size = radix * sub_size;
     int n_factors = size - sub_size;
@@ -161,10 +163,10 @@ static atfft_complex* atfft_generate_stage_twiddle_factors (int radix,
     return f;
 }
 
-static atfft_complex** atfft_init_stage_twiddle_factors (int *radices,
-                                                         int *sub_sizes,
-                                                         int n_radices,
-                                                         enum atfft_direction direction)
+static atfft_complex** atfft_init_twiddle_factors (int *radices,
+                                                   int *sub_sizes,
+                                                   int n_radices,
+                                                   enum atfft_direction direction)
 {
     atfft_complex **factors = calloc (n_radices, sizeof (*factors));
 
@@ -173,9 +175,9 @@ static atfft_complex** atfft_init_stage_twiddle_factors (int *radices,
 
     for (int i = 0; i < n_radices; ++i)
     {
-        atfft_complex *f = atfft_generate_stage_twiddle_factors (radices [i],
-                                                                 sub_sizes [i],
-                                                                 direction);
+        atfft_complex *f = atfft_generate_twiddle_factors (radices [i],
+                                                           sub_sizes [i],
+                                                           direction);
 
         if (!f)
             goto failed;
@@ -186,7 +188,7 @@ static atfft_complex** atfft_init_stage_twiddle_factors (int *radices,
     return factors;
 
 failed:
-    atfft_free_stage_twiddle_factors (factors, n_radices);
+    atfft_free_twiddle_factors (factors, n_radices);
     return NULL;
 }
 
@@ -317,17 +319,17 @@ struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
     fft->n_radices = atfft_init_radices (size, fft->radices, fft->sub_sizes, &max_r);
 
     /* calculate twiddle factors */
-    fft->t_factors = malloc (size * sizeof (*(fft->t_factors)));
-    fft->stage_t_factors = atfft_init_stage_twiddle_factors (fft->radices,
-                                                             fft->sub_sizes,
-                                                             fft->n_radices,
-                                                             direction);
+    fft->sinusoids = malloc (size * sizeof (*(fft->sinusoids)));
+    fft->t_factors = atfft_init_twiddle_factors (fft->radices,
+                                                 fft->sub_sizes,
+                                                 fft->n_radices,
+                                                 direction);
 
     /* clean up on failure */
-    if (!(fft->t_factors && fft->stage_t_factors))
+    if (!(fft->sinusoids && fft->t_factors))
         goto failed;
     else
-        atfft_init_twiddle_factors (fft->t_factors, size, direction);
+        atfft_init_complex_sinusoids (fft->sinusoids, size, direction);
 
     /* allocate some working space */
     fft->work_space = malloc (max_r * sizeof (*(fft->work_space)));
@@ -358,8 +360,8 @@ void atfft_dft_cooley_tukey_destroy (struct atfft_dft_cooley_tukey *fft)
     {
         atfft_free_sub_transforms (fft->sub_transforms, fft->n_sub_transforms);
         free (fft->work_space);
-        atfft_free_stage_twiddle_factors (fft->stage_t_factors, fft->n_radices);
-        free (fft->t_factors);
+        atfft_free_twiddle_factors (fft->t_factors, fft->n_radices);
+        free (fft->sinusoids);
         free (fft);
     }
 }
@@ -462,7 +464,7 @@ static void atfft_butterfly_3 (const struct atfft_dft_cooley_tukey *fft,
     int radix = 3;
     int t = 0;
 
-    atfft_sample sin_2pi_on_3 = ATFFT_IM (fft->t_factors [sub_size * stride]);
+    atfft_sample sin_2pi_on_3 = ATFFT_IM (fft->sinusoids [sub_size * stride]);
 
     while (i--)
     {
@@ -626,7 +628,7 @@ static void atfft_butterfly (const struct atfft_dft_cooley_tukey *fft,
             if (sub_transform)
                 atfft_butterfly_sub_transform (out, sub_size, radix, t_factors, sub_transform);
             else
-                atfft_butterfly_n (out, fft->size, sub_size, stride, radix, fft->t_factors, fft->work_space);
+                atfft_butterfly_n (out, fft->size, sub_size, stride, radix, fft->sinusoids, fft->work_space);
     }
 }
 
@@ -682,7 +684,7 @@ static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
                      stride,
                      R,
                      fft->radix_sub_transforms [stage],
-                     fft->stage_t_factors [stage]);
+                     fft->t_factors [stage]);
 }
 
 void atfft_dft_cooley_tukey_complex_transform (struct atfft_dft_cooley_tukey *fft,
