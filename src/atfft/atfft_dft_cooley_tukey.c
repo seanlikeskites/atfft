@@ -46,6 +46,9 @@ struct atfft_dft_cooley_tukey
     /* twiddle factors */
     atfft_complex **t_factors;
 
+    /* constants */
+    atfft_sample sin_2pi_on_3;
+
     /* working space for length-n butterflies */
     atfft_complex *work_space;
 
@@ -111,8 +114,8 @@ static int atfft_init_radices (int size, int *radices, int *sub_sizes, int *max_
 }
 
 /******************************************
- * Functions for pre-calculating twiddle
- * factors.
+ * Functions for pre-calculating complex
+ * sinusoids and twiddle factors.
  ******************************************/
 static void atfft_init_complex_sinusoids (atfft_complex *sinusoids,
                                           int size,
@@ -331,6 +334,12 @@ struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
     else
         atfft_init_complex_sinusoids (fft->sinusoids, size, direction);
 
+    /* initialise constants */
+    if (direction == ATFFT_FORWARD)
+        fft->sin_2pi_on_3 = - sin (2.0 * M_PI / 3.0);
+    else
+        fft->sin_2pi_on_3 = sin (2.0 * M_PI / 3.0);
+
     /* allocate some working space */
     fft->work_space = malloc (max_r * sizeof (*(fft->work_space)));
 
@@ -370,11 +379,11 @@ void atfft_dft_cooley_tukey_destroy (struct atfft_dft_cooley_tukey *fft)
  * Optimised small size DFTs
  ******************************************/
 static void atfft_dft_2 (atfft_complex *out,
-                         int sub_size)
+                         int stride)
 {
     /* The start of each block in the output DFT */
     atfft_complex *bin1 = out;
-    atfft_complex *bin2 = bin1 + sub_size;
+    atfft_complex *bin2 = bin1 + stride;
     atfft_complex t;
 
     atfft_copy_complex (*bin2, &t);
@@ -383,13 +392,13 @@ static void atfft_dft_2 (atfft_complex *out,
 }
 
 static void atfft_dft_3 (atfft_complex *out,
-                         int sub_size,
+                         int stride,
                          atfft_sample sin_2pi_on_3)
 {
     atfft_complex *bins [3];
     bins [0] = out;
-    bins [1] = bins [0] + sub_size;
-    bins [2] = bins [1] + sub_size;
+    bins [1] = bins [0] + stride;
+    bins [2] = bins [1] + stride;
 
     atfft_complex ts [3];
 
@@ -438,52 +447,54 @@ static void atfft_dft_4 (atfft_complex **bins,
  * DFT Butterflies
  ******************************************/
 static void atfft_butterfly_2 (atfft_complex *out,
+                               int stride,
                                int sub_size,
                                atfft_complex *t_factors)
 {
     int i = sub_size;
     int t = 0;
+    int dft_stride = sub_size * stride;
 
     while (i--)
     {
-        atfft_multiply_by_complex (out + sub_size, t_factors [t]);
-        atfft_dft_2 (out, sub_size);
+        atfft_multiply_by_complex (out + dft_stride, t_factors [t]);
+        atfft_dft_2 (out, dft_stride);
 
-        ++out;
+        out += stride;
         ++t;
     }
 }
 
-static void atfft_butterfly_3 (const struct atfft_dft_cooley_tukey *fft,
-                               atfft_complex *out,
-                               int sub_size,
+static void atfft_butterfly_3 (atfft_complex *out,
                                int stride,
-                               atfft_complex *t_factors)
+                               int sub_size,
+                               atfft_complex *t_factors,
+                               atfft_sample sin_2pi_on_3)
 {
     int i = sub_size;
     int radix = 3;
     int t = 0;
-
-    atfft_sample sin_2pi_on_3 = ATFFT_IM (fft->sinusoids [sub_size * stride]);
+    int dft_stride = sub_size * stride;
 
     while (i--)
     {
-        int m = sub_size;
+        int m = dft_stride;
 
         for (int n = 1; n < radix; ++n)
         {
             atfft_multiply_by_complex (out + m, t_factors [t]);
-            m += sub_size;
+            m += dft_stride;
             ++t;
         }
 
-        atfft_dft_3 (out, sub_size, sin_2pi_on_3);
+        atfft_dft_3 (out, dft_stride, sin_2pi_on_3);
 
-        ++out;
+        out += stride;
     }
 }
 
 static void atfft_butterfly_4 (atfft_complex *out,
+                               int stride,
                                int sub_size,
                                enum atfft_direction direction,
                                atfft_complex *t_factors)
@@ -491,13 +502,14 @@ static void atfft_butterfly_4 (atfft_complex *out,
     int i = sub_size;
     int radix = 4;
     int t = 0;
+    int dft_stride = sub_size * stride;
 
     atfft_complex *bins [radix];
 
     bins [0] = out;
-    bins [1] = bins [0] + sub_size;
-    bins [2] = bins [1] + sub_size;
-    bins [3] = bins [2] + sub_size;
+    bins [1] = bins [0] + dft_stride;
+    bins [2] = bins [1] + dft_stride;
+    bins [3] = bins [2] + dft_stride;
 
     while (i--)
     {
@@ -511,12 +523,13 @@ static void atfft_butterfly_4 (atfft_complex *out,
 
         for (int n = 0; n < radix; ++n)
         {
-            ++(bins [n]);
+            bins [n] += stride;
         }
     }
 }
 
 static void atfft_butterfly_sub_transform (atfft_complex *out,
+                                           int stride,
                                            int sub_size,
                                            int radix,
                                            atfft_complex *t_factors,
@@ -524,30 +537,32 @@ static void atfft_butterfly_sub_transform (atfft_complex *out,
 {
     int i = sub_size;
     int t = 0;
+    int dft_stride = sub_size * stride;
 
     while (i--)
     {
-        int m = sub_size;
+        int m = dft_stride;
 
         for (int n = 1; n < radix; ++n)
         {
             atfft_multiply_by_complex (out + m, t_factors [t]);
-            m += sub_size;
+            m += dft_stride;
             ++t;
         }
 
-        atfft_dft_complex_transform (sub_transform, out, out, sub_size);
+        atfft_dft_complex_transform (sub_transform, out, out, dft_stride);
 
-        ++out;
+        out += stride;
     }
 }
 
 static void atfft_butterfly_n (atfft_complex *out,
-                               int top_size,
-                               int sub_size,
                                int stride,
+                               int sub_size,
                                int radix,
-                               atfft_complex *t_factors,
+                               atfft_complex *sinusoids,
+                               int n_sinusoids,
+                               int sin_stride,
                                atfft_complex *work_space)
 {
     /* Combine radix DFTs of size sub_size,
@@ -560,7 +575,8 @@ static void atfft_butterfly_n (atfft_complex *out,
         /* Copy ith bin from each sub-transform into work_space. */
         for (int n = 0; n < radix; ++n)
         {
-            atfft_copy_complex (out [n * sub_size + i], work_space + n);
+            int b = (n * sub_size + i) * stride;
+            atfft_copy_complex (out [b], work_space + n);
         }
 
         /* Calculate the output bins. */
@@ -580,21 +596,22 @@ static void atfft_butterfly_n (atfft_complex *out,
              *  output DFT.
              */
             int k = n * sub_size + i;
+            int b = k * stride;
 
             /* copy the ith bin of the first sub-transform to the current
              * output bin.
              */
-            atfft_copy_complex (work_space [0], out + k);
+            atfft_copy_complex (work_space [0], out + b);
 
             /* Sum in the ith bins from the remaining sub-transforms,
              * multiplied by their respective twiddle factor.
-             * out[k] += work_space [r] * t_factors [(k * r * stride) % top_size]
+             * out[b] += work_space [r] * sinusoids [(k * r * sin_stride) % n_sinusoids]
              */
             for (int r = 1; r < radix; ++r)
             {
-                atfft_sample *bin = out [k];
+                atfft_sample *bin = out [b];
                 atfft_sample *in = work_space [r];
-                atfft_sample *t = t_factors [(k * r * stride) % top_size];
+                atfft_sample *t = sinusoids [(k * r * sin_stride) % n_sinusoids];
 
                 ATFFT_RE (bin) += ATFFT_RE (in) * ATFFT_RE (t) -
                                     ATFFT_IM (in) * ATFFT_IM (t);
@@ -607,28 +624,29 @@ static void atfft_butterfly_n (atfft_complex *out,
 
 static void atfft_butterfly (const struct atfft_dft_cooley_tukey *fft,
                              atfft_complex *out,
-                             int sub_size,
                              int stride,
+                             int sub_size,
                              int radix,
                              struct atfft_dft *sub_transform,
-                             atfft_complex *t_factors)
+                             atfft_complex *t_factors,
+                             int sin_stride)
 {
     switch (radix)
     {
         case 2:
-            atfft_butterfly_2 (out, sub_size, t_factors);
+            atfft_butterfly_2 (out, stride, sub_size, t_factors);
             break;
         case 3:
-            atfft_butterfly_3 (fft, out, sub_size, stride, t_factors);
+            atfft_butterfly_3 (out, stride, sub_size, t_factors, fft->sin_2pi_on_3);
             break;
         case 4:
-            atfft_butterfly_4 (out, sub_size, fft->direction, t_factors);
+            atfft_butterfly_4 (out, stride, sub_size, fft->direction, t_factors);
             break;
         default:
             if (sub_transform)
-                atfft_butterfly_sub_transform (out, sub_size, radix, t_factors, sub_transform);
+                atfft_butterfly_sub_transform (out, stride, sub_size, radix, t_factors, sub_transform);
             else
-                atfft_butterfly_n (out, fft->size, sub_size, stride, radix, fft->sinusoids, fft->work_space);
+                atfft_butterfly_n (out, stride, sub_size, radix, fft->sinusoids, fft->size, sin_stride, fft->work_space);
     }
 }
 
@@ -638,9 +656,9 @@ static void atfft_butterfly (const struct atfft_dft_cooley_tukey *fft,
 static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
                                        atfft_complex *in,
                                        atfft_complex *out,
-                                       int input_stride,
                                        int stage,
-                                       int stride)
+                                       int in_stride,
+                                       int out_stride)
 {
     /* Get the radix, R, for this stage of the transform.
      * We will split the transform into R sub-transforms
@@ -658,11 +676,11 @@ static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
         for (int r = 0; r < R; ++r)
         {
             atfft_compute_dft_complex (fft, 
-                                       in + r * stride * input_stride,
-                                       out + r * sub_size,
-                                       input_stride,
+                                       in + r * in_stride,
+                                       out + r * sub_size * out_stride,
                                        stage + 1,
-                                       stride * R);
+                                       in_stride * R,
+                                       out_stride);
         }
     }
     else
@@ -673,18 +691,19 @@ static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
          */
         for (int i = 0; i < sub_size * R; ++i)
         {
-            atfft_copy_complex (in [i * stride * input_stride], out + i);
+            atfft_copy_complex (in [i * in_stride], out + i * out_stride);
         }
     }
 
     /* Apply butterfly for this stage of the transform. */
     atfft_butterfly (fft,
                      out,
+                     out_stride,
                      sub_size,
-                     stride,
                      R,
                      fft->radix_sub_transforms [stage],
-                     fft->t_factors [stage]);
+                     fft->t_factors [stage],
+                     in_stride / out_stride);
 }
 
 void atfft_dft_cooley_tukey_complex_transform (struct atfft_dft_cooley_tukey *fft,
@@ -698,7 +717,7 @@ void atfft_dft_cooley_tukey_complex_transform (struct atfft_dft_cooley_tukey *ff
     atfft_compute_dft_complex (fft,
                                in,
                                out,
-                               stride,
                                0,
-                               1);
+                               stride,
+                               stride);
 }
