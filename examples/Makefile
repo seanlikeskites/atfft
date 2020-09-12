@@ -66,7 +66,7 @@ else ifeq (OOURA, $(IMPL))
 	DCT_SOURCES += ../src/ooura/atfft_dct_ooura.c ../src/ooura/fft4g.c
 
 else
-	DFT_SOURCES += ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/atfft_dft_cooley_tukey.c ../src/atfft/atfft_dft_bluestein.c
+	DFT_SOURCES += ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/atfft_dft_cooley_tukey.c ../src/atfft/atfft_dft_bluestein.c ../src/atfft/atfft_dft_nd.c
 	DCT_SOURCES += ../src/atfft/atfft_dct.c ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/atfft_dft_cooley_tukey.c ../src/atfft/atfft_dft_bluestein.c
 
 endif
