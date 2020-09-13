@@ -135,5 +135,19 @@ void atfft_scaled_twiddle_factor (int n,
  */
 int atfft_is_prime (int x);
 
+/******************************************
+ * Functions for allocating sub-transform
+ * plans for use on transforms of large
+ * prime sizes.
+ ******************************************/
+struct atfft_dft** atfft_init_sub_transforms (const int *sizes,
+                                              int n_sizes,
+                                              int *n_sub_transforms,
+                                              struct atfft_dft **size_sub_transforms,
+                                              enum atfft_direction direction,
+                                              enum atfft_format format);
+
+void atfft_free_sub_transforms (struct atfft_dft **sub_transforms,
+                                int size);
 
 #endif /* ATFFT_INTERNAL_H_INCLUDED */

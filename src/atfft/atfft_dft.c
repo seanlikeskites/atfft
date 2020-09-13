@@ -80,9 +80,11 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
 void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
+    {
         fft->fft_destroy (fft->fft);
+        free (fft);
+    }
 }
-
 
 void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out, int stride)
 {

@@ -25,10 +25,6 @@
  */
 #define MAX_RADICES (sizeof (int) * CHAR_BIT - 1)
 
-#ifndef ATFFT_SUB_TRANSFORM_THRESHOLD
-#define ATFFT_SUB_TRANSFORM_THRESHOLD 4
-#endif /* ATFFT_SUB_TRANSFORM_THRESHOLD */
-
 struct atfft_dft_cooley_tukey
 {
     int size;
@@ -196,112 +192,6 @@ failed:
 }
 
 /******************************************
- * Functions for allocating sub-transform
- * plans for use on transforms of large
- * prime sizes.
- ******************************************/
-static int atfft_integer_is_in_array (const int *arr, int size, int member)
-{
-    for (int i = 0; i < size; ++i)
-    {
-        if (arr [i] == member)
-            return 1;
-    }
-
-    return 0;
-}
-
-static int atfft_sub_transform_radices (const int *radices, int *sub_transform_radices, int size)
-{
-    int n_sub_transforms = 0;
-
-    for (int i = 0; i < size; ++i)
-    {
-        if (radices [i] > ATFFT_SUB_TRANSFORM_THRESHOLD && 
-            !atfft_integer_is_in_array (sub_transform_radices, n_sub_transforms, radices [i]))
-            sub_transform_radices [n_sub_transforms++] = radices [i];
-    }
-
-    return n_sub_transforms;
-}
-
-static struct atfft_dft* atfft_populate_sub_transform (int radix,
-                                                       const int *radices,
-                                                       struct atfft_dft **radix_sub_transforms,
-                                                       enum atfft_direction direction,
-                                                       enum atfft_format format)
-{
-    struct atfft_dft *fft = atfft_dft_create (radix, direction, format);
-
-    if (!fft)
-        return NULL;
-
-    for (int i = 0; i < MAX_RADICES; ++i)
-    {
-        if (radices [i] == radix)
-            radix_sub_transforms [i] = fft;
-    }
-
-    return fft;
-}
-
-static void atfft_free_sub_transforms (struct atfft_dft **sub_transforms,
-                                       int size)
-{
-    if (sub_transforms)
-    {
-        for (int i = 0; i < size; ++i)
-        {
-            atfft_dft_destroy (sub_transforms [i]);
-        }
-
-        free (sub_transforms);
-    }
-}
-
-static struct atfft_dft** atfft_init_sub_transforms (const int *radices,
-                                                     int *n_sub_transforms,
-                                                     struct atfft_dft **radix_sub_transforms,
-                                                     enum atfft_direction direction,
-                                                     enum atfft_format format)
-{
-    int sub_transform_radices [MAX_RADICES];
-
-    /* get unique radices for which sub-transforms are required */
-    *n_sub_transforms = atfft_sub_transform_radices (radices, sub_transform_radices, MAX_RADICES);
-
-    if (*n_sub_transforms == 0)
-        return NULL;
-
-    /* allocate some space for them */
-    struct atfft_dft **sub_transforms = calloc (*n_sub_transforms, sizeof (*sub_transforms));
-
-    if (!sub_transforms)
-        return NULL;
-
-    /* create the sub-transform dft structs */
-    for (int i = 0; i < *n_sub_transforms; ++i)
-    {
-        struct atfft_dft *sub_transform = atfft_populate_sub_transform (sub_transform_radices [i],
-                                                                        radices,
-                                                                        radix_sub_transforms,
-                                                                        direction,
-                                                                        format);
-
-        if (!sub_transform)
-            goto failed;
-
-        sub_transforms [i] = sub_transform;
-    }
-
-    return sub_transforms;
-
-failed:
-    atfft_free_sub_transforms (sub_transforms, *n_sub_transforms);
-    return NULL;
-}
-
-/******************************************
  * atfft_dft_cooley_tukey struct management
  ******************************************/
 struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
@@ -346,8 +236,9 @@ struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
     if (!fft->work_space)
         goto failed;
 
-    /* create any necessary Rader's algorithm strucs */
+    /* create any necessary sub-transform strucs */
     fft->sub_transforms = atfft_init_sub_transforms (fft->radices,
+                                                     MAX_RADICES,
                                                      &(fft->n_sub_transforms),
                                                      fft->radix_sub_transforms,
                                                      direction,

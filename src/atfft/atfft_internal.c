@@ -9,7 +9,13 @@
  */
 
 #include "atfft_internal.h"
+#include <atfft/atfft_dft.h>
 #include <math.h>
+#include <stdlib.h>
+
+#ifndef ATFFT_SUB_TRANSFORM_THRESHOLD
+#define ATFFT_SUB_TRANSFORM_THRESHOLD 4
+#endif /* ATFFT_SUB_TRANSFORM_THRESHOLD */
 
 /******************************************
  * External definitions of inline functions.
@@ -75,4 +81,121 @@ int atfft_is_prime (int x)
     }
 
     return 1;
+}
+
+/******************************************
+ * Functions for allocating sub-transform
+ * plans for use on transforms of large
+ * prime sizes.
+ ******************************************/
+static int atfft_integer_is_in_array (const int *arr, int size, int member)
+{
+    for (int i = 0; i < size; ++i)
+    {
+        if (arr [i] == member)
+            return 1;
+    }
+
+    return 0;
+}
+
+static int atfft_sub_transform_sizes (const int *sizes, int *sub_transform_sizes, int size)
+{
+    int n_sub_transforms = 0;
+
+    for (int i = 0; i < size; ++i)
+    {
+        if (sizes [i] > ATFFT_SUB_TRANSFORM_THRESHOLD && 
+            !atfft_integer_is_in_array (sub_transform_sizes, n_sub_transforms, sizes [i]))
+            sub_transform_sizes [n_sub_transforms++] = sizes [i];
+    }
+
+    return n_sub_transforms;
+}
+
+static struct atfft_dft* atfft_populate_sub_transform (int size,
+                                                       const int *sizes,
+                                                       int n_sizes,
+                                                       struct atfft_dft **size_sub_transforms,
+                                                       enum atfft_direction direction,
+                                                       enum atfft_format format)
+{
+    struct atfft_dft *fft = atfft_dft_create (size, direction, format);
+
+    if (!fft)
+        return NULL;
+
+    for (int i = 0; i < n_sizes; ++i)
+    {
+        if (sizes [i] == size)
+            size_sub_transforms [i] = fft;
+    }
+
+    return fft;
+}
+
+struct atfft_dft** atfft_init_sub_transforms (const int *sizes,
+                                              int n_sizes,
+                                              int *n_sub_transforms,
+                                              struct atfft_dft **size_sub_transforms,
+                                              enum atfft_direction direction,
+                                              enum atfft_format format)
+{
+    struct atfft_dft **sub_transforms = NULL;
+    int *sub_transform_sizes = malloc (n_sizes * sizeof (*sub_transform_sizes));
+
+    if (!sub_transform_sizes)
+        return NULL;
+
+    /* get unique sizes for which sub-transforms are required */
+    *n_sub_transforms = atfft_sub_transform_sizes (sizes, sub_transform_sizes, n_sizes);
+
+    if (*n_sub_transforms == 0)
+        goto succeeded; /* we don't need to allocate any sub-transforms */
+
+    /* allocate some space for sub-transforms */
+    sub_transforms = calloc (*n_sub_transforms, sizeof (*sub_transforms));
+
+    if (!sub_transforms)
+        goto failed;
+
+    /* create the sub-transform dft structs */
+    for (int i = 0; i < *n_sub_transforms; ++i)
+    {
+        struct atfft_dft *sub_transform = atfft_populate_sub_transform (sub_transform_sizes [i],
+                                                                        sizes,
+                                                                        n_sizes,
+                                                                        size_sub_transforms,
+                                                                        direction,
+                                                                        format);
+
+        if (!sub_transform)
+            goto failed;
+
+        sub_transforms [i] = sub_transform;
+    }
+
+    goto succeeded;
+
+failed:
+    atfft_free_sub_transforms (sub_transforms, *n_sub_transforms);
+    sub_transforms = NULL;
+
+succeeded:
+    free (sub_transform_sizes);
+    return sub_transforms;
+}
+
+void atfft_free_sub_transforms (struct atfft_dft **sub_transforms,
+                                int size)
+{
+    if (sub_transforms)
+    {
+        for (int i = 0; i < size; ++i)
+        {
+            atfft_dft_destroy (sub_transforms [i]);
+        }
+
+        free (sub_transforms);
+    }
 }
