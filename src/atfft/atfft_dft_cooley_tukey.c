@@ -25,6 +25,10 @@
  */
 #define MAX_RADICES (sizeof (int) * CHAR_BIT - 1)
 
+#ifndef ATFFT_SUB_TRANSFORM_THRESHOLD
+#define ATFFT_SUB_TRANSFORM_THRESHOLD 4
+#endif /* ATFFT_SUB_TRANSFORM_THRESHOLD */
+
 struct atfft_dft_cooley_tukey
 {
     int size;
@@ -242,7 +246,8 @@ struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
                                                      &(fft->n_sub_transforms),
                                                      fft->radix_sub_transforms,
                                                      direction,
-                                                     format);
+                                                     format,
+                                                     ATFFT_SUB_TRANSFORM_THRESHOLD);
 
     if (fft->n_sub_transforms > 0 && !fft->sub_transforms)
         goto failed;

@@ -145,7 +145,8 @@ struct atfft_dft** atfft_init_sub_transforms (const int *sizes,
                                               int *n_sub_transforms,
                                               struct atfft_dft **size_sub_transforms,
                                               enum atfft_direction direction,
-                                              enum atfft_format format);
+                                              enum atfft_format format,
+                                              int threshold);
 
 void atfft_free_sub_transforms (struct atfft_dft **sub_transforms,
                                 int size);

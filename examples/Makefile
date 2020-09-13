@@ -76,6 +76,9 @@ all: $(PROGRAMS)
 complex_transform: complex_transform.c $(DFT_SOURCES)
 	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
+nd_complex: nd_complex.c $(DFT_SOURCES)
+	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+
 real_transform: real_transform.c $(DFT_SOURCES)
 	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 

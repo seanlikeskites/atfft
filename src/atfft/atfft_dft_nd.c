@@ -10,8 +10,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <atfft/atfft_dft_nd.h>
 #include <atfft/atfft_dft.h>
+#include "atfft_internal.h"
 
 struct atfft_dft_nd
 {
@@ -25,7 +27,6 @@ struct atfft_dft_nd
     struct atfft_dft **sub_transforms;
     struct atfft_dft **dim_sub_transforms;
 
-    int data_size;
     atfft_complex *work_area;
 };
 
@@ -42,11 +43,26 @@ static void* alloc_and_copy_array (const void *array,
     return copy;
 }
 
+static int int_array_prod (const int *array, int size)
+{
+    int prod = array [0];
+
+    for (int i = 1; i < size; ++i)
+    {
+        prod *= array [i];
+    }
+
+    return prod;
+}
+
 struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
                                           int n_dims,
                                           enum atfft_direction direction,
                                           enum atfft_format format)
 {
+    /* only use this for data with 2 dimensions or more */
+    assert (n_dims > 1);
+
     struct atfft_dft_nd *fft;
 
     if (!(fft = calloc (1, sizeof (*fft))))
@@ -54,19 +70,33 @@ struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
 
     fft->direction = direction;
     fft->format = format;
-
-    /* copy dims array */
-    fft->dims = alloc_and_copy_array (dims, n_dims * sizeof (*dims));
-
-    if (!fft->dims)
-        goto failed;
-
     fft->n_dims = n_dims;
 
+    /* copy dims array */
+    fft->dims = alloc_and_copy_array (dims, n_dims * sizeof (*(fft->dims)));
+    fft->dim_sub_transforms = calloc (n_dims, sizeof (*(fft->dim_sub_transforms)));
+
+    if (!(fft->dims && fft->dim_sub_transforms))
+        goto failed;
+
     /* allocate fft structs for each dimension */
+    fft->sub_transforms = atfft_init_sub_transforms (dims,
+                                                     n_dims,
+                                                     &(fft->n_sub_transforms),
+                                                     fft->dim_sub_transforms,
+                                                     direction,
+                                                     format,
+                                                     0);
+
+    if (!fft->sub_transforms)
+        goto failed;
 
     /* allocate work space */
-    
+    int data_size = int_array_prod (dims, n_dims);
+    fft->work_area = malloc (data_size * sizeof (*(fft->work_area)));
+
+    if (!fft->work_area)
+        goto failed;
 
     return fft;
 
@@ -79,11 +109,13 @@ void atfft_dft_nd_destroy (struct atfft_dft_nd *fft)
 {
     if (fft)
     {
+        free (fft->work_area);
+        atfft_free_sub_transforms (fft->sub_transforms, fft->n_sub_transforms);
+        free (fft->dim_sub_transforms);
         free (fft->dims);
         free (fft);
     }
 }
-
 
 void atfft_dft_nd_complex_transform (struct atfft_dft_nd *fft, atfft_complex *in, atfft_complex *out)
 {

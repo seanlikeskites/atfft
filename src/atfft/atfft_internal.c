@@ -13,10 +13,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#ifndef ATFFT_SUB_TRANSFORM_THRESHOLD
-#define ATFFT_SUB_TRANSFORM_THRESHOLD 4
-#endif /* ATFFT_SUB_TRANSFORM_THRESHOLD */
-
 /******************************************
  * External definitions of inline functions.
  ******************************************/
@@ -99,13 +95,16 @@ static int atfft_integer_is_in_array (const int *arr, int size, int member)
     return 0;
 }
 
-static int atfft_sub_transform_sizes (const int *sizes, int *sub_transform_sizes, int size)
+static int atfft_sub_transform_sizes (const int *sizes,
+                                      int *sub_transform_sizes,
+                                      int size,
+                                      int threshold)
 {
     int n_sub_transforms = 0;
 
     for (int i = 0; i < size; ++i)
     {
-        if (sizes [i] > ATFFT_SUB_TRANSFORM_THRESHOLD && 
+        if (sizes [i] > threshold && 
             !atfft_integer_is_in_array (sub_transform_sizes, n_sub_transforms, sizes [i]))
             sub_transform_sizes [n_sub_transforms++] = sizes [i];
     }
@@ -139,7 +138,8 @@ struct atfft_dft** atfft_init_sub_transforms (const int *sizes,
                                               int *n_sub_transforms,
                                               struct atfft_dft **size_sub_transforms,
                                               enum atfft_direction direction,
-                                              enum atfft_format format)
+                                              enum atfft_format format,
+                                              int threshold)
 {
     struct atfft_dft **sub_transforms = NULL;
     int *sub_transform_sizes = malloc (n_sizes * sizeof (*sub_transform_sizes));
@@ -148,7 +148,7 @@ struct atfft_dft** atfft_init_sub_transforms (const int *sizes,
         return NULL;
 
     /* get unique sizes for which sub-transforms are required */
-    *n_sub_transforms = atfft_sub_transform_sizes (sizes, sub_transform_sizes, n_sizes);
+    *n_sub_transforms = atfft_sub_transform_sizes (sizes, sub_transform_sizes, n_sizes, threshold);
 
     if (*n_sub_transforms == 0)
         goto succeeded; /* we don't need to allocate any sub-transforms */
