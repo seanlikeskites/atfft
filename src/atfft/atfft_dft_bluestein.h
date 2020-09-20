@@ -28,8 +28,9 @@ void atfft_dft_bluestein_destroy (struct atfft_dft_bluestein *fft);
 
 void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
                                             atfft_complex *in,
+                                            int in_stride,
                                             atfft_complex *out,
-                                            int stride);
+                                            int out_stride);
 
 #ifdef __cplusplus
 }

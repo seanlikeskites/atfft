@@ -95,12 +95,12 @@ int main()
     fftBackward = atfft_dft_create (nSamples, ATFFT_BACKWARD, ATFFT_COMPLEX);
 
     /* apply the forward transform */
-    atfft_dft_complex_transform (fftForward, timeDomain, freqDomain, 1);
+    atfft_dft_complex_transform (fftForward, timeDomain, 1, freqDomain, 1);
     printf ("\nFrequency Domain:\n");
     printComplexArray (freqDomain, nSamples);
 
     /* apply the backward transform */
-    atfft_dft_complex_transform (fftBackward, freqDomain, timeDomain, 1);
+    atfft_dft_complex_transform (fftBackward, freqDomain, 1, timeDomain, 1);
     atfft_real (timeDomain, signal, nSamples);
     printf ("\nReconstructed Signal:\n");
     printSampleArray (signal, nSamples);

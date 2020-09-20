@@ -28,8 +28,9 @@ void atfft_dft_rader_destroy (struct atfft_dft_rader *fft);
 
 void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
                                         atfft_complex *in,
+                                        int in_stride,
                                         atfft_complex *out,
-                                        int stride);
+                                        int out_stride);
 
 #ifdef __cplusplus
 }

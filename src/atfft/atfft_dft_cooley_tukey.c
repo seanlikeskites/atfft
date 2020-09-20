@@ -446,7 +446,7 @@ static void atfft_butterfly_sub_transform (atfft_complex *out,
             ++t;
         }
 
-        atfft_dft_complex_transform (sub_transform, out, out, dft_stride);
+        atfft_dft_complex_transform (sub_transform, out, dft_stride, out, dft_stride);
 
         out += stride;
     }
@@ -554,7 +554,8 @@ static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
                                        atfft_complex *out,
                                        int stage,
                                        int in_stride,
-                                       int out_stride)
+                                       int out_stride,
+                                       int sin_stride)
 {
     /* Get the radix, R, for this stage of the transform.
      * We will split the transform into R sub-transforms
@@ -576,7 +577,8 @@ static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
                                        out + r * sub_size * out_stride,
                                        stage + 1,
                                        in_stride * R,
-                                       out_stride);
+                                       out_stride,
+                                       sin_stride * R);
         }
     }
     else
@@ -599,13 +601,14 @@ static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
                      R,
                      fft->radix_sub_transforms [stage],
                      fft->t_factors [stage],
-                     in_stride / out_stride);
+                     sin_stride);
 }
 
 void atfft_dft_cooley_tukey_complex_transform (struct atfft_dft_cooley_tukey *fft,
                                                atfft_complex *in,
+                                               int in_stride,
                                                atfft_complex *out,
-                                               int stride)
+                                               int out_stride)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
@@ -614,6 +617,7 @@ void atfft_dft_cooley_tukey_complex_transform (struct atfft_dft_cooley_tukey *ff
                                in,
                                out,
                                0,
-                               stride,
-                               stride);
+                               in_stride,
+                               out_stride,
+                               1);
 }

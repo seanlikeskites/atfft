@@ -18,7 +18,7 @@
 #include "atfft_dft_rader.h"
 #include "atfft_dft_bluestein.h"
 
-typedef void (*complex_transform_function) (void*, atfft_complex*, atfft_complex*, int);
+typedef void (*complex_transform_function) (void*, atfft_complex*, int, atfft_complex*, int);
 typedef void (*fft_destroy_function) (void*);
 
 struct atfft_dft
@@ -86,12 +86,16 @@ void atfft_dft_destroy (struct atfft_dft *fft)
     }
 }
 
-void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out, int stride)
+void atfft_dft_complex_transform (struct atfft_dft *fft,
+                                  atfft_complex *in,
+                                  int in_stride,
+                                  atfft_complex *out,
+                                  int out_stride)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);
 
-    fft->complex_transform (fft->fft, in, out, stride);
+    fft->complex_transform (fft->fft, in, in_stride, out, out_stride);
 }
 
 //void atfft_dft_calculate_bin_real (struct atfft_dft *fft,

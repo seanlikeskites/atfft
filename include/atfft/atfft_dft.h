@@ -56,7 +56,11 @@ void atfft_dft_destroy (struct atfft_dft *fft);
  * @param out the output signal 
  *            (should have the number of samples the fft was created for)
  */
-void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out, int stride);
+void atfft_dft_complex_transform (struct atfft_dft *fft,
+                                  atfft_complex *in,
+                                  int in_stride,
+                                  atfft_complex *out,
+                                  int out_stride);
 
 /**
  * Perform a real forward DFT.

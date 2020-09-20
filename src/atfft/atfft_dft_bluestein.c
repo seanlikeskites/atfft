@@ -75,7 +75,7 @@ static int atfft_init_bluestein_convolution_dft (int size,
     }
 
     /* take DFT of sequence */
-    atfft_dft_complex_transform (fft, sequence, conv_dft, 1);
+    atfft_dft_complex_transform (fft, sequence, 1, conv_dft, 1);
     atfft_normalise_complex (conv_dft, conv_size);
 
     /* take conjugate of the sequence for use later */
@@ -151,17 +151,18 @@ void atfft_dft_bluestein_destroy (struct atfft_dft_bluestein *fft)
 
 void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
                                             atfft_complex *in,
+                                            int in_stride,
                                             atfft_complex *out,
-                                            int stride)
+                                            int out_stride)
 {
     /* multiply the input signal with the factors */
     for (int i = 0; i < fft->size; ++i)
     {
-        atfft_product_complex (in [i * stride], fft->factors [i], fft->sig + i);
+        atfft_product_complex (in [i * in_stride], fft->factors [i], fft->sig + i);
     }
 
     /* take DFT of the result */
-    atfft_dft_complex_transform (fft->fft, fft->sig, fft->sig_dft, 1);
+    atfft_dft_complex_transform (fft->fft, fft->sig, 1, fft->sig_dft, 1);
 
     /* perform convolution in the frequency domain */
     for (int i = 0; i < fft->conv_size; ++i)
@@ -170,11 +171,11 @@ void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
     }
 
     /* take the inverse DFT of the result */
-    atfft_dft_complex_transform (fft->fft, fft->sig_dft, fft->conv, 1);
+    atfft_dft_complex_transform (fft->fft, fft->sig_dft, 1, fft->conv, 1);
 
     /* multiply the output transform with the factors */
     for (int i = 0; i < fft->size; ++i)
     {
-        atfft_swap_and_product_complex (fft->conv [i], fft->factors [i], out + i * stride);
+        atfft_swap_and_product_complex (fft->conv [i], fft->factors [i], out + i * out_stride);
     }
 }
