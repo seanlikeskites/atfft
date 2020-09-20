@@ -63,9 +63,9 @@ void printComplexArray (atfft_complex *data, int size)
 
 int main()
 {
-    int dims[] = {5, 5, 2};
+    int dims[] = {2, 2, 2};
 
-    struct atfft_dft_nd *fft = atfft_dft_nd_create (dims, 2, ATFFT_FORWARD, ATFFT_COMPLEX);
+    struct atfft_dft_nd *fft = atfft_dft_nd_create (dims, 3, ATFFT_FORWARD, ATFFT_COMPLEX);
 
     atfft_dft_nd_destroy (fft);
 

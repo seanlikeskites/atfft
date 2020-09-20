@@ -28,6 +28,7 @@ struct atfft_dft_nd
     struct atfft_dft **dim_sub_transforms;
 
     atfft_complex *work_area;
+    int *strides;
 };
 
 static void* alloc_and_copy_array (const void *array,
@@ -53,6 +54,21 @@ static int int_array_prod (const int *array, int size)
     }
 
     return prod;
+}
+
+static int* init_strides (const int *dims, int n_dims, int data_size)
+{
+    int *strides = malloc (n_dims * sizeof (*strides));
+
+    if (!strides)
+        return NULL;
+
+    for (int i = 0; i < n_dims; ++i)
+    {
+        strides [i] = data_size / dims [i];
+    }
+
+    return strides;
 }
 
 struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
@@ -94,8 +110,9 @@ struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
     /* allocate work space */
     int data_size = int_array_prod (dims, n_dims);
     fft->work_area = malloc (data_size * sizeof (*(fft->work_area)));
+    fft->strides = init_strides (dims, n_dims, data_size);
 
-    if (!fft->work_area)
+    if (!(fft->work_area && fft->strides))
         goto failed;
 
     return fft;
@@ -109,6 +126,7 @@ void atfft_dft_nd_destroy (struct atfft_dft_nd *fft)
 {
     if (fft)
     {
+        free (fft->strides);
         free (fft->work_area);
         atfft_free_sub_transforms (fft->sub_transforms, fft->n_sub_transforms);
         free (fft->dim_sub_transforms);
