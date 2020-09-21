@@ -137,4 +137,32 @@ void atfft_dft_nd_destroy (struct atfft_dft_nd *fft)
 
 void atfft_dft_nd_complex_transform (struct atfft_dft_nd *fft, atfft_complex *in, atfft_complex *out)
 {
+    atfft_complex *work_areas[] = {fft->work_area, out};
+    int w = atfft_is_odd (fft->n_dims);
+
+    atfft_complex *current_in = in;
+    atfft_complex *current_out = work_areas [w];
+
+    for (int d = 0; d < fft->n_dims; ++d)
+    {
+        int size = fft->dims [d];
+        int stride = fft->strides [d];
+        struct atfft_dft *sub_transform = fft->dim_sub_transforms [d];
+
+        for (int i = 0; i < stride; ++i)
+        {
+            atfft_dft_complex_transform (sub_transform,
+                                         current_in,
+                                         stride,
+                                         current_out,
+                                         1);
+
+            ++current_in;
+            current_out += size;
+        }
+
+        current_in = work_areas [w];
+        w = 1 - w;
+        current_out = work_areas [w];
+    }
 }
