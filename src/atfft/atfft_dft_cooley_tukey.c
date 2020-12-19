@@ -446,7 +446,7 @@ static void atfft_butterfly_sub_transform (atfft_complex *out,
             ++t;
         }
 
-        atfft_dft_complex_transform (sub_transform, out, dft_stride, out, dft_stride);
+        atfft_dft_complex_transform_stride (sub_transform, out, dft_stride, out, dft_stride);
 
         out += stride;
     }

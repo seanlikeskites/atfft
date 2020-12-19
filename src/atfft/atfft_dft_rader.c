@@ -159,7 +159,7 @@ static int atfft_init_rader_convolution_dft (int size,
     }
 
     /* take DFT of twiddle factors */
-    atfft_dft_complex_transform (fft, t_factors, 1, conv_dft, 1);
+    atfft_dft_complex_transform (fft, t_factors, conv_dft);
 
     free (t_factors);
     return 0;
@@ -283,7 +283,7 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
                                in_stride,
                                fft->sig);
 
-    atfft_dft_complex_transform (fft->fft, fft->sig, 1, fft->sig_dft, 1);
+    atfft_dft_complex_transform (fft->fft, fft->sig, fft->sig_dft);
 
     for (int i = 0; i < fft->conv_size; ++i)
     {
@@ -296,7 +296,7 @@ void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
     ATFFT_RE (fft->sig_dft [0]) += ATFFT_IM (in0);
     ATFFT_IM (fft->sig_dft [0]) += ATFFT_RE (in0);
 
-    atfft_dft_complex_transform (fft->fft, fft->sig_dft, 1, fft->conv, 1);
+    atfft_dft_complex_transform (fft->fft, fft->sig_dft, fft->conv);
 
     atfft_rader_permute_output (fft->perm2, 
                                 fft->rader_size,

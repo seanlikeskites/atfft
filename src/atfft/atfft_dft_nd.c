@@ -151,11 +151,11 @@ void atfft_dft_nd_complex_transform (struct atfft_dft_nd *fft, atfft_complex *in
 
         for (int i = 0; i < stride; ++i)
         {
-            atfft_dft_complex_transform (sub_transform,
-                                         current_in,
-                                         stride,
-                                         current_out,
-                                         1);
+            atfft_dft_complex_transform_stride (sub_transform,
+                                                current_in,
+                                                stride,
+                                                current_out,
+                                                1);
 
             ++current_in;
             current_out += size;

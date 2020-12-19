@@ -58,9 +58,28 @@ void atfft_dft_destroy (struct atfft_dft *fft);
  */
 void atfft_dft_complex_transform (struct atfft_dft *fft,
                                   atfft_complex *in,
-                                  int in_stride,
-                                  atfft_complex *out,
-                                  int out_stride);
+                                  atfft_complex *out);
+
+/**
+ * Perform a complex DFT with a different stride for input and output.
+ *
+ * Performs a forward or inverse transform depending on what the fft
+ * structure passed was created for.
+ *
+ * @param fft a valid fft structure 
+ *            (should have been created with a format of ATFFT_COMPLEX)
+ * @param in the input signal 
+ *           (should have the number of samples the fft was created for)
+ * @param in_stride the stride to take when reading the input signal
+ * @param out the output signal 
+ *            (should have the number of samples the fft was created for)
+ * @param in_stride the stride to take when writing the output signal
+ */
+void atfft_dft_complex_transform_stride (struct atfft_dft *fft,
+                                         atfft_complex *in,
+                                         int in_stride,
+                                         atfft_complex *out,
+                                         int out_stride);
 
 /**
  * Perform a real forward DFT.

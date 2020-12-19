@@ -88,9 +88,16 @@ void atfft_dft_destroy (struct atfft_dft *fft)
 
 void atfft_dft_complex_transform (struct atfft_dft *fft,
                                   atfft_complex *in,
-                                  int in_stride,
-                                  atfft_complex *out,
-                                  int out_stride)
+                                  atfft_complex *out)
+{
+    atfft_dft_complex_transform_stride (fft, in, 1, out, 1);
+}
+
+void atfft_dft_complex_transform_stride (struct atfft_dft *fft,
+                                         atfft_complex *in,
+                                         int in_stride,
+                                         atfft_complex *out,
+                                         int out_stride)
 {
     /* Only to be used with complex FFTs. */
     assert (fft->format == ATFFT_COMPLEX);

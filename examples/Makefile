@@ -4,7 +4,8 @@ LIBS = -lm
 INCLUDEDIRS = -I../include
 DFT_SOURCES = ../src/atfft/atfft_shared.c
 DCT_SOURCES = ../src/atfft/atfft_shared.c
-PROGRAMS = complex_transform real_transform dct
+#PROGRAMS = complex_transform real_transform dct nd_complex
+PROGRAMS = complex_transform dct
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT
