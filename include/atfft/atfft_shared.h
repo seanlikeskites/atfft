@@ -8,6 +8,11 @@
  * the COPYING file for more details.
  */
 
+/** @file 
+ * Definitions of the types used by atfft and some
+ * useful macros and functions for working with them.
+ */
+
 #ifndef ATFFT_SHARED_H_INCLUDED
 #define ATFFT_SHARED_H_INCLUDED
 

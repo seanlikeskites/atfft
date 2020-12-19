@@ -8,6 +8,8 @@
  * the COPYING file for more details.
  */
 
+/** @file */
+
 #ifndef ATFFT_DFT_H_INCLUDED
 #define ATFFT_DFT_H_INCLUDED
 
