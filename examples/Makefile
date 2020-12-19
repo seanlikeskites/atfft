@@ -34,6 +34,7 @@ else ifeq (FFTS, $(IMPL))
 else ifeq (GSL, $(IMPL))
 	LIBS += -lgsl -lgslcblas
 	DFT_SOURCES += ../src/gsl/atfft_dft_gsl.c
+	ND_DFT_SOURCES += ../src/gsl/atfft_dft_gsl.c ../src/atfft/atfft_dft_nd.c ../src/atfft/atfft_internal.c
 	DCT_SOURCES += ../src/atfft/atfft_dct.c ../src/gsl/atfft_dft_gsl.c
 
 else ifeq (KISS, $(IMPL))
@@ -56,6 +57,7 @@ else ifeq (VDSP, $(IMPL))
 else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
 	DFT_SOURCES += ../src/ffmpeg/atfft_dft_ffmpeg.c
+	ND_DFT_SOURCES += ../src/ffmpeg/atfft_dft_ffmpeg.c ../src/atfft/atfft_dft_nd.c ../src/atfft/atfft_internal.c
 	DCT_SOURCES += ../src/ffmpeg/atfft_dct_ffmpeg.c
 
 else ifeq (PFFFT, $(IMPL))

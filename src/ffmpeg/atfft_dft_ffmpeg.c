@@ -39,7 +39,7 @@ struct atfft_dft
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
     /* ffmpeg only supports sizes which are a power of 2. */
-    assert (atfft_is_power_of_2 (size));
+    assert (atfft_is_power_of_2 (size) && size > 2);
 
     struct atfft_dft *fft = NULL;
 
@@ -134,6 +134,31 @@ void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atff
 #else
     atfft_float_to_sample_complex ((atfft_complex_f*) fft->data, out, fft->size);
 #endif
+}
+
+void atfft_dft_complex_transform_stride (struct atfft_dft *fft,
+                                         atfft_complex *in,
+                                         int in_stride,
+                                         atfft_complex *out,
+                                         int out_stride)
+{
+    /* Only to be used with complex FFTs. */
+    assert (fft->format == ATFFT_COMPLEX);
+
+    atfft_sample_to_float_complex_stride (in,
+                                          in_stride,
+                                          (atfft_complex_f*) fft->data,
+                                          1,
+                                          fft->size);
+
+    av_fft_permute (fft->context, (FFTComplex*) fft->data);
+    av_fft_calc (fft->context, (FFTComplex*) fft->data);
+
+    atfft_float_to_sample_complex_stride ((atfft_complex_f*) fft->data,
+                                          1,
+                                          out,
+                                          out_stride,
+                                          fft->size);
 }
 
 static void atfft_halfcomplex_ffmpeg_to_fftw (const FFTSample *in, atfft_complex *out, int size)

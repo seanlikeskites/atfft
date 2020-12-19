@@ -63,9 +63,9 @@ void printComplexArray (atfft_complex *data, int size)
 
 int main()
 {
-    int dims[] = {2, 2, 4};
+    int dims[] = {4, 4, 4};
     int nDims = 3;
-    int nSamples = 16;
+    int nSamples = 64;
 
     atfft_complex *in = malloc (nSamples * sizeof (*in));
     atfft_complex *out = malloc (nSamples * sizeof (*in));
