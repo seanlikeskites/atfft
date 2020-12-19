@@ -8,7 +8,9 @@
  * the COPYING file for more details.
  */
 
-/** @file */
+/** @file 
+ * struct and functions for performing discrete fourier transforms.
+ */
 
 #ifndef ATFFT_DFT_H_INCLUDED
 #define ATFFT_DFT_H_INCLUDED

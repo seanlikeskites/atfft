@@ -8,6 +8,10 @@
  * the COPYING file for more details.
  */
 
+/** @file 
+ * struct and functions for performing discrete cosine transforms.
+ */
+
 #ifndef ATFFT_DCT_H_INCLUDED
 #define ATFFT_DCT_H_INCLUDED
 

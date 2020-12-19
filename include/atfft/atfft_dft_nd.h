@@ -8,6 +8,10 @@
  * the COPYING file for more details.
  */
 
+/** @file 
+ * struct and functions for performing n-dimensional discrete fourier transforms.
+ */
+
 #ifndef ATFFT_DFT_ND_H_INCLUDED
 #define ATFFT_DFT_ND_H_INCLUDED
 

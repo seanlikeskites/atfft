@@ -8,6 +8,10 @@
  * the COPYING file for more details.
  */
 
+/** @file 
+ * Functions for generating windows.
+ */
+
 #ifndef ATFFT_WINDOWS_H_INCLUDED
 #define ATFFT_WINDOWS_H_INCLUDED
 
