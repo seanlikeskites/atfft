@@ -63,8 +63,9 @@ void printComplexArray (atfft_complex *data, int size)
 
 int main()
 {
-    int dims[] = {2, 3, 5};
-    int nSamples = 30;
+    int dims[] = {2, 2, 4};
+    int nDims = 3;
+    int nSamples = 16;
 
     atfft_complex *in = malloc (nSamples * sizeof (*in));
     atfft_complex *out = malloc (nSamples * sizeof (*in));
@@ -78,8 +79,8 @@ int main()
     printf ("Original Signal:\n");
     printComplexArray (in, nSamples);
 
-    struct atfft_dft_nd *fft = atfft_dft_nd_create (dims, 3, ATFFT_FORWARD, ATFFT_COMPLEX);
-    struct atfft_dft_nd *ifft = atfft_dft_nd_create (dims, 3, ATFFT_BACKWARD, ATFFT_COMPLEX);
+    struct atfft_dft_nd *fft = atfft_dft_nd_create (dims, nDims, ATFFT_FORWARD, ATFFT_COMPLEX);
+    struct atfft_dft_nd *ifft = atfft_dft_nd_create (dims, nDims, ATFFT_BACKWARD, ATFFT_COMPLEX);
 
     atfft_dft_nd_complex_transform (fft, in, out);
     printf ("\nFrequency Domain:\n");

@@ -2,9 +2,9 @@
  * Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
  *
  * This program is free software. It comes without any warranty, to
- * the extent permitted by applicable law. You can redistribute it 
- * and/or modify it under the terms of the Do What The Fuck You Want 
- * To Public License, Version 2, as published by Sam Hocevar. See 
+ * the extent permitted by applicable law. You can redistribute it
+ * and/or modify it under the terms of the Do What The Fuck You Want
+ * To Public License, Version 2, as published by Sam Hocevar. See
  * the COPYING file for more details.
  */
 
@@ -108,7 +108,6 @@ void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int si
     }
 }
 
-#ifndef ATFFT_TYPE_FLOAT
 void atfft_float_to_sample_real (const float *in, atfft_sample *out, int size)
 {
     for (int i = 0; i < size; ++i)
@@ -117,11 +116,35 @@ void atfft_float_to_sample_real (const float *in, atfft_sample *out, int size)
     }
 }
 
+void atfft_float_to_sample_real_stride (const float *in,
+                                        int in_stride,
+                                        atfft_sample *out,
+                                        int out_stride,
+                                        int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        out [o] = in [i];
+    }
+}
+
 void atfft_sample_to_float_real (const atfft_sample *in, float *out, int size)
 {
     for (int i = 0; i < size; ++i)
     {
         out [i] = in [i];
+    }
+}
+
+void atfft_sample_to_float_real_stride (const atfft_sample *in,
+                                        int in_stride,
+                                        float *out,
+                                        int out_stride,
+                                        int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        out [o] = in [i];
     }
 }
 
@@ -134,6 +157,19 @@ void atfft_float_to_sample_complex (atfft_complex_f *in, atfft_complex *out, int
     }
 }
 
+void atfft_float_to_sample_complex_stride (atfft_complex_f *in,
+                                           int in_stride,
+                                           atfft_complex *out,
+                                           int out_stride,
+                                           int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
+    }
+}
+
 void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_f *out, int size)
 {
     for (int i = 0; i < size; ++i)
@@ -142,9 +178,20 @@ void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_f *out, int
         ATFFT_IM (out [i]) = ATFFT_IM (in [i]);
     }
 }
-#endif
 
-#ifndef ATFFT_TYPE_DOUBLE
+void atfft_sample_to_float_complex_stride (atfft_complex *in,
+                                           int in_stride,
+                                           atfft_complex_f *out,
+                                           int out_stride,
+                                           int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
+    }
+}
+
 void atfft_double_to_sample_real (const double *in, atfft_sample *out, int size)
 {
     for (int i = 0; i < size; ++i)
@@ -153,11 +200,35 @@ void atfft_double_to_sample_real (const double *in, atfft_sample *out, int size)
     }
 }
 
+void atfft_double_to_sample_real_stride (const double *in,
+                                         int in_stride,
+                                         atfft_sample *out,
+                                         int out_stride,
+                                         int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        out [o] = in [i];
+    }
+}
+
 void atfft_sample_to_double_real (const atfft_sample *in, double *out, int size)
 {
     for (int i = 0; i < size; ++i)
     {
         out [i] = in [i];
+    }
+}
+
+void atfft_sample_to_double_real_stride (const atfft_sample *in,
+                                         int in_stride,
+                                         double *out,
+                                         int out_stride,
+                                         int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        out [o] = in [i];
     }
 }
 
@@ -170,6 +241,19 @@ void atfft_double_to_sample_complex (atfft_complex_d *in, atfft_complex *out, in
     }
 }
 
+void atfft_double_to_sample_complex_stride (atfft_complex_d *in,
+                                            int in_stride,
+                                            atfft_complex *out,
+                                            int out_stride,
+                                            int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
+    }
+}
+
 void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_d *out, int size)
 {
     for (int i = 0; i < size; ++i)
@@ -178,9 +262,20 @@ void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_d *out, in
         ATFFT_IM (out [i]) = ATFFT_IM (in [i]);
     }
 }
-#endif
 
-#ifndef ATFFT_TYPE_LONG_DOUBLE
+void atfft_sample_to_double_complex_stride (atfft_complex *in,
+                                            int in_stride,
+                                            atfft_complex_d *out,
+                                            int out_stride,
+                                            int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
+    }
+}
+
 void atfft_long_double_to_sample_real (const long double *in, atfft_sample *out, int size)
 {
     for (int i = 0; i < size; ++i)
@@ -189,11 +284,35 @@ void atfft_long_double_to_sample_real (const long double *in, atfft_sample *out,
     }
 }
 
+void atfft_long_double_to_sample_real_stride (const long double *in,
+                                              int in_stride,
+                                              atfft_sample *out,
+                                              int out_stride,
+                                              int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        out [o] = in [i];
+    }
+}
+
 void atfft_sample_to_long_double_real (const atfft_sample *in, long double *out, int size)
 {
     for (int i = 0; i < size; ++i)
     {
         out [i] = in [i];
+    }
+}
+
+void atfft_sample_to_long_double_real_stride (const atfft_sample *in,
+                                              int in_stride,
+                                              long double *out,
+                                              int out_stride,
+                                              int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        out [o] = in [i];
     }
 }
 
@@ -206,6 +325,19 @@ void atfft_long_double_to_sample_complex (atfft_complex_l *in, atfft_complex *ou
     }
 }
 
+void atfft_long_double_to_sample_complex_stride (atfft_complex_l *in,
+                                                 int in_stride,
+                                                 atfft_complex *out,
+                                                 int out_stride,
+                                                 int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
+    }
+}
+
 void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *out, int size)
 {
     for (int i = 0; i < size; ++i)
@@ -214,4 +346,16 @@ void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *ou
         ATFFT_IM (out [i]) = ATFFT_IM (in [i]);
     }
 }
-#endif
+
+void atfft_sample_to_long_double_complex_stride (atfft_complex *in,
+                                                 int in_stride,
+                                                 atfft_complex_l *out,
+                                                 int out_stride,
+                                                 int size)
+{
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
+    }
+}

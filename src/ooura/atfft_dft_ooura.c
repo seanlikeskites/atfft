@@ -120,6 +120,30 @@ void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atff
 #endif
 }
 
+void atfft_dft_complex_transform_stride (struct atfft_dft *fft,
+                                         atfft_complex *in,
+                                         int in_stride,
+                                         atfft_complex *out,
+                                         int out_stride)
+{
+    /* Only to be used with complex FFTs. */
+    assert (fft->format == ATFFT_COMPLEX);
+
+    atfft_sample_to_double_complex_stride (in,
+                                           in_stride,
+                                           (atfft_complex_d*) fft->data,
+                                           1,
+                                           fft->size);
+
+    cdft (2 * fft->size, fft->ooura_direction, fft->data, fft->work_area, fft->tables);
+
+    atfft_double_to_sample_complex_stride ((atfft_complex_d*) fft->data,
+                                           1,
+                                           out,
+                                           out_stride,
+                                           fft->size);
+}
+
 static void atfft_halfcomplex_ooura_to_fftw (const double *in, atfft_complex *out, int size)
 {
     int half_size = size / 2;

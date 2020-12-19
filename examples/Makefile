@@ -3,9 +3,10 @@ CFLAGS = -Wall -O3
 LIBS = -lm
 INCLUDEDIRS = -I../include
 DFT_SOURCES = ../src/atfft/atfft_shared.c
+ND_DFT_SOURCES = ../src/atfft/atfft_shared.c
 DCT_SOURCES = ../src/atfft/atfft_shared.c
 #PROGRAMS = complex_transform real_transform dct nd_complex
-PROGRAMS = complex_transform dct
+PROGRAMS = complex_transform dct nd_complex
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT
@@ -59,15 +60,18 @@ else ifeq (FFMPEG, $(IMPL))
 
 else ifeq (PFFFT, $(IMPL))
 	DFT_SOURCES += ../src/pffft/atfft_dft_pffft.c ../src/pffft/pffft.c
+	ND_DFT_SOURCES += ../src/pffft/atfft_dft_pffft.c ../src/pffft/pffft.c ../src/atfft/atfft_dft_nd.c ../src/atfft/atfft_internal.c
 	DCT_SOURCES += ../src/atfft/atfft_dct.c ../src/pffft/atfft_dft_pffft.c ../src/pffft/pffft.c
 	CFLAGS += -msse
 
 else ifeq (OOURA, $(IMPL))
 	DFT_SOURCES += ../src/ooura/atfft_dft_ooura.c ../src/ooura/fft4g.c
+	ND_DFT_SOURCES += ../src/ooura/atfft_dft_ooura.c ../src/ooura/fft4g.c ../src/atfft/atfft_dft_nd.c ../src/atfft/atfft_internal.c
 	DCT_SOURCES += ../src/ooura/atfft_dct_ooura.c ../src/ooura/fft4g.c
 
 else
 	DFT_SOURCES += ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/atfft_dft_cooley_tukey.c ../src/atfft/atfft_dft_bluestein.c ../src/atfft/atfft_dft_nd.c
+	ND_DFT_SOURCES += ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/atfft_dft_cooley_tukey.c ../src/atfft/atfft_dft_bluestein.c ../src/atfft/atfft_dft_nd.c
 	DCT_SOURCES += ../src/atfft/atfft_dct.c ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/atfft_dft_cooley_tukey.c ../src/atfft/atfft_dft_bluestein.c
 
 endif
@@ -77,8 +81,8 @@ all: $(PROGRAMS)
 complex_transform: complex_transform.c $(DFT_SOURCES)
 	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
-nd_complex: nd_complex.c $(DFT_SOURCES)
-	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+nd_complex: nd_complex.c $(ND_DFT_SOURCES)
+	$(CC) -o $@ $< $(ND_DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
 real_transform: real_transform.c $(DFT_SOURCES)
 	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
