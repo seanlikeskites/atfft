@@ -360,7 +360,7 @@ void atfft_sample_to_long_double_complex_stride (atfft_complex *in,
     }
 }
 
-int int_array_product (const int *array, int size)
+int atfft_int_array_product (const int *array, int size)
 {
     int prod = array [0];
 
@@ -368,6 +368,25 @@ int int_array_product (const int *array, int size)
     {
         prod *= array [i];
     }
+
+    return prod;
+}
+
+int atfft_dft_halfcomplex_size (int size)
+{
+    return size / 2 + 1;
+}
+
+int atfft_dft_nd_halfcomplex_size (const int *dims, int n_dims)
+{
+    int prod = 1;
+
+    for (int i = 0; i < n_dims - 1; ++i)
+    {
+        prod *= dims [i];
+    }
+
+    prod *= atfft_dft_halfcomplex_size (dims [n_dims - 1]);
 
     return prod;
 }

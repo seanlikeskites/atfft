@@ -66,30 +66,30 @@ int main()
     int dims[] = {4, 4, 4};
     int nDims = 3;
     int nSamples = atfft_int_array_product (dims, nDims);
+    int outSize = atfft_dft_nd_halfcomplex_size (dims, nDims);
 
-    atfft_complex *in = malloc (nSamples * sizeof (*in));
-    atfft_complex *out = malloc (nSamples * sizeof (*out));
+    atfft_sample *in = malloc (nSamples * sizeof (*in));
+    atfft_complex *out = malloc (outSize * sizeof (*out));
 
     for (int i = 0; i < nSamples; ++i)
     {
-        ATFFT_RE (in [i]) = i;
-        ATFFT_IM (in [i]) = nSamples - i;
+        in [i] = i;
     }
 
     printf ("Original Signal:\n");
-    printComplexArray (in, nSamples);
+    printSampleArray (in, nSamples);
 
-    struct atfft_dft_nd *fft = atfft_dft_nd_create (dims, nDims, ATFFT_FORWARD, ATFFT_COMPLEX);
-    struct atfft_dft_nd *ifft = atfft_dft_nd_create (dims, nDims, ATFFT_BACKWARD, ATFFT_COMPLEX);
+    struct atfft_dft_nd *fft = atfft_dft_nd_create (dims, nDims, ATFFT_FORWARD, ATFFT_REAL);
+    struct atfft_dft_nd *ifft = atfft_dft_nd_create (dims, nDims, ATFFT_BACKWARD, ATFFT_REAL);
 
-    atfft_dft_nd_complex_transform (fft, in, out);
+    atfft_dft_nd_real_forward_transform (fft, in, out);
     printf ("\nFrequency Domain:\n");
-    printComplexArray (out, nSamples);
+    printComplexArray (out, outSize);
 
-    atfft_dft_nd_complex_transform (ifft, out, in);
-    atfft_normalise_complex (in, nSamples);
+    atfft_dft_nd_real_backward_transform (ifft, out, in);
+    atfft_normalise_real (in, nSamples);
     printf ("\nReconstructed Signal:\n");
-    printComplexArray (in, nSamples);
+    printSampleArray (in, nSamples);
 
     atfft_dft_nd_destroy (ifft);
     atfft_dft_nd_destroy (fft);

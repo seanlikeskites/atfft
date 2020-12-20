@@ -96,7 +96,7 @@ struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
         goto failed;
 
     /* allocate work space */
-    int data_size = int_array_product (dims, n_dims);
+    int data_size = atfft_int_array_product (dims, n_dims);
     fft->work_area = malloc (data_size * sizeof (*(fft->work_area)));
     fft->strides = init_strides (dims, n_dims, data_size);
 

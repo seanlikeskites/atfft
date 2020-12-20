@@ -514,7 +514,19 @@ void atfft_sample_to_long_double_complex_stride (atfft_complex *in,
 /**
  * Take the product of an array of integers.
  */
-int int_array_product (const int *array, int size);
+int atfft_int_array_product (const int *array, int size);
+
+/**
+ * Return the size of the complex output when performing a DFT on
+ * a real values signal.
+ */
+int atfft_dft_halfcomplex_size (int size);
+
+/**
+ * Return the size of the complex output when performing am
+ * n-dimensional DFT on a real values signal.
+ */
+int atfft_dft_nd_halfcomplex_size (const int *dims, int n_dims);
 
 #ifdef __cplusplus
 }

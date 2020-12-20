@@ -5,7 +5,7 @@ INCLUDEDIRS = -I../include
 DFT_SOURCES = ../src/atfft/atfft_shared.c
 ND_DFT_SOURCES = ../src/atfft/atfft_shared.c
 DCT_SOURCES = ../src/atfft/atfft_shared.c
-#PROGRAMS = complex_transform real_transform dct nd_complex
+#PROGRAMS = complex_transform real_transform dct nd_complex nd_real
 PROGRAMS = complex_transform dct nd_complex
 
 ifeq (FLOAT, $(TYPE))
@@ -84,11 +84,14 @@ all: $(PROGRAMS)
 complex_transform: complex_transform.c $(DFT_SOURCES)
 	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
+real_transform: real_transform.c $(DFT_SOURCES)
+	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+
 nd_complex: nd_complex.c $(ND_DFT_SOURCES)
 	$(CC) -o $@ $< $(ND_DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
-real_transform: real_transform.c $(DFT_SOURCES)
-	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+nd_real: nd_real.c $(ND_DFT_SOURCES)
+	$(CC) -o $@ $< $(ND_DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
 dct: dct.c $(DCT_SOURCES)
 	$(CC) -o $@ $< $(DCT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)

@@ -19,6 +19,9 @@
 #   define ATFFT_FFTW_PLAN_DFT_R2C_1D fftwf_plan_dft_r2c_1d
 #   define ATFFT_FFTW_PLAN_DFT_C2R_1D fftwf_plan_dft_c2r_1d
 #   define ATFFT_FFTW_PLAN_DFT fftwf_plan_dft
+#   define ATFFT_FFTW_PLAN_DFT_R2C fftwf_plan_dft_r2c
+#   define ATFFT_FFTW_PLAN_DFT_C2R fftwf_plan_dft_c2r
+#   define ATFFT_FFTW_PLAN_R2R_1D fftwf_plan_r2r_1d
 #   define ATFFT_FFTW_EXECUTE fftwf_execute
     typedef fftwf_plan atfft_fftw_plan;
     
@@ -30,6 +33,9 @@
 #   define ATFFT_FFTW_PLAN_DFT_R2C_1D fftw_plan_dft_r2c_1d
 #   define ATFFT_FFTW_PLAN_DFT_C2R_1D fftw_plan_dft_c2r_1d
 #   define ATFFT_FFTW_PLAN_DFT fftw_plan_dft
+#   define ATFFT_FFTW_PLAN_DFT_R2C fftw_plan_dft_r2c
+#   define ATFFT_FFTW_PLAN_DFT_C2R fftw_plan_dft_c2r
+#   define ATFFT_FFTW_PLAN_R2R_1D fftw_plan_r2r_1d
 #   define ATFFT_FFTW_EXECUTE fftw_execute
     typedef fftw_plan atfft_fftw_plan;
 
@@ -41,6 +47,9 @@
 #   define ATFFT_FFTW_PLAN_DFT_R2C_1D fftwl_plan_dft_r2c_1d
 #   define ATFFT_FFTW_PLAN_DFT_C2R_1D fftwl_plan_dft_c2r_1d
 #   define ATFFT_FFTW_PLAN_DFT fftwl_plan_dft
+#   define ATFFT_FFTW_PLAN_DFT_R2C fftwl_plan_dft_r2c
+#   define ATFFT_FFTW_PLAN_DFT_C2R fftwl_plan_dft_c2r
+#   define ATFFT_FFTW_PLAN_R2R_1D fftwl_plan_r2r_1d
 #   define ATFFT_FFTW_EXECUTE fftwl_execute
     typedef fftwl_plan atfft_fftw_plan;
 #endif
