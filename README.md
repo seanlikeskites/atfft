@@ -65,7 +65,7 @@ the atfft interface:
 
 
 ## Licence
-Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
+Copyright (C) 2020 Sean Enderby <sean.enderby@gmail.com>
 
 This program is free software. It comes without any warranty, to
 the extent permitted by applicable law. You can redistribute it 

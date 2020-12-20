@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
+ * Copyright (C) 2020 Sean Enderby <sean.enderby@gmail.com>
  *
  * This program is free software. It comes without any warranty, to
  * the extent permitted by applicable law. You can redistribute it
@@ -510,6 +510,11 @@ void atfft_sample_to_long_double_complex_stride (atfft_complex *in,
                                                 atfft_complex_l *out,
                                                 int out_stride,
                                                 int size);
+
+/**
+ * Take the product of an array of integers.
+ */
+int int_array_product (const int *array, int size);
 
 #ifdef __cplusplus
 }

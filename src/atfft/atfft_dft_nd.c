@@ -44,18 +44,6 @@ static void* alloc_and_copy_array (const void *array,
     return copy;
 }
 
-static int int_array_prod (const int *array, int size)
-{
-    int prod = array [0];
-
-    for (int i = 1; i < size; ++i)
-    {
-        prod *= array [i];
-    }
-
-    return prod;
-}
-
 static int* init_strides (const int *dims, int n_dims, int data_size)
 {
     int *strides = malloc (n_dims * sizeof (*strides));
@@ -108,7 +96,7 @@ struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
         goto failed;
 
     /* allocate work space */
-    int data_size = int_array_prod (dims, n_dims);
+    int data_size = int_array_product (dims, n_dims);
     fft->work_area = malloc (data_size * sizeof (*(fft->work_area)));
     fft->strides = init_strides (dims, n_dims, data_size);
 

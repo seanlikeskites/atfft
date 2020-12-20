@@ -24,6 +24,7 @@ ifeq (FFTW3, $(IMPL))
 	endif
 
 	DFT_SOURCES += ../src/fftw/atfft_dft_fftw.c
+	ND_DFT_SOURCES += ../src/fftw/atfft_dft_fftw.c ../src/fftw/atfft_dft_nd_fftw.c
 	DCT_SOURCES += ../src/fftw/atfft_dct_fftw.c
 	
 else ifeq (FFTS, $(IMPL))

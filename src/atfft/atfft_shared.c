@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Sean Enderby <sean.enderby@gmail.com>
+ * Copyright (C) 2020 Sean Enderby <sean.enderby@gmail.com>
  *
  * This program is free software. It comes without any warranty, to
  * the extent permitted by applicable law. You can redistribute it
@@ -358,4 +358,16 @@ void atfft_sample_to_long_double_complex_stride (atfft_complex *in,
         ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
         ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
     }
+}
+
+int int_array_product (const int *array, int size)
+{
+    int prod = array [0];
+
+    for (int i = 1; i < size; ++i)
+    {
+        prod *= array [i];
+    }
+
+    return prod;
 }
