@@ -27,6 +27,9 @@ struct atfft_dft_nd
     struct atfft_dft **sub_transforms;
     struct atfft_dft **dim_sub_transforms;
 
+    /* additional plan for real transforms */
+    struct atfft_dft *real_transform;
+
     atfft_complex *work_area;
     int *strides;
 };
@@ -84,12 +87,26 @@ struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
         goto failed;
 
     /* allocate fft structs for each dimension */
+    int n_complex_transforms = n_dims;
+
+    if (format == ATFFT_REAL)
+    {
+        fft->real_transform = atfft_dft_create (dims [n_dims - 1],
+                                                direction,
+                                                ATFFT_REAL);
+
+        n_complex_transforms = n_dims - 1;
+
+        if (!fft->real_transform)
+            goto failed;
+    }
+
     fft->sub_transforms = atfft_init_sub_transforms (dims,
-                                                     n_dims,
+                                                     n_complex_transforms,
                                                      &(fft->n_sub_transforms),
                                                      fft->dim_sub_transforms,
                                                      direction,
-                                                     format,
+                                                     ATFFT_COMPLEX,
                                                      0);
 
     if (!fft->sub_transforms)
@@ -116,6 +133,7 @@ void atfft_dft_nd_destroy (struct atfft_dft_nd *fft)
     {
         free (fft->strides);
         free (fft->work_area);
+        atfft_dft_destroy (fft->real_transform);
         atfft_free_sub_transforms (fft->sub_transforms, fft->n_sub_transforms);
         free (fft->dim_sub_transforms);
         free (fft->dims);
@@ -131,7 +149,7 @@ void atfft_dft_nd_complex_transform (struct atfft_dft_nd *fft, atfft_complex *in
     atfft_complex *current_in = in;
     atfft_complex *current_out = work_areas [w];
 
-    for (int d = 0; d < fft->n_dims; ++d)
+    for (int d = fft->n_dims - 1; d >= 0; --d)
     {
         int size = fft->dims [d];
         int stride = fft->strides [d];
@@ -141,16 +159,32 @@ void atfft_dft_nd_complex_transform (struct atfft_dft_nd *fft, atfft_complex *in
         {
             atfft_dft_complex_transform_stride (sub_transform,
                                                 current_in,
-                                                stride,
+                                                1,
                                                 current_out,
-                                                1);
+                                                stride);
 
-            ++current_in;
-            current_out += size;
+            current_in += size;
+            ++current_out;
         }
 
         current_in = work_areas [w];
         w = 1 - w;
         current_out = work_areas [w];
     }
+}
+
+void atfft_dft_nd_real_forward_transform (struct atfft_dft_nd *fft, const atfft_sample *in, atfft_complex *out)
+{
+    /* Only to be used for forward real FFTs. */
+    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+
+    /* not implemented */
+}
+
+void atfft_dft_nd_real_backward_transform (struct atfft_dft_nd *fft, atfft_complex *in, atfft_sample *out)
+{
+    /* Only to be used for backward real FFTs. */
+    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+
+    /* not implemented */
 }
