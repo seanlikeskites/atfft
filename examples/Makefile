@@ -5,8 +5,7 @@ INCLUDEDIRS = -I../include
 DFT_SOURCES = ../src/atfft/atfft_shared.c
 ND_DFT_SOURCES = ../src/atfft/atfft_shared.c
 DCT_SOURCES = ../src/atfft/atfft_shared.c
-#PROGRAMS = complex_transform real_transform dct nd_complex nd_real
-PROGRAMS = complex_transform dct nd_complex nd_real
+PROGRAMS = complex_transform real_transform dct nd_complex nd_real
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT
