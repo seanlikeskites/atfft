@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <atfft/atfft_dft.h>
 #include "atfft_internal.h"
-#include "atfft_dft_bluestein.h"
+#include "dft_bluestein.h"
 
 /**
  * Swap the real and imaginary parts of a and then multiply by b:

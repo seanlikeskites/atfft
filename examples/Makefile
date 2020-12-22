@@ -5,7 +5,7 @@ INCLUDEDIRS = -I../include
 DFT_SOURCES = ../src/atfft/atfft_shared.c
 ND_DFT_SOURCES = ../src/atfft/atfft_shared.c
 DCT_SOURCES = ../src/atfft/atfft_shared.c
-PROGRAMS = complex_transform real_transform dct nd_complex nd_real
+PROGRAMS = complex_transform dct real_transform dct nd_complex nd_real
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT
@@ -22,20 +22,20 @@ ifeq (FFTW3, $(IMPL))
 		LIBS += -lfftw3
 	endif
 
-	DFT_SOURCES += ../src/fftw/atfft_dft_fftw.c
-	ND_DFT_SOURCES += ../src/fftw/atfft_dft_fftw.c ../src/fftw/atfft_dft_nd_fftw.c
-	DCT_SOURCES += ../src/fftw/atfft_dct_fftw.c
+	DFT_SOURCES += ../src/fftw/dft.c
+	ND_DFT_SOURCES += ../src/fftw/dft.c ../src/fftw/dft_nd.c
+	DCT_SOURCES += ../src/fftw/dct.c
 	
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
-	DFT_SOURCES += ../src/ffts/atfft_dft_ffts.c
-	DCT_SOURCES += ../src/atfft/atfft_dct.c ../src/ffts/atfft_dft_ffts.c
+	DFT_SOURCES += ../src/ffts/dft.c
+	DCT_SOURCES += ../src/atfft/dct.c ../src/ffts/dft.c
 
 else ifeq (GSL, $(IMPL))
 	LIBS += -lgsl -lgslcblas
-	DFT_SOURCES += ../src/gsl/atfft_dft_gsl.c
-	ND_DFT_SOURCES += ../src/gsl/atfft_dft_gsl.c ../src/atfft/atfft_dft_nd.c ../src/atfft/atfft_internal.c
-	DCT_SOURCES += ../src/atfft/atfft_dct.c ../src/gsl/atfft_dft_gsl.c
+	DFT_SOURCES += ../src/gsl/dft.c
+	ND_DFT_SOURCES += ../src/gsl/dft.c ../src/atfft/dft_nd.c ../src/atfft/atfft_internal.c
+	DCT_SOURCES += ../src/atfft/dct.c ../src/gsl/dft.c
 
 else ifeq (KISS, $(IMPL))
 	ifeq (FLOAT, $(TYPE))
@@ -46,35 +46,35 @@ else ifeq (KISS, $(IMPL))
 		LIBS += -lkissfft
 	endif
 
-	DFT_SOURCES += ../src/kiss/atfft_dft_kiss.c
-	DCT_SOURCES += ../src/atfft/atfft_dct.c ../src/kiss/atfft_dft_kiss.c
+	DFT_SOURCES += ../src/kiss/dft.c
+	DCT_SOURCES += ../src/atfft/dct.c ../src/kiss/dft.c
 	
 else ifeq (VDSP, $(IMPL))
 	LIBS += -framework Accelerate
-	DFT_SOURCES += ../src/vdsp/atfft_dft_vdsp.c
-	DCT_SOURCES += ../src/vdsp/atfft_dct_vdsp.c
+	DFT_SOURCES += ../src/vdsp/dft.c
+	DCT_SOURCES += ../src/vdsp/dct.c
 
 else ifeq (FFMPEG, $(IMPL))
 	LIBS += -lavutil -lavcodec
-	DFT_SOURCES += ../src/ffmpeg/atfft_dft_ffmpeg.c
-	ND_DFT_SOURCES += ../src/ffmpeg/atfft_dft_ffmpeg.c ../src/atfft/atfft_dft_nd.c ../src/atfft/atfft_internal.c
-	DCT_SOURCES += ../src/ffmpeg/atfft_dct_ffmpeg.c
+	DFT_SOURCES += ../src/ffmpeg/dft.c
+	ND_DFT_SOURCES += ../src/ffmpeg/dft.c ../src/atfft/dft_nd.c ../src/atfft/atfft_internal.c
+	DCT_SOURCES += ../src/ffmpeg/dct.c
 
 else ifeq (PFFFT, $(IMPL))
-	DFT_SOURCES += ../src/pffft/atfft_dft_pffft.c ../src/pffft/pffft.c
-	ND_DFT_SOURCES += ../src/pffft/atfft_dft_pffft.c ../src/pffft/pffft.c ../src/atfft/atfft_dft_nd.c ../src/atfft/atfft_internal.c
-	DCT_SOURCES += ../src/atfft/atfft_dct.c ../src/pffft/atfft_dft_pffft.c ../src/pffft/pffft.c
+	DFT_SOURCES += ../src/pffft/dft.c ../src/pffft/pffft.c
+	ND_DFT_SOURCES += ../src/pffft/dft.c ../src/pffft/pffft.c ../src/atfft/dft_nd.c ../src/atfft/atfft_internal.c
+	DCT_SOURCES += ../src/atfft/dct.c ../src/pffft/dft.c ../src/pffft/pffft.c
 	CFLAGS += -msse
 
 else ifeq (OOURA, $(IMPL))
-	DFT_SOURCES += ../src/ooura/atfft_dft_ooura.c ../src/ooura/fft4g.c
-	ND_DFT_SOURCES += ../src/ooura/atfft_dft_ooura.c ../src/ooura/fft4g.c ../src/atfft/atfft_dft_nd.c ../src/atfft/atfft_internal.c
-	DCT_SOURCES += ../src/ooura/atfft_dct_ooura.c ../src/ooura/fft4g.c
+	DFT_SOURCES += ../src/ooura/dft.c ../src/ooura/fft4g.c
+	ND_DFT_SOURCES += ../src/ooura/dft.c ../src/ooura/fft4g.c ../src/atfft/dft_nd.c ../src/atfft/atfft_internal.c
+	DCT_SOURCES += ../src/ooura/dct.c ../src/ooura/fft4g.c
 
 else
-	DFT_SOURCES += ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/atfft_dft_cooley_tukey.c ../src/atfft/atfft_dft_bluestein.c ../src/atfft/atfft_dft_nd.c
-	ND_DFT_SOURCES += ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/atfft_dft_cooley_tukey.c ../src/atfft/atfft_dft_bluestein.c ../src/atfft/atfft_dft_nd.c
-	DCT_SOURCES += ../src/atfft/atfft_dct.c ../src/atfft/atfft_dft.c ../src/atfft/atfft_dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/atfft_dft_cooley_tukey.c ../src/atfft/atfft_dft_bluestein.c
+	DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c
+	ND_DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_nd.c
+	DCT_SOURCES += ../src/atfft/dct.c ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c
 
 endif
 

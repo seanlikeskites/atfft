@@ -13,9 +13,8 @@
 #include <math.h>
 #include <limits.h>
 #include <atfft/atfft_dft.h>
-#include "atfft_dft_cooley_tukey.h"
+#include "dft_cooley_tukey.h"
 #include "atfft_internal.h"
-#include "atfft_dft_rader.h"
 
 /* Because an int is used to represent the size of the transform
  * valid sizes are anywhere between 0 and 2^(n - 1), where n is

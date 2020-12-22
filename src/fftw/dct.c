@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <atfft/atfft_dct.h>
-#include "atfft_fftw_internal.h"
+#include "fftw_definitions.h"
 
 struct atfft_dct
 {

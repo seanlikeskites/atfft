@@ -14,9 +14,9 @@
 #include <limits.h>
 #include <atfft/atfft_dft.h>
 #include "atfft_internal.h"
-#include "atfft_dft_cooley_tukey.h"
-#include "atfft_dft_rader.h"
-#include "atfft_dft_bluestein.h"
+#include "dft_cooley_tukey.h"
+#include "dft_rader.h"
+#include "dft_bluestein.h"
 
 typedef void (*complex_transform_function) (void*, atfft_complex*, int, atfft_complex*, int);
 typedef void (*fft_destroy_function) (void*);
