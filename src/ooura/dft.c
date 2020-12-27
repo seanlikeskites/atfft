@@ -246,7 +246,6 @@ void atfft_dft_real_backward_transform_stride (struct atfft_dft *fft,
 
     atfft_halfcomplex_fftw_to_ooura (in, in_stride, fft->data, fft->size);
     rdft (fft->size, fft->ooura_direction, fft->data, fft->work_area, fft->tables);
-
     atfft_double_to_sample_real_stride (fft->data,
                                         1,
                                         out,
