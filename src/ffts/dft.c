@@ -37,6 +37,10 @@ struct atfft_dft
 
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
+    /* FFTS only supports real transforms of even lengths */
+    if (format == ATFFT_REAL)
+        assert (atfft_is_even (size));
+
     struct atfft_dft *fft;
 
     if (!(fft = malloc (sizeof (*fft))))
@@ -93,22 +97,13 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
 
 #ifndef ATFFT_TYPE_FLOAT
     if (!(fft->in && fft->out && fft->plan))
-    {
-        if (fft->plan) /* ffts can't hack freeing a null pointer */
-            ffts_free (fft->plan);
-
-        free (fft->out);
-        free (fft->in);
-        free (fft);
-        fft = NULL;
-    }
 #else
     if (!fft->plan)
+#endif
     {
-        free (fft);
+        atfft_dft_destroy (fft);
         fft = NULL;
     }
-#endif
 
     return fft;
 }
@@ -117,7 +112,9 @@ void atfft_dft_destroy (struct atfft_dft *fft)
 {
     if (fft)
     {
-        ffts_free (fft->plan);
+        if (fft->plan) /* ffts can't hack freeing a null pointer */
+            ffts_free (fft->plan);
+
 #ifndef ATFFT_TYPE_FLOAT
         free (fft->out);
         free (fft->in);
