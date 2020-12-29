@@ -23,7 +23,7 @@ ifeq (FFTW3, $(IMPL))
 	endif
 
 	DFT_SOURCES += ../src/fftw/dft.c
-	ND_DFT_SOURCES += ../src/fftw/dft.c ../src/fftw/dft_nd.c
+	ND_DFT_SOURCES += ../src/fftw/dft_nd.c
 	DCT_SOURCES += ../src/fftw/dct.c
 	
 else ifeq (FFTS, $(IMPL))
@@ -47,6 +47,7 @@ else ifeq (KISS, $(IMPL))
 	endif
 
 	DFT_SOURCES += ../src/kiss/dft.c
+	ND_DFT_SOURCES += ../src/kiss/dft_nd.c
 	DCT_SOURCES += ../src/atfft/dct.c ../src/kiss/dft.c
 	
 else ifeq (VDSP, $(IMPL))
