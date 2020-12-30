@@ -25,7 +25,7 @@ static void complexTransform (benchmark::State &state)
 
     while (state.KeepRunning())
     {
-        atfft_dft_complex_transform (fft, x, 1, y, 1);
+        atfft_dft_complex_transform (fft, x, y);
     }
 
     atfft_dft_destroy (fft);
