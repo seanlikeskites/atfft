@@ -147,6 +147,11 @@ atfft_sample atfft_arg (const atfft_complex x);
  * @param size the length of the signals
  */
 void atfft_real (atfft_complex *in, atfft_sample *out, int size);
+void atfft_real_stride (atfft_complex *in,
+                        int in_stride,
+                        atfft_sample *out,
+                        int out_stride,
+                        int size);
 
 /**
  * Get the imaginary part of a complex signal.
@@ -156,6 +161,11 @@ void atfft_real (atfft_complex *in, atfft_sample *out, int size);
  * @param size the length of the signals
  */
 void atfft_imag (atfft_complex *in, atfft_sample *out, int size);
+void atfft_imag_stride (atfft_complex *in,
+                        int in_stride,
+                        atfft_sample *out,
+                        int out_stride,
+                        int size);
 
 /**
  * Create a complex signal from a real signal.
@@ -165,6 +175,11 @@ void atfft_imag (atfft_complex *in, atfft_sample *out, int size);
  * @param size the length of the signals
  */
 void atfft_real_to_complex (const atfft_sample *in, atfft_complex *out, int size);
+void atfft_real_to_complex_stride (const atfft_sample *in,
+                                   int in_stride,
+                                   atfft_complex *out,
+                                   int out_stride,
+                                   int size);
 
 /**
  * Create a complex signal from a halfcomplex signal.
@@ -174,6 +189,18 @@ void atfft_real_to_complex (const atfft_sample *in, atfft_complex *out, int size
  * @param size the length of the output signal
  */
 void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int size);
+void atfft_halfcomplex_to_complex_stride (atfft_complex *in,
+                                          int in_stride,
+                                          atfft_complex *out,
+                                          int out_stride,
+                                          int size);
+
+void atfft_complex_to_halfcomplex (atfft_complex *in, atfft_complex *out, int size);
+void atfft_complex_to_halfcomplex_stride (atfft_complex *in,
+                                          int in_stride,
+                                          atfft_complex *out,
+                                          int out_stride,
+                                          int size);
 
 /**
  * Convert a real valued signal from single precision floats
