@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 #include <benchmark/benchmark.h>
 #include <atfft/atfft.h>
 
@@ -10,7 +11,7 @@ float randomFloat()
 
 static void complexTransform (benchmark::State &state)
 {
-    int size = state.range_x();
+    int size = state.range (0);
     atfft_complex *x = new atfft_complex [size];
     atfft_complex *y = new atfft_complex [size];
     atfft_dft *fft = static_cast <atfft_dft*> (atfft_dft_create (size, ATFFT_FORWARD, ATFFT_COMPLEX));
@@ -23,7 +24,7 @@ static void complexTransform (benchmark::State &state)
         ATFFT_IM (x [i]) = randomFloat();
     }
 
-    while (state.KeepRunning())
+    for (auto _ : state)
     {
         atfft_dft_complex_transform (fft, x, y);
     }
@@ -33,11 +34,22 @@ static void complexTransform (benchmark::State &state)
     delete[] x;
 }
 
-BENCHMARK (complexTransform)->Arg(32)->Arg(64)->Arg(128)
-                            ->Arg(256)->Arg(512)->Arg(1024)->Arg(2048)->Arg(4096)->Arg(8192)
-                            ->Arg(16384)->Arg(32768)->Arg(65536);
-//BENCHMARK (complexTransform)->Arg(5)->Arg(7)->Arg(13)->Arg(31)->Arg(67)->Arg(127)
-//                            ->Arg(257)->Arg(509)->Arg(1021)->Arg(2053)->Arg(35987);
-//BENCHMARK (complexTransform)->Arg(2*2*2*2*2*2*3*17)->Arg(8192);
+#ifdef BENCHMARK_POWERS_OF_2
+BENCHMARK (complexTransform)->RangeMultiplier (2)->Range (1 << 5, 1 << 16);
+#endif
+
+#ifdef BENCHMARK_POWERS_OF_3
+BENCHMARK (complexTransform)->RangeMultiplier (3)->Range (27, std::pow (3, 10));
+#endif
+
+#ifdef BENCHMARK_PRIMES
+BENCHMARK (complexTransform)->Arg (37)
+                            ->Arg (67)
+                            ->Arg (131)
+                            ->Arg (257)
+                            ->Arg (521)
+                            ->Arg (1031)
+                            ->Arg (2053);
+#endif
 
 BENCHMARK_MAIN();
