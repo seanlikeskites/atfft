@@ -1,0 +1,9 @@
+/**
+
+\page equations Equations
+
+\section thedft The Discrete Fourier Transform
+
+\f[ X[k] = \sum_{n = 0}^{N - 1} x[n]e^{\frac{-2\pi jkn}{N}} \f]
+
+*/

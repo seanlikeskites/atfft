@@ -1,0 +1,25 @@
+/**
+
+\mainpage All the FFT!
+
+I'll write some fully fledged documentation here at some point. For now just
+know that you should create a plan structure with atfft_dft_create() and pass that
+around to the transform functions (atfft_dft_complex_transform(),
+atfft_dft_real_forward_transform() and atfft_dft_real_backward_transform()). The layout of the input and
+ouput of the transforms is identical to FFTW's.
+
+Enjoy!
+
+\code{.c}
+#define N_SAMPLES 32
+atfft_complex timeDomain [N_SAMPLES];
+atfft_complex freqDomain [N_SAMPLES];
+
+/* create a DFT plan */
+struct atfft_dft *fft = atfft_dft_create (N_SAMPLES, ATFFT_FORWARD, ATFFT_COMPLEX);
+
+/* use the plan to perform a DFT */
+atfft_dft_complex_transform (fft, timeDomain, freqDomain);
+\endcode
+
+*/

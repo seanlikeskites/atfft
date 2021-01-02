@@ -129,74 +129,6 @@ void atfft_real_to_complex_stride (const atfft_sample *in,
     }
 }
 
-void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int size)
-{
-    int last_bin = atfft_dft_halfcomplex_size (size);
-
-    memcpy (out, in, last_bin * sizeof (*out));
-
-    if (atfft_is_even (size))
-        --last_bin;
-
-    for (int i = 1; i < last_bin; ++i)
-    {
-        ATFFT_RE (out [size - i]) = ATFFT_RE (in [i]);
-        ATFFT_IM (out [size - i]) = - ATFFT_IM (in [i]);
-    }
-}
-
-void atfft_halfcomplex_to_complex_stride (atfft_complex *in,
-                                          int in_stride,
-                                          atfft_complex *out,
-                                          int out_stride,
-                                          int size)
-{
-    int last_bin = atfft_dft_halfcomplex_size (size);
-
-    for (int i = 0, o = 0; i < last_bin * in_stride; i += in_stride, o += out_stride)
-    {
-        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
-        ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
-    }
-
-    if (atfft_is_even (size))
-        --last_bin;
-
-    for (int i = in_stride, o = (size - 1) * out_stride; i < last_bin * in_stride; i += in_stride, o -= out_stride)
-    {
-        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
-        ATFFT_IM (out [o]) = - ATFFT_IM (in [i]);
-    }
-}
-
-
-void atfft_complex_to_halfcomplex (atfft_complex *in, atfft_complex *out, int size)
-{
-    int last_bin = atfft_dft_halfcomplex_size (size);
-    memcpy (out, in, last_bin * sizeof (*out));
-}
-
-void atfft_complex_to_halfcomplex_stride (atfft_complex *in,
-                                          int in_stride,
-                                          atfft_complex *out,
-                                          int out_stride,
-                                          int size)
-{
-    for (int i = 0, o = 0; i < atfft_dft_halfcomplex_size (size) * in_stride; i += in_stride, o += out_stride)
-    {
-        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
-        ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
-    }
-}
-
-void atfft_float_to_sample_real (const float *in, atfft_sample *out, int size)
-{
-    for (int i = 0; i < size; ++i)
-    {
-        out [i] = in [i];
-    }
-}
-
 void atfft_float_to_sample_real_stride (const float *in,
                                         int in_stride,
                                         atfft_sample *out,
@@ -439,35 +371,4 @@ void atfft_sample_to_long_double_complex_stride (atfft_complex *in,
         ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
         ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
     }
-}
-
-int atfft_int_array_product (const int *array, int size)
-{
-    int prod = array [0];
-
-    for (int i = 1; i < size; ++i)
-    {
-        prod *= array [i];
-    }
-
-    return prod;
-}
-
-int atfft_dft_halfcomplex_size (int size)
-{
-    return size / 2 + 1;
-}
-
-int atfft_dft_nd_halfcomplex_size (const int *dims, int n_dims)
-{
-    int prod = 1;
-
-    for (int i = 0; i < n_dims - 1; ++i)
-    {
-        prod *= dims [i];
-    }
-
-    prod *= atfft_dft_halfcomplex_size (dims [n_dims - 1]);
-
-    return prod;
 }

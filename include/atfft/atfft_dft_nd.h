@@ -91,4 +91,3 @@ void atfft_dft_nd_real_backward_transform (struct atfft_dft_nd *fft, atfft_compl
 #endif
 
 #endif /* ATFFT_DFT_ND_H_INCLUDED */
-

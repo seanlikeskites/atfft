@@ -13,6 +13,7 @@
 #include <math.h>
 #include <ffts/ffts.h>
 #include <atfft/atfft_dft_nd.h>
+#include <atfft/atfft_dft_nd_util.h>
 
 #ifndef ATFFT_TYPE_FLOAT
 #   ifdef _MSC_VER

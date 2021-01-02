@@ -9,6 +9,8 @@
  */
 
 #include <atfft/atfft_dft.h>
+#include <atfft/atfft_dft_util.h>
 #include <atfft/atfft_dft_nd.h>
+#include <atfft/atfft_dft_nd_util.h>
 #include <atfft/atfft_dct.h>
 #include <atfft/atfft_windows.h>
