@@ -9,7 +9,7 @@
  */
 
 /** @file
- * Definitions of the types used by atfft and some
+ * Definitions of the types used by ATFFT and some
  * useful macros and functions for working with them.
  */
 
@@ -28,7 +28,7 @@ enum atfft_direction
     ATFFT_BACKWARD /**< Create a plan for a backward transform. */
 };
 
-/** An enum to represent the type of values the transform will operate on. */
+/** An enum to represent the type of values a transform will operate on. */
 enum atfft_format
 {
     ATFFT_COMPLEX, /**< Create a plan for operating on complex valued signals. */
@@ -42,9 +42,9 @@ typedef double atfft_complex_d [2];
 /** A complex long double type. */
 typedef long double atfft_complex_l [2];
 
-/** A macro to return the real part of the complex types. */
+/** A macro to access the real part of a complex value. */
 #define ATFFT_RE(x) ((x) [0])
-/** A macro to return the imaginary part of the complex types. */
+/** A macro to access the imaginary part of a complex value. */
 #define ATFFT_IM(x) ((x) [1])
 
 /** A macro to return the smallest of two values. */
@@ -78,16 +78,22 @@ typedef long double atfft_complex_l [2];
      * <tr><td>-D ATFFT_TYPE_DOUBLE         <td>double
      * </table>
      *
-     * These definitions take precedence in the order given in the above table, i.e. if ATFFT_TYPE_FLOAT is defined,
-     * atfft_sample will always be typedefed to float, even if the other two definitions are present. In order for
-     * atfft_sample to be double, either none of the above definitions must be present or only ATFFT_TYPE_DOUBLE must be
-     * defined.
+     * These definitions take precedence in the order given in the above table, i.e. if ATFFT_TYPE_FLOAT is defined, \ref
+     * atfft_sample will always be typedefed to float, even if the other two definitions are present.
+     *
+     * In order for \ref atfft_sample to be double, either none of the above definitions must be present or only
+     * ATFFT_TYPE_DOUBLE must be defined.
      */
     typedef double atfft_sample;
     /** A typedef defining the type used for complex values in ATFFT.
      *
-     * By default this will be \ref atfft_complex_d, but by providing additional definitions at compile time this can be
-     * changed.
+     * Complex values are stored as an array of two values (a real and an imaginary part). Typedefs providing a complex type
+     * for each precision of floating point value are described above (\ref atfft_complex_f, \ref atfft_complex_d, \ref
+     * atfft_complex_l). \ref atfft_complex is typedefed to one of those three, such that its real and imaginary part have
+     * the same type as \ref atfft_sample.
+     *
+     * By default atfft_complex will be an array of two doubles (\ref atfft_complex_d), but by providing additional
+     * definitions at compile time this can be changed.
      *
      * <table>
      * <tr><th>Definition                   <th>Complex Type
@@ -97,9 +103,10 @@ typedef long double atfft_complex_l [2];
      * </table>
      *
      * These definitions take precedence in the order given in the above table, i.e. if ATFFT_TYPE_FLOAT is defined,
-     * atfft_complex will always be typedefed to \ref atfft_complex_f, even if the other two definitions are present. In
-     * order for atfft_complex to be \ref atfft_complex_d, either none of the above definitions must be present or only
-     * ATFFT_TYPE_DOUBLE must be defined.
+     * \ref atfft_complex will always be typedefed to \ref atfft_complex_f, even if the other two definitions are present.
+     *
+     * In order for \ref atfft_complex to be \ref atfft_complex_d, either none of the above definitions must be present or
+     * only ATFFT_TYPE_DOUBLE must be defined.
      */
     typedef atfft_complex_d atfft_complex;
 #endif
@@ -108,6 +115,8 @@ typedef long double atfft_complex_l [2];
  * Check if an integer is even.
  *
  * @param x integer to check
+ *
+ * @return 1 if @p x is even, 0 otherwise
  */
 int atfft_is_even (unsigned int x);
 
@@ -115,6 +124,8 @@ int atfft_is_even (unsigned int x);
  * Check if an integer is odd.
  *
  * @param x integer to check
+ *
+ * @return 1 if @p x is odd, 0 otherwise
  */
 int atfft_is_odd (unsigned int x);
 
@@ -122,6 +133,8 @@ int atfft_is_odd (unsigned int x);
  * Check if an integer is a power of 2
  *
  * @param x integer to check
+ *
+ * @return 1 if @p x is a power of 2, 0 otherwise
  */
 int atfft_is_power_of_2 (unsigned int x);
 
@@ -167,31 +180,47 @@ void atfft_scale_complex (atfft_complex *data, int size, atfft_sample scale_fact
  */
 void atfft_normalise_complex (atfft_complex *data, int size);
 
-/** Return the absolute value of a complex number. */
+/**
+ * Find the magnitude of a complex value.
+ *
+ * @param x value to find the magnitude of
+ *
+ * @return The magnitude of @p x.
+ *
+ * @return Where @p x is some complex value \f$ a + bi \f$, atfft_abs() returns \f$ \sqrt{a^{2} + b^{2}} \f$.
+ */
 atfft_sample atfft_abs (const atfft_complex x);
 
-/** Return the complex argument (phase) of a complex number. */
+/**
+ * Find the argument (phase) of a complex value.
+ *
+ * @param x value to find the argument of
+ *
+ * @return The argument of @p x in the range \f$ -\pi \f$ to \f$ \pi \f$.
+ *
+ * @return Where @p x is some complex value \f$ a + bi \f$, atfft_arg() returns \f$ \mathop{\rm atan2}(b, a) \f$.
+ */
 atfft_sample atfft_arg (const atfft_complex x);
 
 /**
- * Copy the real part of a complex signal into the output.
+ * Copy the real part of a complex valued signal into the output.
  *
- * @param in the input signal (should contain at least @p size elements)
- * @param out the output signal (should contain at least @p size elements)
- * @param size the length of the signals
+ * @param in the signal to be copied from (should contain at least @p size elements)
+ * @param out the signal to copy to (should contain at least @p size elements)
+ * @param size the number of values to copy
  */
 void atfft_real (atfft_complex *in, atfft_sample *out, int size);
 
 /**
- * Copy the real part of a complex signal into the output.
+ * Copy the real part of a complex valued signal into the output, taking strides of different length for input and output.
  *
- * @param in the input signal
+ * @param in the signal to be copied from
  *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
- * @param out the output signal
+ * @param in_stride the stride to take when reading the input
+ * @param out the signal to copy to
  *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
- * @param out_stride the stride to take when reading the input signal
- * @param size the length of the signals
+ * @param out_stride the stride to take when writing the output
+ * @param size the number of values to copy
  */
 void atfft_real_stride (atfft_complex *in,
                         int in_stride,
@@ -200,13 +229,26 @@ void atfft_real_stride (atfft_complex *in,
                         int size);
 
 /**
- * Get the imaginary part of a complex signal.
+ * Copy the imaginary part of a complex valued signal into the output.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the signal to be copied from (should contain at least @p size elements)
+ * @param out the signal to copy to (should contain at least @p size elements)
+ * @param size the number of values to copy
  */
 void atfft_imag (atfft_complex *in, atfft_sample *out, int size);
+
+/**
+ * Copy the imaginary part of a complex valued signal into the output, taking strides of different length for input and
+ * output.
+ *
+ * @param in the signal to be copied from
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
+ * @param out the signal to copy to
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the number of values to copy
+ */
 void atfft_imag_stride (atfft_complex *in,
                         int in_stride,
                         atfft_sample *out,
@@ -214,13 +256,26 @@ void atfft_imag_stride (atfft_complex *in,
                         int size);
 
 /**
- * Create a complex signal from a real signal.
+ * Create a complex signal from a real signal, setting all imaginary parts to 0.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_real_to_complex (const atfft_sample *in, atfft_complex *out, int size);
+
+/**
+ * Create a complex signal from a real signal, setting all imaginary parts to 0 and taking strides of different length for
+ * input and output.
+ *
+ * @param in the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
+ * @param out the output signal
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
+ */
 void atfft_real_to_complex_stride (const atfft_sample *in,
                                    int in_stride,
                                    atfft_complex *out,
@@ -228,26 +283,25 @@ void atfft_real_to_complex_stride (const atfft_sample *in,
                                    int size);
 
 /**
- * Convert a real valued signal from single precision floats
- * to the type atfft is using.
+ * Convert a real valued signal from single precision floats to \ref atfft_sample values.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_float_to_sample_real (const float *in, atfft_sample *out, int size);
 
 /**
- * Convert a real valued signal from single precision floats
- * to the type atfft is using.
+ * Convert a real valued signal from single precision floats to \ref atfft_sample values, taking strides of different length
+ * for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_float_to_sample_real_stride (const float *in,
                                         int in_stride,
@@ -256,26 +310,25 @@ void atfft_float_to_sample_real_stride (const float *in,
                                         int size);
 
 /**
- * Convert a real valued signal from the type atfft is using
- * to single precision floats
+ * Convert a real valued signal from \ref atfft_sample values to single precision floats.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_sample_to_float_real (const atfft_sample *in, float *out, int size);
 
 /**
- * Convert a real valued signal from the type atfft is using
- * to single precision floats
+ * Convert a real valued signal from \ref atfft_sample values to single precision floats, taking strides of different length
+ * for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_sample_to_float_real_stride (const atfft_sample *in,
                                         int in_stride,
@@ -284,26 +337,25 @@ void atfft_sample_to_float_real_stride (const atfft_sample *in,
                                         int size);
 
 /**
- * Convert a complex valued signal from single precision floats
- * to the type atfft is using.
+ * Convert a complex valued signal from single precision floats to \ref atfft_sample values.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_float_to_sample_complex (atfft_complex_f *in, atfft_complex *out, int size);
 
 /**
- * Convert a complex valued signal from single precision floats
- * to the type atfft is using.
+ * Convert a complex valued signal from single precision floats to \ref atfft_sample values, taking strides of different
+ * length for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_float_to_sample_complex_stride (atfft_complex_f *in,
                                            int in_stride,
@@ -312,26 +364,25 @@ void atfft_float_to_sample_complex_stride (atfft_complex_f *in,
                                            int size);
 
 /**
- * Convert a complex valued signal from the type atfft is using
- * to single precision floats
+ * Convert a complex valued signal from \ref atfft_sample values to single precision floats.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_sample_to_float_complex (atfft_complex *in, atfft_complex_f *out, int size);
 
 /**
- * Convert a complex valued signal from the type atfft is using
- * to single precision floats
+ * Convert a complex valued signal from \ref atfft_sample values to single precision floats, taking strides of different
+ * length for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_sample_to_float_complex_stride (atfft_complex *in,
                                            int in_stride,
@@ -340,26 +391,25 @@ void atfft_sample_to_float_complex_stride (atfft_complex *in,
                                            int size);
 
 /**
- * Convert a real valued signal from double precision floats
- * to the type atfft is using.
+ * Convert a real valued signal from double precision floats to \ref atfft_sample values.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_double_to_sample_real (const double *in, atfft_sample *out, int size);
 
 /**
- * Convert a real valued signal from double precision floats
- * to the type atfft is using.
+ * Convert a real valued signal from double precision floats to \ref atfft_sample values, taking strides of different length
+ * for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_double_to_sample_real_stride (const double *in,
                                          int in_stride,
@@ -368,26 +418,25 @@ void atfft_double_to_sample_real_stride (const double *in,
                                          int size);
 
 /**
- * Convert a real valued signal from the type atfft is using
- * to double precision floats
+ * Convert a real valued signal from \ref atfft_sample values to double precision floats.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_sample_to_double_real (const atfft_sample *in, double *out, int size);
 
 /**
- * Convert a real valued signal from the type atfft is using
- * to double precision floats
+ * Convert a real valued signal from \ref atfft_sample values to double precision floats, taking strides of different length
+ * for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_sample_to_double_real_stride (const atfft_sample *in,
                                          int in_stride,
@@ -396,26 +445,25 @@ void atfft_sample_to_double_real_stride (const atfft_sample *in,
                                          int size);
 
 /**
- * Convert a complex valued signal from double precision floats
- * to the type atfft is using.
+ * Convert a complex valued signal from double precision floats to \ref atfft_sample values.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_double_to_sample_complex (atfft_complex_d *in, atfft_complex *out, int size);
 
 /**
- * Convert a complex valued signal from double precision floats
- * to the type atfft is using.
+ * Convert a complex valued signal from double precision floats to \ref atfft_sample values, taking strides of different
+ * length for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_double_to_sample_complex_stride (atfft_complex_d *in,
                                             int in_stride,
@@ -424,26 +472,25 @@ void atfft_double_to_sample_complex_stride (atfft_complex_d *in,
                                             int size);
 
 /**
- * Convert a complex valued signal from the type atfft is using
- * to double precision floats
+ * Convert a complex valued signal from \ref atfft_sample values to double precision floats.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_sample_to_double_complex (atfft_complex *in, atfft_complex_d *out, int size);
 
 /**
- * Convert a complex valued signal from the type atfft is using
- * to double precision floats
+ * Convert a complex valued signal from \ref atfft_sample values to double precision floats, taking strides of different
+ * length for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_sample_to_double_complex_stride (atfft_complex *in,
                                             int in_stride,
@@ -452,26 +499,25 @@ void atfft_sample_to_double_complex_stride (atfft_complex *in,
                                             int size);
 
 /**
- * Convert a real valued signal from long double precision floats
- * to the type atfft is using.
+ * Convert a real valued signal from long double precision floats to \ref atfft_sample values.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_long_double_to_sample_real (const long double *in, atfft_sample *out, int size);
 
 /**
- * Convert a real valued signal from long double precision floats
- * to the type atfft is using.
+ * Convert a real valued signal from long double precision floats to \ref atfft_sample values, taking strides of different
+ * length for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_long_double_to_sample_real_stride (const long double *in,
                                               int in_stride,
@@ -480,26 +526,25 @@ void atfft_long_double_to_sample_real_stride (const long double *in,
                                               int size);
 
 /**
- * Convert a real valued signal from the type atfft is using
- * to long double precision floats
+ * Convert a real valued signal from \ref atfft_sample values to long double precision floats.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_sample_to_long_double_real (const atfft_sample *in, long double *out, int size);
 
 /**
- * Convert a real valued signal from the type atfft is using
- * to long double precision floats
+ * Convert a real valued signal from \ref atfft_sample values to long double precision floats, taking strides of different
+ * length for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_sample_to_long_double_real_stride (const atfft_sample *in,
                                               int in_stride,
@@ -508,26 +553,25 @@ void atfft_sample_to_long_double_real_stride (const atfft_sample *in,
                                               int size);
 
 /**
- * Convert a complex valued signal from long double precision floats
- * to the type atfft is using.
+ * Convert a complex valued signal from long double precision floats to \ref atfft_sample values.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_long_double_to_sample_complex (atfft_complex_l *in, atfft_complex *out, int size);
 
 /**
- * Convert a complex valued signal from long double precision floats
- * to the type atfft is using.
+ * Convert a complex valued signal from long double precision floats to \ref atfft_sample values, taking strides of
+ * different length for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_long_double_to_sample_complex_stride (atfft_complex_l *in,
                                                 int in_stride,
@@ -536,26 +580,25 @@ void atfft_long_double_to_sample_complex_stride (atfft_complex_l *in,
                                                 int size);
 
 /**
- * Convert a complex valued signal from the type atfft is using
- * to long double precision floats
+ * Convert a complex valued signal from \ref atfft_sample values to long double precision floats.
  *
- * @param in the input signal (should contain size elements)
- * @param out the output signal (should contain size elements)
- * @param size the length of the signals
+ * @param in the input signal (should contain at least @p size elements)
+ * @param out the output signal (should contain at least @p size elements)
+ * @param size the length of the signal
  */
 void atfft_sample_to_long_double_complex (atfft_complex *in, atfft_complex_l *out, int size);
 
 /**
- * Convert a complex valued signal from the type atfft is using
- * to long double precision floats
+ * Convert a complex valued signal from \ref atfft_sample values to long double precision floats, taking strides of
+ * different length for input and output.
  *
  * @param in the input signal
- *        (should contain at least (size - 1) * in_stride + 1 elements)
- * @param in_stride the stride to take when reading the input signal
+ *        (should contain at least (@p size - 1) * @p in_stride + 1 elements)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *        (should contain at least (size - 1) * out_stride + 1 elements)
- * @param out_stride the stride to take when writing the output signal
- * @param size the number of samples to convert
+ *        (should contain at least (@p size - 1) * @p out_stride + 1 elements)
+ * @param out_stride the stride to take when writing the output
+ * @param size the length of the signal
  */
 void atfft_sample_to_long_double_complex_stride (atfft_complex *in,
                                                 int in_stride,
