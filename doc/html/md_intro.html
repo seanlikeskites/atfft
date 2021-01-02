@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.9.1"/>
-<title>All the FFT!: Globals</title>
+<title>All the FFT!: STUFF</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -14,12 +14,6 @@
 <script type="text/javascript">
   $(document).ready(function() { init_search(); });
 </script>
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    extensions: ["tex2jax.js"],
-    jax: ["input/TeX","output/HTML-CSS"],
-});
-</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -44,9 +38,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
-      <li class="current"><a href="files.html"><span>Files</span></a></li>
+      <li class="current"><a href="pages.html"><span>Related&#160;Pages</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -65,23 +58,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-  <div id="navrow2" class="tabs2">
-    <ul class="tablist">
-      <li><a href="files.html"><span>File&#160;List</span></a></li>
-      <li class="current"><a href="globals.html"><span>Globals</span></a></li>
-    </ul>
-  </div>
-  <div id="navrow3" class="tabs2">
-    <ul class="tablist">
-      <li><a href="globals.html"><span>All</span></a></li>
-      <li><a href="globals_func.html"><span>Functions</span></a></li>
-      <li class="current"><a href="globals_type.html"><span>Typedefs</span></a></li>
-      <li><a href="globals_enum.html"><span>Enumerations</span></a></li>
-      <li><a href="globals_eval.html"><span>Enumerator</span></a></li>
-      <li><a href="globals_defs.html"><span>Macros</span></a></li>
-    </ul>
-  </div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -96,25 +72,22 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">STUFF </div>  </div>
+</div><!--header-->
 <div class="contents">
-&#160;<ul>
-<li>atfft_complex
-: <a class="el" href="atfft__shared_8h.html#ad9ef665697f50dadf73d570cf4f8ea0a">atfft_shared.h</a>
-</li>
-<li>atfft_complex_d
-: <a class="el" href="atfft__shared_8h.html#a297d661f1ec5475a131905adccaed9e6">atfft_shared.h</a>
-</li>
-<li>atfft_complex_f
-: <a class="el" href="atfft__shared_8h.html#a3e8ea1d479a2f0eec7304cfe03f114d2">atfft_shared.h</a>
-</li>
-<li>atfft_complex_l
-: <a class="el" href="atfft__shared_8h.html#a55de5884b0769c4f8a0783e191b68c82">atfft_shared.h</a>
-</li>
-<li>atfft_sample
-: <a class="el" href="atfft__shared_8h.html#ac5a6b98eef8258d28fd48f500d469ecd">atfft_shared.h</a>
-</li>
-</ul>
-</div><!-- contents -->
+<div class="textblock"><p>I'll write some fully fledged documentation here at some point. For now just know that you should create an atfft structure with atfft_create() and pass that around to the transform functions (atfft_complex_transform(), atfft_real_forward_transform() and atfft_real_backward_transform()). The layout of the input and ouput of the transforms is identical to FFTW's.</p>
+<p>Enjoy!</p>
+<div class="fragment"><div class="line"><span class="keywordtype">int</span> nSample = 32;</div>
+<div class="line"></div>
+<div class="line"><span class="comment">/* create a DFT plan */</span></div>
+<div class="line"><span class="keyword">struct </span>atfft_dft *fft = <a class="code" href="atfft__dft_8h.html#a29225a1047daa2ca1bd4f392a2e7fadf">atfft_dft_create</a> (nSamples, <a class="code" href="atfft__shared_8h.html#a195b9278c2aca6c5b809db4828e0e3cfae6266459feb382570fc950a01ee27997">ATFFT_FORWARD</a>, <a class="code" href="atfft__shared_8h.html#a9272b7eeaa158a5d5a8eecbed1613ac4a1f97919c23497a0e837b0c7d856f5b91">ATFFT_COMPLEX</a>);</div>
+<div class="line"></div>
+<div class="line"><span class="comment">/* use the plan to perform a DFT */</span></div>
+<div class="line"><a class="code" href="atfft__dft_8h.html#a6181c552cf1dc1f81b21a9a344c2f29b">atfft_dft_complex_transform</a> (fft, timeDomain, freqDomain);</div>
+</div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

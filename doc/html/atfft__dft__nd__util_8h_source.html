@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.9.1"/>
-<title>All the FFT!: /home/sean/Documents/libs/atfft/include/atfft/atfft.h Source File</title>
+<title>All the FFT!: /home/sean/Documents/libs/atfft/include/atfft/atfft_dft_nd_util.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -92,31 +92,38 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">atfft.h</div>  </div>
+<div class="title">atfft_dft_nd_util.h</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
+<a href="atfft__dft__nd__util_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> * Copyright (C) 2020 Sean Enderby &lt;sean.enderby@gmail.com&gt;</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> *</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> * This program is free software. It comes without any warranty, to</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> * the extent permitted by applicable law. You can redistribute it </span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> * and/or modify it under the terms of the Do What The Fuck You Want </span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment"> * To Public License, Version 2, as published by Sam Hocevar. See </span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> * the extent permitted by applicable law. You can redistribute it</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> * and/or modify it under the terms of the Do What The Fuck You Want</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment"> * To Public License, Version 2, as published by Sam Hocevar. See</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment"> * the COPYING file for more details.</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="atfft__dft_8h.html">atfft/atfft_dft.h</a>&gt;</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="atfft__dft__util_8h.html">atfft/atfft_dft_util.h</a>&gt;</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="atfft__dft__nd_8h.html">atfft/atfft_dft_nd.h</a>&gt;</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="atfft__dft__nd__util_8h.html">atfft/atfft_dft_nd_util.h</a>&gt;</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="atfft__dct_8h.html">atfft/atfft_dct.h</a>&gt;</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="atfft__windows_8h.html">atfft/atfft_windows.h</a>&gt;</span></div>
-<div class="ttc" id="atfft__windows_8h_html"><div class="ttname"><a href="atfft__windows_8h.html">atfft_windows.h</a></div></div>
-<div class="ttc" id="atfft__dft__nd__util_8h_html"><div class="ttname"><a href="atfft__dft__nd__util_8h.html">atfft_dft_nd_util.h</a></div></div>
-<div class="ttc" id="atfft__dct_8h_html"><div class="ttname"><a href="atfft__dct_8h.html">atfft_dct.h</a></div></div>
-<div class="ttc" id="atfft__dft_8h_html"><div class="ttname"><a href="atfft__dft_8h.html">atfft_dft.h</a></div></div>
-<div class="ttc" id="atfft__dft__util_8h_html"><div class="ttname"><a href="atfft__dft__util_8h.html">atfft_dft_util.h</a></div></div>
-<div class="ttc" id="atfft__dft__nd_8h_html"><div class="ttname"><a href="atfft__dft__nd_8h.html">atfft_dft_nd.h</a></div></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#ifndef ATFFT_DFT_ND_UTIL_H_INCLUDED</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#define ATFFT_DFT_ND_UTIL_H_INCLUDED</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;{</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keywordtype">int</span> <a class="code" href="atfft__dft__nd__util_8h.html#ab061fd427da4d1918ba8e4c5a5f6056b">atfft_int_array_product</a> (<span class="keyword">const</span> <span class="keywordtype">int</span> *array, <span class="keywordtype">int</span> size);</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keywordtype">int</span> <a class="code" href="atfft__dft__nd__util_8h.html#a77d34fc777d8c6dc433d3cd7415d98c5">atfft_dft_nd_halfcomplex_size</a> (<span class="keyword">const</span> <span class="keywordtype">int</span> *dims, <span class="keywordtype">int</span> n_dims);</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;}</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#endif </span><span class="comment">/* ATFFT_DFT_ND_UTIL_H_INCLUDED */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="atfft__dft__nd__util_8h_html_ab061fd427da4d1918ba8e4c5a5f6056b"><div class="ttname"><a href="atfft__dft__nd__util_8h.html#ab061fd427da4d1918ba8e4c5a5f6056b">atfft_int_array_product</a></div><div class="ttdeci">int atfft_int_array_product(const int *array, int size)</div></div>
+<div class="ttc" id="atfft__dft__nd__util_8h_html_a77d34fc777d8c6dc433d3cd7415d98c5"><div class="ttname"><a href="atfft__dft__nd__util_8h.html#a77d34fc777d8c6dc433d3cd7415d98c5">atfft_dft_nd_halfcomplex_size</a></div><div class="ttdeci">int atfft_dft_nd_halfcomplex_size(const int *dims, int n_dims)</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
