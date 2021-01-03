@@ -8,7 +8,7 @@
  * the COPYING file for more details.
  */
 
-#include <atfft/atfft_dft_util.h>
+#include <atfft/dft_util.h>
 
 int atfft_int_array_product (const int *array, int size)
 {

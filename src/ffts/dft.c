@@ -12,7 +12,8 @@
 #include <assert.h>
 #include <math.h>
 #include <ffts/ffts.h>
-#include <atfft/atfft_dft.h>
+#include <atfft/dft.h>
+#include <atfft/dft_util.h>
 
 #ifndef ATFFT_TYPE_FLOAT
 #   ifdef _MSC_VER

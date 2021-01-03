@@ -9,7 +9,7 @@
  */
 
 #include <string.h>
-#include <atfft/atfft_dft_util.h>
+#include <atfft/dft_util.h>
 
 int atfft_dft_halfcomplex_size (int size)
 {

@@ -11,7 +11,7 @@
 #ifndef ATFFT_INTERNAL_H_INCLUDED
 #define ATFFT_INTERNAL_H_INCLUDED
 
-#include <atfft/atfft_shared.h>
+#include <atfft/types.h>
 
 /**
  * Copy the complex value x into the complex value y.

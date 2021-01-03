@@ -2,7 +2,7 @@ CFLAGS := -Wall -O3
 CXXFLAGS := -Wall -O3 -std=c++11 -DBENCHMARK_POWERS_OF_2
 LIBS := -lm -lpthread -lbenchmark
 INCLUDEDIRS := -I../include
-FFT_SOURCES := ../src/atfft/atfft_shared.c ../src/atfft/dft_util.c
+FFT_SOURCES := ../src/atfft/types.c ../src/atfft/dft_util.c
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT

@@ -11,10 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <atfft/atfft_dft_nd.h>
-#include <atfft/atfft_dft_nd_util.h>
-#include <atfft/atfft_dft.h>
-#include <atfft/atfft_dft_util.h>
+#include <atfft/dft_nd.h>
+#include <atfft/dft_nd_util.h>
+#include <atfft/dft.h>
+#include <atfft/dft_util.h>
 #include "atfft_internal.h"
 
 struct atfft_dft_nd

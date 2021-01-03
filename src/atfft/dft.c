@@ -12,8 +12,8 @@
 #include <assert.h>
 #include <math.h>
 #include <limits.h>
-#include <atfft/atfft_dft.h>
-#include <atfft/atfft_dft_util.h>
+#include <atfft/dft.h>
+#include <atfft/dft_util.h>
 #include "atfft_internal.h"
 #include "dft_cooley_tukey.h"
 #include "dft_rader.h"

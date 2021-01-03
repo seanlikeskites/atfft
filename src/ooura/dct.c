@@ -12,7 +12,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <atfft/atfft_dct.h>
+#include <atfft/dct.h>
 #include "../ooura/ooura.h"
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE

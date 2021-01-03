@@ -16,7 +16,7 @@ extern "C"
 {
 #endif
 
-#include <atfft/atfft_shared.h>
+#include <atfft/types.h>
 
 struct atfft_dft_rader;
 

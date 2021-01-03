@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <Accelerate/Accelerate.h>
-#include <atfft/atfft_dft.h>
+#include <atfft/dft.h>
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
 #   warning vDSP only supports double precision floating point, \

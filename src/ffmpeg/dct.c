@@ -13,7 +13,7 @@
 #include <math.h>
 #include <libavutil/mem.h>
 #include <libavcodec/avfft.h>
-#include <atfft/atfft_dct.h>
+#include <atfft/dct.h>
 
 #ifndef ATFFT_TYPE_FLOAT
 #   ifdef _MSC_VER

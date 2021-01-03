@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <Accelerate/Accelerate.h>
-#include <atfft/atfft_dct.h>
+#include <atfft/dct.h>
 
 #ifndef ATFFT_TYPE_FLOAT
 #   warning vDSP DCTs only support single precision floating point, \

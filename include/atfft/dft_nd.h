@@ -15,7 +15,7 @@
 #ifndef ATFFT_DFT_ND_H_INCLUDED
 #define ATFFT_DFT_ND_H_INCLUDED
 
-#include <atfft/atfft_shared.h>
+#include <atfft/types.h>
 
 #ifdef __cplusplus
 extern "C"

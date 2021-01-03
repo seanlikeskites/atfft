@@ -2,9 +2,9 @@ CC = gcc -g
 CFLAGS = -Wall -O3
 LIBS = -lm
 INCLUDEDIRS = -I../include
-DFT_SOURCES = ../src/atfft/atfft_shared.c ../src/atfft/dft_util.c
-ND_DFT_SOURCES = ../src/atfft/atfft_shared.c ../src/atfft/dft_util.c ../src/atfft/dft_nd_util.c
-DCT_SOURCES = ../src/atfft/atfft_shared.c ../src/atfft/dft_util.c
+DFT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c
+ND_DFT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c ../src/atfft/dft_nd_util.c
+DCT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c
 PROGRAMS = complex_transform dct real_transform dct nd_complex nd_real
 
 ifeq (FLOAT, $(TYPE))

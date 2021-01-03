@@ -12,8 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <atfft/atfft_dft_nd.h>
-#include <atfft/atfft_dft_nd_util.h>
+#include <atfft/dft_nd.h>
+#include <atfft/dft_nd_util.h>
 #include "fftw_definitions.h"
 
 struct atfft_dft_nd

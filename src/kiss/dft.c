@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <atfft/atfft_dft.h>
+#include <atfft/dft.h>
 
 /* we need to make sure we are using kiss_fft with the correct type */
 #define kiss_fft_scalar atfft_sample

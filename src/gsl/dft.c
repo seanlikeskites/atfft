@@ -17,7 +17,7 @@
 #include <gsl/gsl_fft_complex.h>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
-#include <atfft/atfft_dft.h>
+#include <atfft/dft.h>
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
 #   ifdef _MSC_VER

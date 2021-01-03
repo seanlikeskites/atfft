@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <atfft/atfft_dft.h>
+#include <atfft/dft.h>
 #include "../pffft/pffft.h"
 
 #ifndef ATFFT_TYPE_FLOAT

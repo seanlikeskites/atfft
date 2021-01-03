@@ -10,7 +10,7 @@
 
 #include <math.h>
 #include <string.h>
-#include <atfft/atfft_shared.h>
+#include <atfft/types.h>
 
 /* some handy integer tests */
 int atfft_is_even (unsigned int x)

@@ -9,7 +9,7 @@
  */
 
 #include <stdlib.h>
-#include <atfft/atfft_dft.h>
+#include <atfft/dft.h>
 #include "atfft_internal.h"
 #include "dft_bluestein.h"
 

@@ -10,8 +10,8 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <atfft/atfft_dft.h>
-#include <atfft/atfft_dct.h>
+#include <atfft/dft.h>
+#include <atfft/dct.h>
 
 struct atfft_dct
 {

@@ -11,7 +11,7 @@
 #include <fftw3.h>
 #include <stdlib.h>
 #include <string.h>
-#include <atfft/atfft_dct.h>
+#include <atfft/dct.h>
 #include "fftw_definitions.h"
 
 struct atfft_dct

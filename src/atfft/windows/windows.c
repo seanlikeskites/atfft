@@ -9,7 +9,7 @@
  */
 
 #include <math.h>
-#include <atfft/atfft_windows.h>
+#include <atfft/windows.h>
 
 void atfft_bartlett_window (atfft_sample *window, int size, enum atfft_window_symmetry symmetry)
 {
