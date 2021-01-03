@@ -26,7 +26,7 @@ extern "C"
  * Return the size of the complex output when performing a DFT on
  * a real valued signal.
  */
-int atfft_dft_halfcomplex_size (int size);
+int atfft_halfcomplex_size (int size);
 
 /**
  * Create a complex signal from a halfcomplex signal.

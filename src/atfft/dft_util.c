@@ -11,14 +11,14 @@
 #include <string.h>
 #include <atfft/dft_util.h>
 
-int atfft_dft_halfcomplex_size (int size)
+int atfft_halfcomplex_size (int size)
 {
     return size / 2 + 1;
 }
 
 void atfft_halfcomplex_to_complex (atfft_complex *in, atfft_complex *out, int size)
 {
-    int last_bin = atfft_dft_halfcomplex_size (size);
+    int last_bin = atfft_halfcomplex_size (size);
 
     memcpy (out, in, last_bin * sizeof (*out));
 
@@ -38,7 +38,7 @@ void atfft_halfcomplex_to_complex_stride (atfft_complex *in,
                                           int out_stride,
                                           int size)
 {
-    int last_bin = atfft_dft_halfcomplex_size (size);
+    int last_bin = atfft_halfcomplex_size (size);
 
     for (int i = 0, o = 0; i < last_bin * in_stride; i += in_stride, o += out_stride)
     {
@@ -59,7 +59,7 @@ void atfft_halfcomplex_to_complex_stride (atfft_complex *in,
 
 void atfft_complex_to_halfcomplex (atfft_complex *in, atfft_complex *out, int size)
 {
-    int last_bin = atfft_dft_halfcomplex_size (size);
+    int last_bin = atfft_halfcomplex_size (size);
     memcpy (out, in, last_bin * sizeof (*out));
 }
 
@@ -69,7 +69,7 @@ void atfft_complex_to_halfcomplex_stride (atfft_complex *in,
                                           int out_stride,
                                           int size)
 {
-    for (int i = 0, o = 0; i < atfft_dft_halfcomplex_size (size) * in_stride; i += in_stride, o += out_stride)
+    for (int i = 0, o = 0; i < atfft_halfcomplex_size (size) * in_stride; i += in_stride, o += out_stride)
     {
         ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
         ATFFT_IM (out [o]) = ATFFT_IM (in [i]);

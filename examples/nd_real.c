@@ -66,7 +66,7 @@ int main()
     int dims[] = {4, 4, 4};
     int nDims = 3;
     int nSamples = atfft_int_array_product (dims, nDims);
-    int outSize = atfft_dft_nd_halfcomplex_size (dims, nDims);
+    int outSize = atfft_nd_halfcomplex_size (dims, nDims);
 
     atfft_sample *in = malloc (nSamples * sizeof (*in));
     atfft_complex *out = malloc (outSize * sizeof (*out));

@@ -22,7 +22,7 @@ int atfft_int_array_product (const int *array, int size)
     return prod;
 }
 
-int atfft_dft_nd_halfcomplex_size (const int *dims, int n_dims)
+int atfft_nd_halfcomplex_size (const int *dims, int n_dims)
 {
     int prod = 1;
 
@@ -31,7 +31,7 @@ int atfft_dft_nd_halfcomplex_size (const int *dims, int n_dims)
         prod *= dims [i];
     }
 
-    prod *= atfft_dft_halfcomplex_size (dims [n_dims - 1]);
+    prod *= atfft_halfcomplex_size (dims [n_dims - 1]);
 
     return prod;
 }

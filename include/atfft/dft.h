@@ -9,7 +9,30 @@
  */
 
 /** @file
- * struct and functions for performing discrete fourier transforms.
+ * This header provides definitions the necessary functions for creating, executing, and freeing Discrete Fourier Transform
+ * (DFT) plans.
+ *
+ * The procedure for performing DFTs with ATFFT is as follows:
+ *  - Create a plan for the type of transform you want to perform.
+ *  - Use this plan with the relevant transform functions to perform the transform on a signal.
+ *  - Free the plan once you are done with it.
+ *
+ * A DFT plan is created using the atfft_dft_create() function. When creating a plan you must specify the length of signal
+ * it will operate on as well as the direction of the transform and the format of the time domain signal. Depending on the
+ * direction and format specified, the plan can then be used with the relevant transform function. The following table
+ * gives the correct transform function to be used for each combination of direction and format.
+ *
+ * <table>
+ * <tr><td style="border:none"> <th>ATFFT_FORWARD                      <th>ATFFT_BACKWARD
+ * <tr><th>ATFFT_COMPLEX        <td>atfft_dft_complex_transform()      <td>atfft_dft_complex_transform()
+ * <tr><th>ATFFT_REAL           <td>atfft_dft_real_forward_transform() <td>atfft_dft_real_backward_transform()
+ * </table>
+ *
+ * The following code provides a simple example of how to perform a DFT on complex valued data using ATFFT.
+ * \include complex_dft.c
+ *
+ * The following code provides a simple example of how to perform a DFT on real valued data using ATFFT.
+ * \include real_dft.c
  */
 
 #ifndef ATFFT_DFT_H_INCLUDED
@@ -23,27 +46,28 @@ extern "C"
 #endif
 
 /**
- * @struct atfft_dft
+ * @struct atfft_dft atfft/dft.h
  *
- * A Structure to hold internal FFT implementation.
+ * An opaque struct holing the details of a DFT plan.
  *
- * When using atfft you will create one of these structures
- * using atfft_create(), this structure is then passed
- * to the calculation functions in order to compute DFTs.
+ * To perform a DFT you will create one of these structures using atfft_dft_create(), this structure is then passed to the
+ * calculation functions (atfft_dft_complex_transform(), atfft_dft_real_forward_transform(), etc.) in order to compute DFTs.
+ *
+ * The exact contents of this structure differs depending on which FFT implementation is being used.
  */
 struct atfft_dft;
 
 /**
- * Create an fft structure.
+ * Create a DFT plan.
  *
- * @param size the signal length the fft should operate on
+ * @param size the signal length the DFT should operate on
  * @param direction the direction of the transform
- * @param format the type of transform (real or complex)
+ * @param format the type of time domain signal the transform will apply to (real or complex)
  */
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format);
 
 /**
- * Free an fft structure.
+ * Free a DFT plan.
  *
  * @param fft the structure to free
  */

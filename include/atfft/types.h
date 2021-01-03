@@ -24,8 +24,8 @@ extern "C"
 /** An enum to represent the direction of a transform. */
 enum atfft_direction
 {
-    ATFFT_FORWARD, /**< Create a plan for a forward transform. */
-    ATFFT_BACKWARD /**< Create a plan for a backward transform. */
+    ATFFT_FORWARD, /**< Create a plan for a forward transform (from time to frequency domain). */
+    ATFFT_BACKWARD /**< Create a plan for a backward transform (from frequency to time domain). */
 };
 
 /** An enum to represent the type of values a transform will operate on. */

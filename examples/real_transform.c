@@ -68,7 +68,7 @@ int main()
     atfft_complex *freqDomain;
     struct atfft_dft *fftForward, *fftBackward;
     int i = 0;
-    int outSize = atfft_dft_halfcomplex_size (nSamples);
+    int outSize = atfft_halfcomplex_size (nSamples);
 
     /* allocate some memory for the signals */
     signal = malloc (nSamples * sizeof (*signal));

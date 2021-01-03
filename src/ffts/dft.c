@@ -71,11 +71,11 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
             if (direction == ATFFT_FORWARD)
             {
                 fft->in_size = size;
-                fft->out_size = 2 * atfft_dft_halfcomplex_size (size);
+                fft->out_size = 2 * atfft_halfcomplex_size (size);
             }
             else
             {
-                fft->in_size = 2 * atfft_dft_halfcomplex_size (size);
+                fft->in_size = 2 * atfft_halfcomplex_size (size);
                 fft->out_size = size;
             }
 #endif

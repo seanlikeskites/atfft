@@ -64,7 +64,7 @@ static int* init_strides (const int *dims, int n_dims, int data_size, enum atfft
     }
 
     if (format == ATFFT_REAL)
-        strides [i] = data_size / atfft_dft_halfcomplex_size (dims [i]);
+        strides [i] = data_size / atfft_halfcomplex_size (dims [i]);
     else
         strides [i] = data_size / dims [i];
 
@@ -110,7 +110,7 @@ struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
             goto failed;
 
         /* work space will be smaller for real transforms */
-        data_size = atfft_dft_nd_halfcomplex_size (dims, n_dims);
+        data_size = atfft_nd_halfcomplex_size (dims, n_dims);
     }
     else
     {

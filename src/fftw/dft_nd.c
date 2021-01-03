@@ -39,7 +39,7 @@ struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
     fft->format = format;
 
     int full_size = atfft_int_array_product (dims, n_dims);
-    int halfcomplex_size = atfft_dft_nd_halfcomplex_size (dims, n_dims);
+    int halfcomplex_size = atfft_nd_halfcomplex_size (dims, n_dims);
 
     switch (format)
     {
