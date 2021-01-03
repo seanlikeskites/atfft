@@ -69,113 +69,109 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
 /**
  * Free a DFT plan.
  *
- * @param fft the structure to free
+ * @param plan the plan to free
  */
-void atfft_dft_destroy (struct atfft_dft *fft);
+void atfft_dft_destroy (struct atfft_dft *plan);
 
 /**
- * Perform a complex DFT.
+ * Perform a DFT on complex data.
  *
- * Performs a forward or inverse transform depending on what the fft
- * structure passed was created for.
+ * Performs a forward or inverse transform depending on what the @p plan was created for.
  *
- * @param fft a valid fft structure
- *            (should have been created with a format of ATFFT_COMPLEX)
+ * @param plan a valid DFT plan 
+ *             (should have been created with a format of ATFFT_COMPLEX)
  * @param in the input signal
- *           (should have the number of samples the fft was created for)
+ *           (should contain at least as many elements as the signal size the @p plan was created for)
  * @param out the output signal
- *            (should have the number of samples the fft was created for)
+ *           (should contain at least as many elements as the signal size the @p plan was created for)
  */
-void atfft_dft_complex_transform (struct atfft_dft *fft,
+void atfft_dft_complex_transform (struct atfft_dft *plan,
                                   atfft_complex *in,
                                   atfft_complex *out);
 
 /**
- * Perform a complex DFT with a different stride for input and output.
+ * Perform a DFT on complex data, taking strides of different length for input and output.
  *
- * Performs a forward or inverse transform depending on what the fft
- * structure passed was created for.
+ * Performs a forward or inverse transform depending on what the @p plan was created for.
  *
- * @param fft a valid fft structure
- *            (should have been created with a format of ATFFT_COMPLEX)
+ * @param plan a valid DFT plan 
+ *             (should have been created with a format of ATFFT_COMPLEX)
  * @param in the input signal
- *           (should have the number of samples the fft was created for)
- * @param in_stride the stride to take when reading the input signal
+ *            (should contain at least <b>(@p in_stride * (size - 1) + 1)</b> elements,
+ *             where size is the signal size the @p plan was created for)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *            (should have the number of samples the fft was created for)
- * @param out_stride the stride to take when writing the output signal
+ *            (should contain at least <b>(out_stride * (size - 1) + 1)</b> elements,
+ *             where size is the signal size the @p plan was created for)
+ * @param out_stride the stride to take when writing the output
  */
-void atfft_dft_complex_transform_stride (struct atfft_dft *fft,
+void atfft_dft_complex_transform_stride (struct atfft_dft *plan,
                                          atfft_complex *in,
                                          int in_stride,
                                          atfft_complex *out,
                                          int out_stride);
 
 /**
- * Perform a real forward DFT.
+ * Perform a forward DFT on real data.
  *
- * @param fft a valid fft structure
- *            (should have been created with a direction of ATFFT_FORWARD
- *             and a format of ATFFT_REAL)
+ * @param plan a valid DFT plan 
+ *            (should have been created with a direction of ATFFT_FORWARD and a format of ATFFT_REAL)
  * @param in the input signal
- *           (should have the number of samples the fft was created for)
+ *           (should contain at least as many elements as the signal size the @p plan was created for)
  * @param out the output signal
- *            (should have size / 2 + 1 samples, where size is the
- *             size the fft was created for)
+ *            (should contain at least <b>(\ref atfft_halfcomplex_size (size))</b> elements,
+ *             where size is the signal size the @p plan was created for)
  */
-void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out);
+void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sample *in, atfft_complex *out);
 
 /**
- * Perform a real forward DFT.
+ * Perform a forward DFT on real data, taking strides of different length for input and output.
  *
- * @param fft a valid fft structure
- *            (should have been created with a direction of ATFFT_FORWARD
- *             and a format of ATFFT_REAL)
+ * @param plan a valid DFT plan 
+ *            (should have been created with a direction of ATFFT_FORWARD and a format of ATFFT_REAL)
  * @param in the input signal
- *           (should have (size - 1) * in_stride + 1 samples, where size is the
- *            size the fft was created for)
- * @param in_stride the stride to take when reading the input signal
+ *            (should contain at least <b>(@p in_stride * (size - 1) + 1)</b> elements,
+ *             where size is the signal size the @p plan was created for)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *           (should have out_stride * size / 2 + 1 samples, where size is the
- *            size the fft was created for)
- * @param out_stride the stride to take when writing the output signal
+ *            (should contain at least <b>(out_stride * (\ref atfft_halfcomplex_size (size) - 1) + 1)</b> elements,
+ *             where size is the signal size the @p plan was created for)
+ * @param out_stride the stride to take when writing the output
  */
-void atfft_dft_real_forward_transform_stride (struct atfft_dft *fft,
+void atfft_dft_real_forward_transform_stride (struct atfft_dft *plan,
                                               const atfft_sample *in,
                                               int in_stride,
                                               atfft_complex *out,
                                               int out_stride);
 
 /**
- * Perform a real inverse DFT.
+ * Perform a backward DFT on halfcomplex data.
  *
- * @param fft a valid fft structure
- *            (should have been created with a direction of ATFFT_BACKWARD
- *             and a format of ATFFT_REAL)
+ * @param plan a valid DFT plan 
+ *            (should have been created with a direction of ATFFT_BACKWARD and a format of ATFFT_REAL)
  * @param in the input signal
- *           (should have size / 2 + 1 samples, where size is the
- *            size the fft was created for)
+ *            (should contain at least <b>(\ref atfft_halfcomplex_size (size))</b> elements,
+ *             where size is the signal size the @p plan was created for)
  * @param out the output signal
- *            (should have the number of samples the fft was created for)
+  *           (should contain at least as many elements as the signal size the @p plan was created for)
  */
-void atfft_dft_real_backward_transform (struct atfft_dft *fft, atfft_complex *in, atfft_sample *out);
+void atfft_dft_real_backward_transform (struct atfft_dft *plan, atfft_complex *in, atfft_sample *out);
 
 /**
- * Perform a real inverse DFT.
+ * Perform a backward DFT on halfcomplex data, taking strides of different length for input and output.
  *
- * @param fft a valid fft structure
- *            (should have been created with a direction of ATFFT_BACKWARD
- *             and a format of ATFFT_REAL)
+ * @param plan a valid DFT plan 
+ *            (should have been created with a direction of ATFFT_BACKWARD and a format of ATFFT_REAL)
  * @param in the input signal
- *           (should have in_stride * size / 2 + 1 samples, where size is the
- *            size the fft was created for)
- * @param in_stride the stride to take when reading the input signal
+ *           (should contain at least <b>(in_stride * (\ref atfft_halfcomplex_size (size) - 1) + 1)</b> elements,
+ *            where size is the signal size the @p plan was created for)
+ * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *           (should have (size - 1) * out_stride + 1 samples, where size is the
- *            size the fft was created for)
- * @param out_stride the stride to take when writing the output signal
+ *            (should contain at least <b>(@p out_stride * (size - 1) + 1)</b> elements,
+ *             where size is the signal size the @p plan was created for)
+ * @param out_stride the stride to take when writing the output
  */
-void atfft_dft_real_backward_transform_stride (struct atfft_dft *fft,
+void atfft_dft_real_backward_transform_stride (struct atfft_dft *plan,
                                                atfft_complex *in,
                                                int in_stride,
                                                atfft_sample *out,
