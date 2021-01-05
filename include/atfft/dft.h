@@ -1,11 +1,23 @@
 /*
- * Copyright (C) 2020 Sean Enderby <sean.enderby@gmail.com>
+ * Copyright (c) 2021 Sean Enderby <sean.enderby@gmail.com>
  *
- * This program is free software. It comes without any warranty, to
- * the extent permitted by applicable law. You can redistribute it
- * and/or modify it under the terms of the Do What The Fuck You Want
- * To Public License, Version 2, as published by Sam Hocevar. See
- * the COPYING file for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 /** @file
@@ -101,7 +113,7 @@ void atfft_dft_complex_transform (struct atfft_dft *plan,
  *             where size is the signal size the @p plan was created for)
  * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *            (should contain at least <b>(out_stride * (size - 1) + 1)</b> elements,
+ *            (should contain at least <b>(@p out_stride * (size - 1) + 1)</b> elements,
  *             where size is the signal size the @p plan was created for)
  * @param out_stride the stride to take when writing the output
  */
@@ -134,7 +146,7 @@ void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sampl
  *             where size is the signal size the @p plan was created for)
  * @param in_stride the stride to take when reading the input
  * @param out the output signal
- *            (should contain at least <b>(out_stride * (\ref atfft_halfcomplex_size (size) - 1) + 1)</b> elements,
+ *            (should contain at least <b>(@p out_stride * (\ref atfft_halfcomplex_size (size) - 1) + 1)</b> elements,
  *             where size is the signal size the @p plan was created for)
  * @param out_stride the stride to take when writing the output
  */
