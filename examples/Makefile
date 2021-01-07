@@ -25,6 +25,13 @@ ifeq (FFTW3, $(IMPL))
 	DFT_SOURCES += ../src/fftw/dft.c
 	ND_DFT_SOURCES += ../src/fftw/dft_nd.c
 	DCT_SOURCES += ../src/fftw/dct.c
+
+else ifeq (MKL, $(IMPL))
+	LIBS += -lmkl_rt
+
+	DFT_SOURCES += ../src/mkl/dft.c
+	ND_DFT_SOURCES += ../src/fftw/dft_nd.c
+	DCT_SOURCES += ../src/fftw/dct.c
 	
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts

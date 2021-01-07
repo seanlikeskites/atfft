@@ -6,8 +6,10 @@ FFT_SOURCES := ../src/atfft/types.c ../src/atfft/dft_util.c
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT
+	CXXFLAGS += -DATFFT_TYPE_FLOAT
 else ifeq (LONG_DOUBLE, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_LONG_DOUBLE
+	CXXFLAGS += -DATFFT_TYPE_LONG_DOUBLE
 endif
 
 ifeq (FFTW3, $(IMPL))
@@ -20,6 +22,12 @@ ifeq (FFTW3, $(IMPL))
 	endif
 
 	FFT_SOURCES += ../src/fftw/dft.c
+	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_PRIMES
+
+else ifeq (MKL, $(IMPL))
+	LIBS += -lmkl_rt
+
+	FFT_SOURCES += ../src/mkl/dft.c
 	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_PRIMES
 	
 else ifeq (FFTS, $(IMPL))

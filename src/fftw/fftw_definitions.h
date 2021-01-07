@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef ATFFT_FFTW_INTERNAL_H_INCLUDED
-#define ATFFT_FFTW_INTERNAL_H_INCLUDED
+#ifndef ATFFT_FFTW_DEFINITIONS_H_INCLUDED
+#define ATFFT_FFTW_DEFINITIONS_H_INCLUDED
 
 #if defined(ATFFT_TYPE_FLOAT)
 #   define ATFFT_FFTW_MALLOC fftwf_malloc
@@ -66,4 +66,4 @@
     typedef fftwl_plan atfft_fftw_plan;
 #endif
 
-#endif /* ATFFT_DFT_H_INCLUDED */
+#endif /* ATFFT_FFTW_DEFINITIONS_H_INCLUDED */
