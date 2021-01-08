@@ -30,8 +30,13 @@ else ifeq (MKL, $(IMPL))
 	LIBS += -lmkl_rt
 
 	DFT_SOURCES += ../src/mkl/dft.c
-	ND_DFT_SOURCES += ../src/fftw/dft_nd.c
-	DCT_SOURCES += ../src/fftw/dct.c
+	ND_DFT_SOURCES += ../src/mkl/dft_nd.c
+
+	ifeq (LONG_DOUBLE, $(TYPE))
+		DCT_SOURCES += ../src/atfft/dct.c ../src/mkl/dft.c
+	else
+		DCT_SOURCES += ../src/fftw/dct.c
+	endif
 	
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
