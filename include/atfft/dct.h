@@ -44,6 +44,13 @@ extern "C"
 struct atfft_dct;
 
 /**
+ * Check whether a given signal length is supported by the current DCT implementation.
+ *
+ * @param size the signal length to check
+ */
+int atfft_dct_is_supported_size (int size);
+
+/**
  * Create a dct structure.
  *
  * @param size the signal length the dct should operate on

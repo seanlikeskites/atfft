@@ -70,6 +70,14 @@ extern "C"
 struct atfft_dft;
 
 /**
+ * Check whether a given signal length is supported by the current DFT implementation for the given format.
+ *
+ * @param size the signal length to check
+ * @param format the format of the transform
+ */
+int atfft_dft_is_supported_size (int size, enum atfft_format format);
+
+/**
  * Create a DFT plan.
  *
  * @param size the signal length the DFT should operate on

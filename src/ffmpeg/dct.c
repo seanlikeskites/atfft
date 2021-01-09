@@ -41,71 +41,81 @@ struct atfft_dct
 {
     int size;
     enum atfft_direction direction;
-    FFTSample *data;
+
+    /* the libavcodec DCT context */
     DCTContext *context;
+
+    /* buffer for libavcodec to operate on */
+    size_t n_data_bytes;
+    FFTSample *data;
 };
+
+int atfft_dct_is_supported_size (int size)
+{
+    int min = 1 << 4;
+    int max = 1 << 16;
+
+    return atfft_is_power_of_2 (size) && size >= min && size <= max;
+}
 
 struct atfft_dct* atfft_dct_create (int size, enum atfft_direction direction)
 {
     /* ffmpeg only supports sizes which are a power of 2. */
-    assert (atfft_is_power_of_2 (size));
+    assert (atfft_dct_is_supported_size (size));
 
-    struct atfft_dct *dct = NULL;
+    struct atfft_dct *plan = NULL;
 
-    if (!(dct = malloc (sizeof (*dct))))
+    if (!(plan = calloc (1, sizeof (*plan))))
         return NULL;
 
-    dct->size = size;
-    dct->direction = direction;
-
-    size_t data_size = size * sizeof (*(dct->data));
-    dct->data = av_malloc (data_size);
+    plan->size = size;
+    plan->direction = direction;
 
     if (direction == ATFFT_FORWARD)
-        dct->context = av_dct_init (log2 (size), DCT_II);
+        plan->context = av_dct_init (log2 (size), DCT_II);
     else
-        dct->context = av_dct_init (log2 (size), DCT_III);
+        plan->context = av_dct_init (log2 (size), DCT_III);
+
+    plan->n_data_bytes = size * sizeof (*(plan->data));
+    plan->data = av_malloc (plan->n_data_bytes);
 
     /* clean up on failure */
-    if (!(dct->data && dct->context))
+    if (!(plan->data && plan->context))
     {
-        atfft_dct_destroy (dct);
-        dct = NULL;
+        atfft_dct_destroy (plan);
+        plan = NULL;
     }
 
-    return dct;
+    return plan;
 }
 
-void atfft_dct_destroy (struct atfft_dct *dct)
+void atfft_dct_destroy (struct atfft_dct *plan)
 {
-    if (dct)
+    if (plan)
     {
-        av_dct_end (dct->context);
-        av_free (dct->data);
-        free (dct);
+        av_free (plan->data);
+        av_dct_end (plan->context);
+        free (plan);
     }
 }
 
-void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
+void atfft_dct_transform (struct atfft_dct *plan, const atfft_sample *in, atfft_sample *out)
 {
 #ifdef ATFFT_TYPE_FLOAT
-    size_t n_bytes = dct->size * sizeof (*in);
-#endif 
-
-#ifdef ATFFT_TYPE_FLOAT
-    memcpy (dct->data, in, n_bytes);
+    memcpy (plan->data, in, plan->n_data_bytes);
 #else
-    atfft_sample_to_float_real (in, dct->data, dct->size);
+    atfft_sample_to_float_real (in, plan->data, plan->size);
 #endif
 
-    av_dct_calc (dct->context, dct->data);
+    av_dct_calc (plan->context, plan->data);
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (out, dct->data, n_bytes);
+    memcpy (out, plan->data, n_bytes);
 #else
-    atfft_float_to_sample_real (dct->data, out, dct->size);
+    atfft_float_to_sample_real (plan->data, out, plan->size);
 #endif
 
-    if (dct->direction == ATFFT_BACKWARD)
-        atfft_scale_real (out, dct->size, dct->size);
+    /* libavcodec normalises the backward transform */
+    if (plan->direction == ATFFT_BACKWARD)
+        atfft_scale_real (out, plan->size, plan->size);
 }
