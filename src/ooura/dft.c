@@ -25,7 +25,7 @@
 #include <assert.h>
 #include <math.h>
 #include <atfft/dft.h>
-#include "../ooura/ooura.h"
+#include "ooura.h"
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
 #   ifdef _MSC_VER
@@ -43,123 +43,141 @@ struct atfft_dft
     enum atfft_direction direction;
     int ooura_direction;
     enum atfft_format format;
-    int data_size;
+
+    /* buffer for in place transform */
+    size_t n_data_bytes;
     double *data;
+
+    /* buffers for ooura state */
     int *work_area;
     double *tables;
 };
 
+int atfft_dft_is_supported_size (int size, enum atfft_format format)
+{
+    int min = 1;
+
+    if (format == ATFFT_REAL)
+        min = 2;
+
+    return atfft_is_power_of_2 (size) && size >= min;
+}
+
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    /* Ooura only supports sizes which are a power of 2. */
-    assert (atfft_is_power_of_2 (size));
+    /* ooura only supports sizes which are a power of 2. */
+    assert (atfft_dft_is_supported_size (size, format));
 
-    struct atfft_dft *fft;
+    struct atfft_dft *plan;
 
-    if (!(fft = malloc (sizeof (*fft))))
+    if (!(plan = calloc (1, sizeof (*plan))))
         return NULL;
 
-    fft->size = size;
-    fft->direction = direction;
-    fft->format = format;
+    plan->size = size;
+    plan->direction = direction;
+    plan->format = format;
 
     if (direction == ATFFT_FORWARD)
-        fft->ooura_direction = -1;
+        plan->ooura_direction = -1;
     else
-        fft->ooura_direction = 1;
+        plan->ooura_direction = 1;
 
     int work_size = 0;
 
     switch (format)
     {
         case ATFFT_COMPLEX:
-            fft->data_size = 2 * size * sizeof (*(fft->data));
-            work_size = (2 + (1 << (int) (log (size + 0.5) / log (2)) / 2)) * sizeof (*(fft->work_area));
+            plan->n_data_bytes = 2 * size * sizeof (*(plan->data));
+            work_size = (2 + (1 << (int) (log (size + 0.5) / log (2)) / 2));
             break;
 
         case ATFFT_REAL:
-            fft->ooura_direction *= -1;
-            fft->data_size = size * sizeof (*(fft->data));
-            work_size = (2 + (1 << (int) (log (size / 2 + 0.5) / log (2)) / 2)) * sizeof (*(fft->work_area));
+            plan->ooura_direction *= -1;
+            plan->n_data_bytes = size * sizeof (*(plan->data));
+            work_size = (2 + (1 << (int) (log (size / 2 + 0.5) / log (2)) / 2));
     }
 
-    fft->data = malloc (fft->data_size);
-    fft->work_area = malloc (work_size);
-    fft->tables = malloc (size / 2 * sizeof (*(fft->tables)));
+    plan->data = malloc (plan->n_data_bytes);
+    plan->work_area = malloc (work_size * sizeof (*(plan->work_area)));
+    plan->tables = malloc (size / 2 * sizeof (*(plan->tables)));
 
-    /* clean up on failure */
-    if (!(fft->data && fft->work_area && fft->tables))
-    {
-        atfft_dft_destroy (fft);
-        fft = NULL;
-    }
+    if (!(plan->data && plan->work_area && plan->tables))
+        goto failed;
+
+    /* run a transform to initialise ooura state */
+    plan->work_area [0] = 0;
+
+    if (format == ATFFT_COMPLEX)
+        cdft (2 * plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
     else
-    {
-        fft->work_area [0] = 0;
-    }
+        rdft (plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
 
-    return fft;
+    return plan;
+
+failed:
+    atfft_dft_destroy (plan);
+    return NULL;
 }
 
-void atfft_dft_destroy (struct atfft_dft *fft)
+void atfft_dft_destroy (struct atfft_dft *plan)
 {
-    if (fft)
+    if (plan)
     {
-        free (fft->tables);
-        free (fft->work_area);
-        free (fft->data);
-        free (fft);
+        free (plan->tables);
+        free (plan->work_area);
+        free (plan->data);
+        free (plan);
     }
 }
 
-void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *plan, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
-    assert (fft->format == ATFFT_COMPLEX);
+    assert (plan->format == ATFFT_COMPLEX);
 
 #ifdef ATFFT_TYPE_DOUBLE
-    memcpy (fft->data, in, fft->data_size);
+    memcpy (plan->data, in, plan->n_data_bytes);
 #else
-    atfft_sample_to_double_complex (in, (atfft_complex_d*) fft->data, fft->size);
+    atfft_sample_to_double_complex (in, (atfft_complex_d*) plan->data, plan->size);
 #endif
 
-    cdft (2 * fft->size, fft->ooura_direction, fft->data, fft->work_area, fft->tables);
+    cdft (2 * plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
 
 #ifdef ATFFT_TYPE_DOUBLE
-    memcpy (out, fft->data, fft->data_size);
+    memcpy (out, plan->data, plan->n_data_bytes);
 #else
-    atfft_double_to_sample_complex ((atfft_complex_d*) fft->data, out, fft->size);
+    atfft_double_to_sample_complex ((atfft_complex_d*) plan->data, out, plan->size);
 #endif
 }
 
-void atfft_dft_complex_transform_stride (struct atfft_dft *fft,
+void atfft_dft_complex_transform_stride (struct atfft_dft *plan,
                                          atfft_complex *in,
                                          int in_stride,
                                          atfft_complex *out,
                                          int out_stride)
 {
     /* Only to be used with complex FFTs. */
-    assert (fft->format == ATFFT_COMPLEX);
+    assert (plan->format == ATFFT_COMPLEX);
 
     atfft_sample_to_double_complex_stride (in,
                                            in_stride,
-                                           (atfft_complex_d*) fft->data,
+                                           (atfft_complex_d*) plan->data,
                                            1,
-                                           fft->size);
+                                           plan->size);
 
-    cdft (2 * fft->size, fft->ooura_direction, fft->data, fft->work_area, fft->tables);
+    cdft (2 * plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
 
-    atfft_double_to_sample_complex_stride ((atfft_complex_d*) fft->data,
+    atfft_double_to_sample_complex_stride ((atfft_complex_d*) plan->data,
                                            1,
                                            out,
                                            out_stride,
-                                           fft->size);
+                                           plan->size);
 }
 
-static void atfft_halfcomplex_ooura_to_fftw (const double *in,
-                                             atfft_complex *out,
-                                             int out_stride,
-                                             int size)
+static void halfcomplex_ooura_to_atfft (const double *in,
+                                        atfft_complex *out,
+                                        int out_stride,
+                                        int size)
 {
     int half_size = size / 2;
 
@@ -178,44 +196,44 @@ static void atfft_halfcomplex_ooura_to_fftw (const double *in,
     ATFFT_IM (out [o]) = 0;
 }
 
-void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
 #ifdef ATFFT_TYPE_DOUBLE
-    memcpy (fft->data, in, fft->data_size);
+    memcpy (plan->data, in, plan->n_data_bytes);
 #else
-    atfft_sample_to_double_real (in, fft->data, fft->size);
+    atfft_sample_to_double_real (in, plan->data, plan->size);
 #endif
 
-    rdft (fft->size, fft->ooura_direction, fft->data, fft->work_area, fft->tables);
-    atfft_halfcomplex_ooura_to_fftw (fft->data, out, 1, fft->size);
+    rdft (plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
+    halfcomplex_ooura_to_atfft (plan->data, out, 1, plan->size);
 }
 
-void atfft_dft_real_forward_transform_stride (struct atfft_dft *fft,
+void atfft_dft_real_forward_transform_stride (struct atfft_dft *plan,
                                               const atfft_sample *in,
                                               int in_stride,
                                               atfft_complex *out,
                                               int out_stride)
 {
     /* Only to be used for forward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
     atfft_sample_to_double_real_stride (in,
                                         in_stride,
-                                        fft->data,
+                                        plan->data,
                                         1,
-                                        fft->size);
+                                        plan->size);
 
-    rdft (fft->size, fft->ooura_direction, fft->data, fft->work_area, fft->tables);
-    atfft_halfcomplex_ooura_to_fftw (fft->data, out, out_stride, fft->size);
+    rdft (plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
+    halfcomplex_ooura_to_atfft (plan->data, out, out_stride, plan->size);
 }
 
-static void atfft_halfcomplex_fftw_to_ooura (atfft_complex *in,
-                                             int in_stride,
-                                             double *out,
-                                             int size)
+static void halfcomplex_atfft_to_ooura (atfft_complex *in,
+                                        int in_stride,
+                                        double *out,
+                                        int size)
 {
     int half_size = size / 2;
 
@@ -232,35 +250,35 @@ static void atfft_halfcomplex_fftw_to_ooura (atfft_complex *in,
     out [1] = 2.0 * ATFFT_RE (in [i]);
 }
 
-void atfft_dft_real_backward_transform (struct atfft_dft *fft, atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *plan, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
-    atfft_halfcomplex_fftw_to_ooura (in, 1, fft->data, fft->size);
-    rdft (fft->size, fft->ooura_direction, fft->data, fft->work_area, fft->tables);
+    halfcomplex_atfft_to_ooura (in, 1, plan->data, plan->size);
+    rdft (plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
 
 #ifdef ATFFT_TYPE_DOUBLE
-    memcpy (out, fft->data, fft->data_size);
+    memcpy (out, plan->data, plan->n_data_bytes);
 #else
-    atfft_double_to_sample_real (fft->data, out, fft->size);
+    atfft_double_to_sample_real (plan->data, out, plan->size);
 #endif
 }
 
-void atfft_dft_real_backward_transform_stride (struct atfft_dft *fft,
+void atfft_dft_real_backward_transform_stride (struct atfft_dft *plan,
                                                atfft_complex *in,
                                                int in_stride,
                                                atfft_sample *out,
                                                int out_stride)
 {
     /* Only to be used for backward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
-    atfft_halfcomplex_fftw_to_ooura (in, in_stride, fft->data, fft->size);
-    rdft (fft->size, fft->ooura_direction, fft->data, fft->work_area, fft->tables);
-    atfft_double_to_sample_real_stride (fft->data,
+    halfcomplex_atfft_to_ooura (in, in_stride, plan->data, plan->size);
+    rdft (plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
+    atfft_double_to_sample_real_stride (plan->data,
                                         1,
                                         out,
                                         out_stride,
-                                        fft->size);
+                                        plan->size);
 }

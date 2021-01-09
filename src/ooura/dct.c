@@ -22,10 +22,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <assert.h>
+#include <math.h>
 #include <atfft/dct.h>
-#include "../ooura/ooura.h"
+#include "ooura.h"
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
 #   ifdef _MSC_VER
@@ -42,82 +42,92 @@ struct atfft_dct
     int size;
     enum atfft_direction direction;
     int ooura_direction;
-    int data_size;
+
+    /* buffer for in place transform */
+    size_t n_data_bytes;
     double *data;
+
+    /* buffers for ooura state */
     int *work_area;
     double *tables;
 };
 
+int atfft_dct_is_supported_size (int size)
+{
+    int min = 2;
+    return atfft_is_power_of_2 (size) && size >= min;
+}
+
 struct atfft_dct* atfft_dct_create (int size, enum atfft_direction direction)
 {
-    /* Ooura only supports sizes which are a power of 2. */
-    assert (atfft_is_power_of_2 (size));
+    /* ooura only supports sizes which are a power of 2. */
+    assert (atfft_dct_is_supported_size (size));
 
-    struct atfft_dct *dct;
+    struct atfft_dct *plan;
 
-    if (!(dct = malloc (sizeof (*dct))))
+    if (!(plan = calloc (1, sizeof (*plan))))
         return NULL;
 
-    dct->size = size;
-    dct->direction = direction;
+    plan->size = size;
+    plan->direction = direction;
 
     if (direction == ATFFT_FORWARD)
-        dct->ooura_direction = -1;
+        plan->ooura_direction = -1;
     else
-        dct->ooura_direction = 1;
+        plan->ooura_direction = 1;
 
-    dct->data_size = size * sizeof (*(dct->data));
-    dct->data = malloc (dct->data_size);
+    plan->n_data_bytes = size * sizeof (*(plan->data));
+    plan->data = malloc (plan->n_data_bytes);
 
-    int work_size = (2 + (1 << (int) (log (size / 2 + 0.5) / log (2)) / 2)) * sizeof (*(dct->work_area));
-    dct->work_area = malloc (work_size);
-
-    dct->tables = malloc ((size * 5 / 4) * sizeof (*(dct->tables)));
+    int work_size = (2 + (1 << (int) (log (size / 2 + 0.5) / log (2)) / 2));
+    plan->work_area = malloc (work_size * sizeof (*plan->work_area));
+    plan->tables = malloc ((size * 5 / 4) * sizeof (*(plan->tables)));
 
     /* clean up on failure */
-    if (!(dct->data && dct->work_area && dct->tables))
-    {
-        atfft_dct_destroy (dct);
-        dct = NULL;
-    }
-    else
-    {
-        dct->work_area [0] = 0;
-    }
+    if (!(plan->data && plan->work_area && plan->tables))
+        goto failed;
 
-    return dct;
+    /* run a transform to initialise ooura state */
+    plan->work_area [0] = 0;
+    ddct (plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
+
+    return plan;
+
+failed:
+    atfft_dct_destroy (plan);
+    return NULL;
 }
 
-void atfft_dct_destroy (struct atfft_dct *dct)
+void atfft_dct_destroy (struct atfft_dct *plan)
 {
-    if (dct)
+    if (plan)
     {
-        free (dct->tables);
-        free (dct->work_area);
-        free (dct->data);
-        free (dct);
+        free (plan->tables);
+        free (plan->work_area);
+        free (plan->data);
+        free (plan);
     }
 }
 
-void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
+void atfft_dct_transform (struct atfft_dct *plan, const atfft_sample *in, atfft_sample *out)
 {
 #ifdef ATFFT_TYPE_DOUBLE
-    memcpy (dct->data, in, dct->data_size);
+    memcpy (plan->data, in, plan->n_data_bytes);
 #else
-    atfft_sample_to_double_real (in, dct->data, dct->size);
+    atfft_sample_to_double_real (in, plan->data, plan->size);
 #endif
 
-    if (dct->direction == ATFFT_BACKWARD)
-        dct->data [0] *= 0.5;
+    if (plan->direction == ATFFT_BACKWARD)
+        plan->data [0] *= 0.5;
 
-    ddct (dct->size, dct->ooura_direction, dct->data, dct->work_area, dct->tables);
+    ddct (plan->size, plan->ooura_direction, plan->data, plan->work_area, plan->tables);
 
 #ifdef ATFFT_TYPE_DOUBLE
-    memcpy (out, dct->data, dct->data_size);
+    memcpy (out, plan->data, plan->n_data_bytes);
 #else
-    atfft_double_to_sample_real (dct->data, out, dct->size);
+    atfft_double_to_sample_real (plan->data, out, plan->size);
 #endif
 
-    if (dct->direction == ATFFT_BACKWARD)
-        atfft_scale_real (out, dct->size, 2.0);
+    if (plan->direction == ATFFT_BACKWARD)
+        atfft_scale_real (out, plan->size, 2.0);
 }

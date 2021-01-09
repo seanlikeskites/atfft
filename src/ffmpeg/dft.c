@@ -21,6 +21,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <math.h>
 #include <libavutil/mem.h>
@@ -48,7 +49,7 @@ struct atfft_dft
     /* the libavcodec FFT context */
     void *context;
 
-    /* buffer for libavcodec to operate on */
+    /* buffer for in place transform */
     size_t n_data_bytes;
     FFTSample *data;
 };
