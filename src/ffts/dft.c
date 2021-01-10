@@ -22,10 +22,9 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <math.h>
-#include <ffts/ffts.h>
 #include <atfft/dft.h>
 #include <atfft/dft_util.h>
+#include <ffts/ffts.h>
 
 #ifndef ATFFT_TYPE_FLOAT
 #   ifdef _MSC_VER
@@ -39,28 +38,32 @@
 
 struct atfft_dft
 {
+    int size;
     enum atfft_direction direction;
     enum atfft_format format;
+
+    /* the ffts plan */
+    ffts_plan_t *plan;
+
 #ifndef ATFFT_TYPE_FLOAT
-    int in_size, out_size;
+    /* input and output buffers for ffts transform */
+    size_t in_size, out_size;
     float *in, *out;
 #endif
-    ffts_plan_t *plan;
 };
 
-struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
+int atfft_dft_is_supported_size (int size, enum atfft_format format)
 {
-    /* FFTS only supports real transforms of even lengths */
-    assert (format == ATFFT_COMPLEX || (atfft_is_even (size) && size > 2));
+    if (format == ATFFT_COMPLEX)
+        return size > 0;
+    else
+        return size > 0 && atfft_is_even(size);
+}
 
-    struct atfft_dft *fft;
-
-    if (!(fft = malloc (sizeof (*fft))))
-        return NULL;
-
-    fft->direction = direction;
-    fft->format = format;
-
+static ffts_plan_t* init_ffts_plan (int size,
+                                    enum atfft_direction direction,
+                                    enum atfft_format format)
+{
     int ffts_direction = 0;
 
     if (direction == ATFFT_FORWARD)
@@ -68,105 +71,114 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     else
         ffts_direction = 1;
 
-    switch (format)
-    {
-        case ATFFT_COMPLEX:
-#ifndef ATFFT_TYPE_FLOAT
-            fft->in_size = 2 * size;
-            fft->out_size = 2 * size;
-#endif
-            fft->plan = ffts_init_1d (size, ffts_direction);
-            break;
-
-        case ATFFT_REAL:
-#ifndef ATFFT_TYPE_FLOAT
-            if (direction == ATFFT_FORWARD)
-            {
-                fft->in_size = size;
-                fft->out_size = 2 * atfft_halfcomplex_size (size);
-            }
-            else
-            {
-                fft->in_size = 2 * atfft_halfcomplex_size (size);
-                fft->out_size = size;
-            }
-#endif
-
-            fft->plan = ffts_init_1d_real (size, ffts_direction);
-            break;
-    }
-
-#ifndef ATFFT_TYPE_FLOAT
-    fft->in = malloc (fft->in_size * sizeof (*(fft->in)));
-    fft->out = malloc (fft->out_size * sizeof (*(fft->out)));
-#endif
-
-#ifndef ATFFT_TYPE_FLOAT
-    if (!(fft->in && fft->out && fft->plan))
-#else
-    if (!fft->plan)
-#endif
-    {
-        atfft_dft_destroy (fft);
-        fft = NULL;
-    }
-
-    return fft;
+    if (format == ATFFT_COMPLEX)
+        return ffts_init_1d (size, ffts_direction);
+    else
+        return ffts_init_1d_real (size, ffts_direction);
 }
 
-void atfft_dft_destroy (struct atfft_dft *fft)
+struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    if (fft)
-    {
-        if (fft->plan) /* ffts can't hack freeing a null pointer */
-            ffts_free (fft->plan);
+    /* fftw supports all sizes for complex transforms, but real transforms must be even. */
+    assert (atfft_dft_is_supported_size (size, format));
+
+    struct atfft_dft *plan;
+
+    if (!(plan = calloc (1, sizeof (*plan))))
+        return NULL;
+
+    plan->size = size;
+    plan->direction = direction;
+    plan->format = format;
 
 #ifndef ATFFT_TYPE_FLOAT
-        free (fft->out);
-        free (fft->in);
+    /* allocate input and output buffers */
+    if (format == ATFFT_COMPLEX)
+    {
+        plan->in_size = 2 * size;
+        plan->out_size = 2 * size;
+    }
+    else
+    {
+        if (direction == ATFFT_FORWARD)
+        {
+            plan->in_size = size;
+            plan->out_size = 2 * atfft_halfcomplex_size (size);
+        }
+        else
+        {
+            plan->in_size = 2 * atfft_halfcomplex_size (size);
+            plan->out_size = size;
+        }
+    }
+
+    plan->in = malloc (plan->in_size * sizeof (*(plan->in)));
+    plan->out = malloc (plan->out_size * sizeof (*(plan->out)));
+
+    if (!(plan->in && plan->out))
+        goto failed;
 #endif
-        free (fft);
+
+    /* initialise the ffts plan */
+    plan->plan = init_ffts_plan (size, direction, format);
+
+    if (!plan->plan)
+        goto failed;
+
+    return plan;
+
+failed:
+    atfft_dft_destroy (plan);
+    return NULL;
+}
+
+void atfft_dft_destroy (struct atfft_dft *plan)
+{
+    if (plan)
+    {
+        if (plan->plan) /* ffts can't hack freeing a null pointer */
+            ffts_free (plan->plan);
+
+#ifndef ATFFT_TYPE_FLOAT
+        free (plan->out);
+        free (plan->in);
+#endif
+
+        free (plan);
     }
 }
 
-void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
+static void apply_transform (struct atfft_dft *plan, const atfft_sample *in, atfft_sample *out)
+{
+#ifdef ATFFT_TYPE_FLOAT
+    ffts_execute (plan->plan, (const float*) in, (float*) out);
+#else
+    atfft_sample_to_float_real (in, plan->in, plan->in_size);
+    ffts_execute (plan->plan, plan->in, plan->out);
+    atfft_float_to_sample_real (plan->out, out, plan->out_size);
+#endif
+}
+
+void atfft_dft_complex_transform (struct atfft_dft *plan, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
-    assert (fft->format == ATFFT_COMPLEX);
+    assert (plan->format == ATFFT_COMPLEX);
 
-#ifdef ATFFT_TYPE_FLOAT
-    ffts_execute (fft->plan, (const float*) in, (float*) out);
-#else
-    atfft_sample_to_float_real ((atfft_sample*) in, fft->in, fft->in_size);
-    ffts_execute (fft->plan, fft->in, fft->out);
-    atfft_float_to_sample_real (fft->out, (atfft_sample*) out, fft->out_size);
-#endif
+    apply_transform (plan, (atfft_sample*) in, (atfft_sample*) out);
 }
 
-void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
-#ifdef ATFFT_TYPE_FLOAT
-    ffts_execute (fft->plan, (const float*) in, (float*) out);
-#else
-    atfft_sample_to_float_real (in, fft->in, fft->in_size);
-    ffts_execute (fft->plan, fft->in, fft->out);
-    atfft_float_to_sample_real (fft->out, (atfft_sample*) out, fft->out_size);
-#endif
+    apply_transform (plan, in, (atfft_sample*) out);
 }
 
-void atfft_dft_real_backward_transform (struct atfft_dft *fft, atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *plan, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
-#ifdef ATFFT_TYPE_FLOAT
-    ffts_execute (fft->plan, (const float*) in, (float*) out);
-#else
-    atfft_sample_to_float_real ((atfft_sample*) in, fft->in, fft->in_size);
-    ffts_execute (fft->plan, fft->in, fft->out);
-    atfft_float_to_sample_real (fft->out, out, fft->out_size);
-#endif
+    apply_transform (plan, (atfft_sample*) in, out);
 }

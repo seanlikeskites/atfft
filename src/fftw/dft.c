@@ -99,6 +99,7 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     plan->direction = direction;
     plan->format = format;
 
+    /* allocate input and output buffers */
     if (format == ATFFT_COMPLEX)
     {
         plan->n_in_bytes = 2 * size * sizeof (*(plan->in));
@@ -118,7 +119,6 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
         }
     }
 
-    /* allocate input and output buffers */
     plan->in = ATFFT_FFTW_MALLOC (plan->n_in_bytes);
     plan->out = ATFFT_FFTW_MALLOC (plan->n_out_bytes);
 
