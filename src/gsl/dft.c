@@ -75,30 +75,26 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     plan->direction = direction;
     plan->format = format;
 
-    switch (format)
+    if (format == ATFFT_COMPLEX)
     {
-        case ATFFT_COMPLEX:
-            plan->n_data_bytes = 2 * size * sizeof (*(plan->data));
-            plan->work_area = gsl_fft_complex_workspace_alloc (size);
-            plan->tables = gsl_fft_complex_wavetable_alloc (size);
+        plan->n_data_bytes = 2 * size * sizeof (*(plan->data));
+        plan->work_area = gsl_fft_complex_workspace_alloc (size);
+        plan->tables = gsl_fft_complex_wavetable_alloc (size);
 
-            if (direction == ATFFT_FORWARD)
-                plan->gsl_direction = -1;
-            else
-                plan->gsl_direction = 1;
+        if (direction == ATFFT_FORWARD)
+            plan->gsl_direction = -1;
+        else
+            plan->gsl_direction = 1;
+    }
+    else
+    {
+        plan->n_data_bytes = size * sizeof (*(plan->data));
+        plan->work_area = gsl_fft_real_workspace_alloc (size);
 
-            break;
-
-        case ATFFT_REAL:
-            plan->n_data_bytes = size * sizeof (*(plan->data));
-            plan->work_area = gsl_fft_real_workspace_alloc (size);
-
-            if (direction == ATFFT_FORWARD)
-                plan->tables = gsl_fft_real_wavetable_alloc (size);
-            else
-                plan->tables = gsl_fft_halfcomplex_wavetable_alloc (size);
-
-            break;
+        if (direction == ATFFT_FORWARD)
+            plan->tables = gsl_fft_real_wavetable_alloc (size);
+        else
+            plan->tables = gsl_fft_halfcomplex_wavetable_alloc (size);
     }
 
     plan->data = malloc (plan->n_data_bytes);
@@ -117,25 +113,22 @@ void atfft_dft_destroy (struct atfft_dft *plan)
 {
     if (plan)
     {
-        switch (plan->format)
+        if (plan->format == ATFFT_COMPLEX)
         {
-            case ATFFT_COMPLEX:
-                gsl_fft_complex_wavetable_free (plan->tables);
-                gsl_fft_complex_workspace_free (plan->work_area);
-                break;
+            gsl_fft_complex_wavetable_free (plan->tables);
+            gsl_fft_complex_workspace_free (plan->work_area);
+        }
+        else
+        {
+            if (plan->direction == ATFFT_FORWARD)
+                gsl_fft_real_wavetable_free (plan->tables);
+            else
+                gsl_fft_halfcomplex_wavetable_free (plan->tables);
 
-            case ATFFT_REAL:
-                if (plan->direction == ATFFT_FORWARD)
-                    gsl_fft_real_wavetable_free (plan->tables);
-                else
-                    gsl_fft_halfcomplex_wavetable_free (plan->tables);
-
-                gsl_fft_real_workspace_free (plan->work_area);
-                break;
+            gsl_fft_real_workspace_free (plan->work_area);
         }
 
         free (plan->data);
-
         free (plan);
     }
 }

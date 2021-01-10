@@ -177,14 +177,8 @@ void atfft_dct_backward_transform (struct atfft_dct *dct, const atfft_sample *in
 
 void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
 {
-    switch (dct->direction)
-    {
-        case ATFFT_FORWARD:
-            atfft_dct_forward_transform (dct, in, out);
-            break;
-
-        case ATFFT_BACKWARD:
-            atfft_dct_backward_transform (dct, in, out);
-            break;
-    }
+    if (dct->direction == ATFFT_FORWARD)
+        atfft_dct_forward_transform (dct, in, out);
+    else
+        atfft_dct_backward_transform (dct, in, out);
 }

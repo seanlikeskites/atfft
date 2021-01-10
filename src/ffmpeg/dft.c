@@ -82,27 +82,25 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     init_context init_ctx = NULL;
     int init_direction = 0;
 
-    switch (format)
+    if (format == ATFFT_COMPLEX)
     {
-        case ATFFT_COMPLEX:
-            plan->n_data_bytes = 2 * size * sizeof (*(plan->data));
-            init_ctx = (init_context) av_fft_init;
+        plan->n_data_bytes = 2 * size * sizeof (*(plan->data));
+        init_ctx = (init_context) av_fft_init;
 
-            if (direction == ATFFT_FORWARD)
-                init_direction = 0;
-            else
-                init_direction = 1;
-            break;
+        if (direction == ATFFT_FORWARD)
+            init_direction = 0;
+        else
+            init_direction = 1;
+    }
+    else
+    {
+        plan->n_data_bytes = size * sizeof (*(plan->data));
+        init_ctx = (init_context) av_rdft_init;
 
-        case ATFFT_REAL:
-            plan->n_data_bytes = size * sizeof (*(plan->data));
-            init_ctx = (init_context) av_rdft_init;
-
-            if (direction == ATFFT_FORWARD)
-                init_direction = DFT_R2C;
-            else
-                init_direction = IDFT_C2R;
-            break;
+        if (direction == ATFFT_FORWARD)
+            init_direction = DFT_R2C;
+        else
+            init_direction = IDFT_C2R;
     }
 
     /* allocate libavcodec FFT context and data buffer */
@@ -125,16 +123,10 @@ void atfft_dft_destroy (struct atfft_dft *plan)
     {
         av_free (plan->data);
 
-        switch (plan->format)
-        {
-            case ATFFT_COMPLEX:
-                av_fft_end (plan->context);
-                break;
-
-            case ATFFT_REAL:
-                av_rdft_end (plan->context);
-                break;
-        }
+        if (plan->format == ATFFT_COMPLEX)
+            av_fft_end (plan->context);
+        else
+            av_rdft_end (plan->context);
 
         free (plan);
     }

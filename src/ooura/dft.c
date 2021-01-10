@@ -84,17 +84,16 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
 
     int work_size = 0;
 
-    switch (format)
+    if (format == ATFFT_COMPLEX)
     {
-        case ATFFT_COMPLEX:
-            plan->n_data_bytes = 2 * size * sizeof (*(plan->data));
-            work_size = (2 + (1 << (int) (log (size + 0.5) / log (2)) / 2));
-            break;
-
-        case ATFFT_REAL:
-            plan->ooura_direction *= -1;
-            plan->n_data_bytes = size * sizeof (*(plan->data));
-            work_size = (2 + (1 << (int) (log (size / 2 + 0.5) / log (2)) / 2));
+        plan->n_data_bytes = 2 * size * sizeof (*(plan->data));
+        work_size = (2 + (1 << (int) (log (size + 0.5) / log (2)) / 2));
+    }
+    else
+    {
+        plan->ooura_direction *= -1;
+        plan->n_data_bytes = size * sizeof (*(plan->data));
+        work_size = (2 + (1 << (int) (log (size / 2 + 0.5) / log (2)) / 2));
     }
 
     plan->data = malloc (plan->n_data_bytes);

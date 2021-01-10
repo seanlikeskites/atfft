@@ -105,18 +105,17 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     int work_size = 0;
     pffft_transform_t transform_type = 0;
 
-    switch (format)
+    if (format == ATFFT_COMPLEX)
     {
-        case ATFFT_COMPLEX:
-            plan->n_in_out_bytes = 2 * size * sizeof (*(plan->in));
-            work_size = 2 * size;
-            transform_type = PFFFT_COMPLEX;
-            break;
-
-        case ATFFT_REAL:
-            plan->n_in_out_bytes = size * sizeof (*(plan->in));
-            work_size = size;
-            transform_type = PFFFT_REAL;
+        plan->n_in_out_bytes = 2 * size * sizeof (*(plan->in));
+        work_size = 2 * size;
+        transform_type = PFFFT_COMPLEX;
+    }
+    else
+    {
+        plan->n_in_out_bytes = size * sizeof (*(plan->in));
+        work_size = size;
+        transform_type = PFFFT_REAL;
     }
 
     plan->plan = pffft_new_setup (size, transform_type);

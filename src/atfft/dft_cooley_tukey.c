@@ -333,14 +333,10 @@ static void atfft_dft_4 (atfft_complex **bins,
     atfft_sum_complex (*bins [1], *bins [3], &ts [1]);
     atfft_difference_complex (*bins [0], *bins [2], &ts [2]);
 
-    switch (direction)
-    {
-        case ATFFT_BACKWARD:
-            atfft_difference_complex (*bins [3], *bins [1], &ts [3]);
-            break;
-        default:
-            atfft_difference_complex (*bins [1], *bins [3], &ts [3]);
-    }
+    if (direction == ATFFT_FORWARD)
+        atfft_difference_complex (*bins [1], *bins [3], &ts [3]);
+    else
+        atfft_difference_complex (*bins [3], *bins [1], &ts [3]);
 
     atfft_sum_complex (ts [0], ts[1], bins [0]);
     ATFFT_RE (*bins [1]) = ATFFT_RE (ts [2]) + ATFFT_IM (ts [3]);
