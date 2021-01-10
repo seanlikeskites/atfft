@@ -20,80 +20,98 @@
  * SOFTWARE.
  */
 
-#include <fftw3.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <atfft/dct.h>
+#include <fftw3.h>
 #include "fftw_definitions.h"
 
 struct atfft_dct
 {
     int size;
     enum atfft_direction direction;
-    int data_size;
-    atfft_sample *in, *out;
+
+    /* the fftw plan */
     atfft_fftw_plan plan;
+
+    /* aligned input and output buffers for fftw transform */
+    size_t n_in_out_bytes;
+    atfft_sample *in, *out;
 };
+
+int atfft_dct_is_supported_size (int size)
+{
+    return size > 0;
+}
 
 struct atfft_dct* atfft_dct_create (int size, enum atfft_direction direction)
 {
-    struct atfft_dct *dct;
+    /* fftw supports all sizes. */
+    assert (atfft_dct_is_supported_size (size));
 
-    if (!(dct = malloc (sizeof (*dct))))
+    struct atfft_dct *plan;
+
+    if (!(plan = malloc (sizeof (*plan))))
         return NULL;
 
-    dct->size = size;
-    dct->direction = direction;
-    dct->data_size = size * sizeof (*(dct->in));
-    dct->in = ATFFT_FFTW_MALLOC (dct->data_size);
-    dct->out = ATFFT_FFTW_MALLOC (dct->data_size);
+    plan->size = size;
+    plan->direction = direction;
 
-    switch (direction)
+    /* allocate input and output buffers */
+    plan->n_in_out_bytes = size * sizeof (*(plan->in));
+    plan->in = ATFFT_FFTW_MALLOC (plan->n_in_out_bytes);
+    plan->out = ATFFT_FFTW_MALLOC (plan->n_in_out_bytes);
+
+    if (!(plan->in && plan->out))
+        goto failed;
+
+    /* initialise the fftw plan */
+    if (direction == ATFFT_FORWARD)
     {
-        case ATFFT_FORWARD:
-            dct->plan = ATFFT_FFTW_PLAN_R2R_1D (size,
-                                                dct->in,
-                                                dct->out,
-                                                FFTW_REDFT10,
-                                                FFTW_ESTIMATE);
-            break;
-
-        case ATFFT_BACKWARD:
-            dct->plan = ATFFT_FFTW_PLAN_R2R_1D (size,
-                                                dct->in,
-                                                dct->out,
-                                                FFTW_REDFT01,
-                                                FFTW_ESTIMATE);
-            break;
-    };
-
-    /* clean up on failure */
-    if (!(dct->in && dct->out && dct->plan))
+        plan->plan = ATFFT_FFTW_PLAN_R2R_1D (size,
+                                             plan->in,
+                                             plan->out,
+                                             FFTW_REDFT10,
+                                             ATFFT_FFTW_PLANNING_METHOD);
+    }
+    else
     {
-        atfft_dct_destroy (dct);
-        dct = NULL;
+        plan->plan = ATFFT_FFTW_PLAN_R2R_1D (size,
+                                             plan->in,
+                                             plan->out,
+                                             FFTW_REDFT01,
+                                             ATFFT_FFTW_PLANNING_METHOD);
     }
 
-    return dct;
+    if (!plan->plan)
+        goto failed;
+
+    return plan;
+
+failed:
+    atfft_dct_destroy (plan);
+    return NULL;
 }
 
-void atfft_dct_destroy (struct atfft_dct *dct)
+void atfft_dct_destroy (struct atfft_dct *plan)
 {
-    if (dct)
+    if (plan)
     {
-        ATFFT_FFTW_DESTROY_PLAN (dct->plan);
-        ATFFT_FFTW_FREE (dct->out);
-        ATFFT_FFTW_FREE (dct->in);
-        free (dct);
+        ATFFT_FFTW_DESTROY_PLAN (plan->plan);
+        ATFFT_FFTW_FREE (plan->out);
+        ATFFT_FFTW_FREE (plan->in);
+        free (plan);
     }
 }
 
-void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_sample *out)
+void atfft_dct_transform (struct atfft_dct *plan, const atfft_sample *in, atfft_sample *out)
 {
-    memcpy (dct->in, in, dct->data_size);
-    ATFFT_FFTW_EXECUTE (dct->plan);
-    memcpy (out, dct->out, dct->data_size);
+    memcpy (plan->in, in, plan->n_in_out_bytes);
+    ATFFT_FFTW_EXECUTE (plan->plan);
+    memcpy (out, plan->out, plan->n_in_out_bytes);
 
-    if (dct->direction == ATFFT_FORWARD)
-        atfft_scale_real (out, dct->size, 0.5);
+    /* fftw multiplies DCT bins by 2 */
+    if (plan->direction == ATFFT_FORWARD)
+        atfft_scale_real (out, plan->size, 0.5);
 }

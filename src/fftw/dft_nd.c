@@ -20,145 +20,164 @@
  * SOFTWARE.
  */
 
-#include <fftw3.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <atfft/dft_nd.h>
 #include <atfft/dft_nd_util.h>
+#include <fftw3.h>
 #include "fftw_definitions.h"
 
 struct atfft_dft_nd
 {
     enum atfft_direction direction;
     enum atfft_format format;
-    int in_size, out_size;
-    atfft_sample *in, *out;
+
+    /* the fftw plan */
     atfft_fftw_plan plan;
+
+    /* aligned input and output buffers for fftw transform */
+    size_t n_in_bytes, n_out_bytes;
+    atfft_sample *in, *out;
 };
+
+static atfft_fftw_plan init_fftw_plan (const int *dims,
+                                       int n_dims,
+                                       enum atfft_direction direction,
+                                       enum atfft_format format,
+                                       atfft_sample *in,
+                                       atfft_sample *out)
+{
+    if (format == ATFFT_COMPLEX)
+    {
+        if (direction == ATFFT_FORWARD)
+            return ATFFT_FFTW_PLAN_DFT (n_dims,
+                                        dims,
+                                        (atfft_fftw_complex*) in,
+                                        (atfft_fftw_complex*) out,
+                                        FFTW_FORWARD,
+                                        ATFFT_FFTW_PLANNING_METHOD);
+        else
+            return ATFFT_FFTW_PLAN_DFT (n_dims,
+                                        dims,
+                                        (atfft_fftw_complex*) in,
+                                        (atfft_fftw_complex*) out,
+                                        FFTW_BACKWARD,
+                                        ATFFT_FFTW_PLANNING_METHOD);
+    }
+    else
+    {
+        if (direction == ATFFT_FORWARD)
+            return ATFFT_FFTW_PLAN_DFT_R2C (n_dims,
+                                            dims,
+                                            in,
+                                            (atfft_fftw_complex*) out,
+                                            ATFFT_FFTW_PLANNING_METHOD);
+        else
+            return ATFFT_FFTW_PLAN_DFT_C2R (n_dims,
+                                            dims,
+                                            (atfft_fftw_complex*) in,
+                                            out,
+                                            ATFFT_FFTW_PLANNING_METHOD);
+    }
+
+    return NULL;
+}
 
 struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
                                           int n_dims,
                                           enum atfft_direction direction,
                                           enum atfft_format format)
 {
-    struct atfft_dft_nd *fft;
+    struct atfft_dft_nd *plan;
 
-    if (!(fft = malloc (sizeof (*fft))))
+    if (!(plan = calloc (1, sizeof (*plan))))
         return NULL;
 
-    fft->direction = direction;
-    fft->format = format;
+    plan->direction = direction;
+    plan->format = format;
 
     int full_size = atfft_int_array_product (dims, n_dims);
-    int halfcomplex_size = atfft_nd_halfcomplex_size (dims, n_dims);
 
-    switch (format)
+    if (format == ATFFT_COMPLEX)
     {
-        case ATFFT_COMPLEX:
-            fft->in_size = 2 * full_size * sizeof (*(fft->in));
-            fft->in = ATFFT_FFTW_MALLOC (fft->in_size);
+        plan->n_in_bytes = 2 * full_size * sizeof (*(plan->in));
+        plan->n_out_bytes = 2 * full_size * sizeof (*(plan->out));
+    }
+    else
+    {
+        int halfcomplex_size = atfft_nd_halfcomplex_size (dims, n_dims);
 
-            fft->out_size = 2 * full_size * sizeof (*(fft->out));
-            fft->out = ATFFT_FFTW_MALLOC (fft->out_size);
-
-            if (direction == ATFFT_FORWARD)
-                fft->plan = ATFFT_FFTW_PLAN_DFT (n_dims,
-                                                 dims,
-                                                 (atfft_complex*) fft->in,
-                                                 (atfft_complex*) fft->out,
-                                                 FFTW_FORWARD,
-                                                 FFTW_ESTIMATE);
-            else
-                fft->plan = ATFFT_FFTW_PLAN_DFT (n_dims,
-                                                 dims,
-                                                 (atfft_complex*) fft->in,
-                                                 (atfft_complex*) fft->out,
-                                                 FFTW_BACKWARD,
-                                                 FFTW_ESTIMATE);
-            break;
-
-        case ATFFT_REAL:
-            if (direction == ATFFT_FORWARD)
-            {
-                fft->in_size = full_size * sizeof (*(fft->in));
-                fft->in = ATFFT_FFTW_MALLOC (fft->in_size);
-
-                fft->out_size = 2 * halfcomplex_size * sizeof (*(fft->out));
-                fft->out = ATFFT_FFTW_MALLOC (fft->out_size);
-
-                fft->plan = ATFFT_FFTW_PLAN_DFT_R2C (n_dims,
-                                                     dims,
-                                                     fft->in,
-                                                     (atfft_complex*) fft->out,
-                                                     FFTW_ESTIMATE);
-            }
-            else
-            {
-                fft->in_size = 2 * halfcomplex_size * sizeof (*(fft->in));
-                fft->in = ATFFT_FFTW_MALLOC (fft->in_size);
-
-                fft->out_size = full_size * sizeof (*(fft->out));
-                fft->out = ATFFT_FFTW_MALLOC (fft->out_size);
-
-                fft->plan = ATFFT_FFTW_PLAN_DFT_C2R (n_dims,
-                                                     dims,
-                                                     (atfft_complex*) fft->in,
-                                                     fft->out,
-                                                     FFTW_ESTIMATE);
-            }
-            break;
+        if (direction == ATFFT_FORWARD)
+        {
+            plan->n_in_bytes = full_size * sizeof (*(plan->in));
+            plan->n_out_bytes = 2 * halfcomplex_size * sizeof (*(plan->out));
+        }
+        else
+        {
+            plan->n_in_bytes = 2 * halfcomplex_size * sizeof (*(plan->in));
+            plan->n_out_bytes = full_size * sizeof (*(plan->out));
+        }
     }
 
+    /* allocate input and output buffers */
+    plan->in = ATFFT_FFTW_MALLOC (plan->n_in_bytes);
+    plan->out = ATFFT_FFTW_MALLOC (plan->n_out_bytes);
 
-    /* clean up on failure */
-    if (!(fft->in && fft->out && fft->plan))
-    {
-        atfft_dft_nd_destroy (fft);
-        fft = NULL;
-    }
+    if (!(plan->in && plan->out))
+        goto failed;
 
-    return fft;
+    /* initialise the fftw plan */
+    plan->plan = init_fftw_plan (dims, n_dims, direction, format, plan->in, plan->out);
+
+    if (!plan->plan)
+        goto failed;
+
+    return plan;
+
+failed:
+    atfft_dft_nd_destroy (plan);
+    return NULL;
 }
 
-void atfft_dft_nd_destroy (struct atfft_dft_nd *fft)
+void atfft_dft_nd_destroy (struct atfft_dft_nd *plan)
 {
-    if (fft)
+    if (plan)
     {
-        ATFFT_FFTW_DESTROY_PLAN (fft->plan);
-        ATFFT_FFTW_FREE (fft->out);
-        ATFFT_FFTW_FREE (fft->in);
-        free (fft);
+        ATFFT_FFTW_DESTROY_PLAN (plan->plan);
+        ATFFT_FFTW_FREE (plan->out);
+        ATFFT_FFTW_FREE (plan->in);
+        free (plan);
     }
 }
 
-static void atfft_dft_nd_fftw_apply_transform (struct atfft_dft_nd *fft, const atfft_sample *in, atfft_sample *out)
+static void apply_transform (struct atfft_dft_nd *plan, const atfft_sample *in, atfft_sample *out)
 {
-    memcpy (fft->in, in, fft->in_size);
-    ATFFT_FFTW_EXECUTE (fft->plan);
-    memcpy (out, fft->out, fft->out_size);
+    memcpy (plan->in, in, plan->n_in_bytes);
+    ATFFT_FFTW_EXECUTE (plan->plan);
+    memcpy (out, plan->out, plan->n_out_bytes);
 }
 
-void atfft_dft_nd_complex_transform (struct atfft_dft_nd *fft, atfft_complex *in, atfft_complex *out)
+void atfft_dft_nd_complex_transform (struct atfft_dft_nd *plan, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
-    assert (fft->format == ATFFT_COMPLEX);
+    assert (plan->format == ATFFT_COMPLEX);
 
-    atfft_dft_nd_fftw_apply_transform (fft, (atfft_sample*) in, (atfft_sample*) out);
+    apply_transform (plan, (atfft_sample*) in, (atfft_sample*) out);
 }
 
-void atfft_dft_nd_real_forward_transform (struct atfft_dft_nd *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_nd_real_forward_transform (struct atfft_dft_nd *plan, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
-    atfft_dft_nd_fftw_apply_transform (fft, in, (atfft_sample*) out);
+    apply_transform (plan, in, (atfft_sample*) out);
 }
 
-void atfft_dft_nd_real_backward_transform (struct atfft_dft_nd *fft, atfft_complex *in, atfft_sample *out)
+void atfft_dft_nd_real_backward_transform (struct atfft_dft_nd *plan, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
-    atfft_dft_nd_fftw_apply_transform (fft, (atfft_sample*) in, out);
+    apply_transform (plan, (atfft_sample*) in, out);
 }

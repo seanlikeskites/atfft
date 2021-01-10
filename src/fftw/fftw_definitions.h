@@ -23,6 +23,10 @@
 #ifndef ATFFT_FFTW_DEFINITIONS_H_INCLUDED
 #define ATFFT_FFTW_DEFINITIONS_H_INCLUDED
 
+#ifndef ATFFT_FFTW_PLANNING_METHOD
+#define ATFFT_FFTW_PLANNING_METHOD FFTW_ESTIMATE
+#endif
+
 #if defined(ATFFT_TYPE_FLOAT)
 #   define ATFFT_FFTW_MALLOC fftwf_malloc
 #   define ATFFT_FFTW_FREE fftwf_free
@@ -36,6 +40,7 @@
 #   define ATFFT_FFTW_PLAN_R2R_1D fftwf_plan_r2r_1d
 #   define ATFFT_FFTW_EXECUTE fftwf_execute
     typedef fftwf_plan atfft_fftw_plan;
+    typedef fftwf_complex atfft_fftw_complex;
     
 #elif defined (ATFFT_TYPE_DOUBLE)
 #   define ATFFT_FFTW_MALLOC fftw_malloc
@@ -50,6 +55,7 @@
 #   define ATFFT_FFTW_PLAN_R2R_1D fftw_plan_r2r_1d
 #   define ATFFT_FFTW_EXECUTE fftw_execute
     typedef fftw_plan atfft_fftw_plan;
+    typedef fftw_complex atfft_fftw_complex;
 
 #elif defined(ATFFT_TYPE_LONG_DOUBLE)
 #   define ATFFT_FFTW_MALLOC fftwl_malloc
@@ -64,6 +70,7 @@
 #   define ATFFT_FFTW_PLAN_R2R_1D fftwl_plan_r2r_1d
 #   define ATFFT_FFTW_EXECUTE fftwl_execute
     typedef fftwl_plan atfft_fftw_plan;
+    typedef fftwl_complex atfft_fftw_complex;
 #endif
 
 #endif /* ATFFT_FFTW_DEFINITIONS_H_INCLUDED */
