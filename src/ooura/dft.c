@@ -48,7 +48,7 @@ struct atfft_dft
     size_t n_data_bytes;
     double *data;
 
-    /* buffers for ooura state */
+    /* buffers for ooura internals */
     int *work_area;
     double *tables;
 };
