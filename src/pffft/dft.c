@@ -24,7 +24,7 @@
 #include <string.h>
 #include <assert.h>
 #include <atfft/dft.h>
-#include "../pffft/pffft.h"
+#include "pffft.h"
 
 #ifndef ATFFT_TYPE_FLOAT
 #   ifdef _MSC_VER
@@ -42,43 +42,65 @@ struct atfft_dft
     enum atfft_direction direction;
     pffft_direction_t pffft_direction;
     enum atfft_format format;
-    int in_size, out_size;
-    float *in, *out;
-    float *work_area;
+
+    /* the pffft plan */
     PFFFT_Setup *plan;
+
+    /* aligned input and output buffers for pffft transform */
+    size_t n_in_out_bytes;
+    float *in, *out;
+
+    /* additional work buffer for pffft */
+    float *work_area;
 };
 
-static int atfft_is_supported_size_pffft (unsigned int size, enum atfft_format format)
+int atfft_dft_is_supported_size (int size, enum atfft_format format)
 {
+    if (size <= 0)
+        return 0;
+
+    /* remove any factors of 5 and 3 */
+    int div = size;
+
+    while (div % 5 == 0)
+    {
+        div /= 5;
+    }
+
+    while (div % 3 == 0)
+    {
+        div /= 3;
+    }
+
+    /* we should be left with a power of 2 */
     int min = 16;
 
     if (format == ATFFT_REAL)
         min = 32;
 
-    if (!(size % min) && (size > 0))
-        return 1;        
-    else
-        return 0;
+    return atfft_is_power_of_2 (div) && div >= min;
 }
 
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
-    /* pffft only supports sizes which are a multiples of 32 (or 16 for complex transforms). */
-    assert (atfft_is_supported_size_pffft (size, format));
+    /* pffft only supports sizes of the form:
+     * 16 * 2^a * 3^b * 5^c for complex transforms
+     * 32 * 2^a * 3^b * 5^c for real transforms. */
+    assert (atfft_dft_is_supported_size (size, format));
 
-    struct atfft_dft *fft;
+    struct atfft_dft *plan;
 
-    if (!(fft = malloc (sizeof (*fft))))
+    if (!(plan = calloc (1, sizeof (*plan))))
         return NULL;
 
-    fft->size = size;
-    fft->direction = direction;
-    fft->format = format;
+    plan->size = size;
+    plan->direction = direction;
+    plan->format = format;
 
     if (direction == ATFFT_FORWARD)
-        fft->pffft_direction = PFFFT_FORWARD;
+        plan->pffft_direction = PFFFT_FORWARD;
     else
-        fft->pffft_direction = PFFFT_BACKWARD;
+        plan->pffft_direction = PFFFT_BACKWARD;
 
     int work_size = 0;
     pffft_transform_t transform_type = 0;
@@ -86,94 +108,92 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     switch (format)
     {
         case ATFFT_COMPLEX:
-            fft->in_size = 2 * size * sizeof (*(fft->in));
-            fft->out_size = 2 * size * sizeof (*(fft->out));
-            work_size = 2 * size * sizeof (*(fft->work_area));
+            plan->n_in_out_bytes = 2 * size * sizeof (*(plan->in));
+            work_size = 2 * size;
             transform_type = PFFFT_COMPLEX;
             break;
 
         case ATFFT_REAL:
-            fft->in_size = size * sizeof (*(fft->in));
-            fft->out_size = size * sizeof (*(fft->out));
-            work_size = size * sizeof (*(fft->work_area));
+            plan->n_in_out_bytes = size * sizeof (*(plan->in));
+            work_size = size;
             transform_type = PFFFT_REAL;
     }
 
-    fft->in = pffft_aligned_malloc (fft->in_size);
-    fft->out = pffft_aligned_malloc (fft->out_size);
-    fft->work_area = pffft_aligned_malloc (work_size);
-    fft->plan = pffft_new_setup (size, transform_type);
+    plan->plan = pffft_new_setup (size, transform_type);
+    plan->in = pffft_aligned_malloc (plan->n_in_out_bytes);
+    plan->out = pffft_aligned_malloc (plan->n_in_out_bytes);
+    plan->work_area = pffft_aligned_malloc (work_size * sizeof (*plan->work_area));
 
     /* clean up on failure */
-    if (!(fft->in && fft->out && fft->work_area && fft->plan))
+    if (!(plan->plan && plan->in && plan->out && plan->work_area))
     {
-        atfft_dft_destroy (fft);
-        fft = NULL;
+        atfft_dft_destroy (plan);
+        plan = NULL;
     }
 
-    return fft;
+    return plan;
 }
 
-void atfft_dft_destroy (struct atfft_dft *fft)
+void atfft_dft_destroy (struct atfft_dft *plan)
 {
-    if (fft)
+    if (plan)
     {
-        pffft_destroy_setup (fft->plan);
-        pffft_aligned_free (fft->work_area);
-        pffft_aligned_free (fft->out);
-        pffft_aligned_free (fft->in);
-        free (fft);
+        pffft_destroy_setup (plan->plan);
+        pffft_aligned_free (plan->work_area);
+        pffft_aligned_free (plan->out);
+        pffft_aligned_free (plan->in);
+        free (plan);
     }
 }
 
-void atfft_dft_complex_transform (struct atfft_dft *fft, atfft_complex *in, atfft_complex *out)
+void atfft_dft_complex_transform (struct atfft_dft *plan, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
-    assert (fft->format == ATFFT_COMPLEX);
+    assert (plan->format == ATFFT_COMPLEX);
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (fft->in, in, fft->in_size);
+    memcpy (plan->in, in, plan->n_in_out_bytes);
 #else
-    atfft_sample_to_float_complex (in, (atfft_complex_f*) fft->in, fft->size);
+    atfft_sample_to_float_complex (in, (atfft_complex_f*) plan->in, plan->size);
 #endif
 
-    pffft_transform_ordered (fft->plan, fft->in, fft->out, fft->work_area, fft->pffft_direction);
+    pffft_transform_ordered (plan->plan, plan->in, plan->out, plan->work_area, plan->pffft_direction);
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (out, fft->out, fft->out_size);
+    memcpy (out, plan->out, plan->n_in_out_bytes);
 #else
-    atfft_float_to_sample_complex ((atfft_complex_f*) fft->out, out, fft->size);
+    atfft_float_to_sample_complex ((atfft_complex_f*) plan->out, out, plan->size);
 #endif
 }
 
-void atfft_dft_complex_transform_stride (struct atfft_dft *fft,
+void atfft_dft_complex_transform_stride (struct atfft_dft *plan,
                                          atfft_complex *in,
                                          int in_stride,
                                          atfft_complex *out,
                                          int out_stride)
 {
     /* Only to be used with complex FFTs. */
-    assert (fft->format == ATFFT_COMPLEX);
+    assert (plan->format == ATFFT_COMPLEX);
 
     atfft_sample_to_float_complex_stride (in,
                                           in_stride,
-                                          (atfft_complex_f*) fft->in,
+                                          (atfft_complex_f*) plan->in,
                                           1,
-                                          fft->size);
+                                          plan->size);
 
-    pffft_transform_ordered (fft->plan, fft->in, fft->out, fft->work_area, fft->pffft_direction);
+    pffft_transform_ordered (plan->plan, plan->in, plan->out, plan->work_area, plan->pffft_direction);
 
-    atfft_float_to_sample_complex_stride ((atfft_complex_f*) fft->out,
+    atfft_float_to_sample_complex_stride ((atfft_complex_f*) plan->out,
                                           1,
                                           out,
                                           out_stride,
-                                          fft->size);
+                                          plan->size);
 }
 
-static void atfft_halfcomplex_pffft_to_fftw (const float *in,
-                                             atfft_complex *out,
-                                             int out_stride,
-                                             int size)
+static void halfcomplex_pffft_to_atfft (const float *in,
+                                        atfft_complex *out,
+                                        int out_stride,
+                                        int size)
 {
     int half_size = size / 2;
 
@@ -192,44 +212,44 @@ static void atfft_halfcomplex_pffft_to_fftw (const float *in,
     ATFFT_IM (out [o]) = 0;
 }
 
-void atfft_dft_real_forward_transform (struct atfft_dft *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (fft->in, in, fft->in_size);
+    memcpy (plan->in, in, plan->n_in_out_bytes);
 #else
-    atfft_sample_to_float_real (in, fft->in, fft->size);
+    atfft_sample_to_float_real (in, plan->in, plan->size);
 #endif
 
-    pffft_transform_ordered (fft->plan, fft->in, fft->out, fft->work_area, fft->pffft_direction);
-    atfft_halfcomplex_pffft_to_fftw (fft->out, out, 1, fft->size);
+    pffft_transform_ordered (plan->plan, plan->in, plan->out, plan->work_area, plan->pffft_direction);
+    halfcomplex_pffft_to_atfft (plan->out, out, 1, plan->size);
 }
 
-void atfft_dft_real_forward_transform_stride (struct atfft_dft *fft,
+void atfft_dft_real_forward_transform_stride (struct atfft_dft *plan,
                                               const atfft_sample *in,
                                               int in_stride,
                                               atfft_complex *out,
                                               int out_stride)
 {
     /* Only to be used for forward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
     atfft_sample_to_float_real_stride (in,
                                        in_stride,
-                                       fft->in,
+                                       plan->in,
                                        1,
-                                       fft->size);
+                                       plan->size);
 
-    pffft_transform_ordered (fft->plan, fft->in, fft->out, fft->work_area, fft->pffft_direction);
-    atfft_halfcomplex_pffft_to_fftw (fft->out, out, out_stride, fft->size);
+    pffft_transform_ordered (plan->plan, plan->in, plan->out, plan->work_area, plan->pffft_direction);
+    halfcomplex_pffft_to_atfft (plan->out, out, out_stride, plan->size);
 }
 
-static void atfft_halfcomplex_fftw_to_pffft (atfft_complex *in,
-                                             int in_stride,
-                                             float *out,
-                                             int size)
+static void halfcomplex_atfft_to_pffft (atfft_complex *in,
+                                        int in_stride,
+                                        float *out,
+                                        int size)
 {
     int half_size = size / 2;
 
@@ -246,35 +266,35 @@ static void atfft_halfcomplex_fftw_to_pffft (atfft_complex *in,
     out [1] = ATFFT_RE (in [i]);
 }
 
-void atfft_dft_real_backward_transform (struct atfft_dft *fft, atfft_complex *in, atfft_sample *out)
+void atfft_dft_real_backward_transform (struct atfft_dft *plan, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
-    atfft_halfcomplex_fftw_to_pffft (in, 1, fft->in, fft->size);
-    pffft_transform_ordered (fft->plan, fft->in, fft->out, fft->work_area, fft->pffft_direction);
+    halfcomplex_atfft_to_pffft (in, 1, plan->in, plan->size);
+    pffft_transform_ordered (plan->plan, plan->in, plan->out, plan->work_area, plan->pffft_direction);
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (out, fft->out, fft->out_size);
+    memcpy (out, plan->out, plan->n_in_out_bytes);
 #else
-    atfft_float_to_sample_real (fft->out, out, fft->size);
+    atfft_float_to_sample_real (plan->out, out, plan->size);
 #endif
 }
 
-void atfft_dft_real_backward_transform_stride (struct atfft_dft *fft,
+void atfft_dft_real_backward_transform_stride (struct atfft_dft *plan,
                                                atfft_complex *in,
                                                int in_stride,
                                                atfft_sample *out,
                                                int out_stride)
 {
     /* Only to be used for backward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
-    atfft_halfcomplex_fftw_to_pffft (in, in_stride, fft->in, fft->size);
-    pffft_transform_ordered (fft->plan, fft->in, fft->out, fft->work_area, fft->pffft_direction);
-    atfft_float_to_sample_real_stride (fft->out,
+    halfcomplex_atfft_to_pffft (in, in_stride, plan->in, plan->size);
+    pffft_transform_ordered (plan->plan, plan->in, plan->out, plan->work_area, plan->pffft_direction);
+    atfft_float_to_sample_real_stride (plan->out,
                                        1,
                                        out,
                                        out_stride,
-                                       fft->size);
+                                       plan->size);
 }
