@@ -186,5 +186,5 @@ void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_s
         case ATFFT_BACKWARD:
             atfft_dct_backward_transform (dct, in, out);
             break;
-    };
+    }
 }

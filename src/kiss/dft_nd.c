@@ -33,6 +33,8 @@ struct atfft_dft_nd
 {
     enum atfft_direction direction;
     enum atfft_format format;
+
+    /* the kissfft config */
     void *cfg;
 };
 
@@ -41,73 +43,63 @@ struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
                                           enum atfft_direction direction,
                                           enum atfft_format format)
 {
-    /* kiss_fft only does even length real transforms */
+    /* kissfft only does even length real transforms */
     assert ((format == ATFFT_COMPLEX) || atfft_is_even (dims [n_dims - 1]));
 
-    struct atfft_dft_nd *fft;
+    struct atfft_dft_nd *plan;
 
-    if (!(fft = malloc (sizeof (*fft))))
+    if (!(plan = malloc (sizeof (*plan))))
         return NULL;
 
-    fft->direction = direction;
-    fft->format = format;
+    plan->direction = direction;
+    plan->format = format;
 
-    switch (format)
-    {
-        case ATFFT_COMPLEX:
-            if (direction == ATFFT_FORWARD)
-                fft->cfg = kiss_fftnd_alloc (dims, n_dims, 0, 0, 0);
-            else
-                fft->cfg = kiss_fftnd_alloc (dims, n_dims, 1, 0, 0);
-            break;
+    int inverse = direction == ATFFT_BACKWARD;
 
-        case ATFFT_REAL:
-            if (direction == ATFFT_FORWARD)
-                fft->cfg = kiss_fftndr_alloc (dims, n_dims, 0, 0, 0);
-            else
-                fft->cfg = kiss_fftndr_alloc (dims, n_dims, 1, 0, 0);
-            break;
-    };
+    if (format == ATFFT_COMPLEX)
+        plan->cfg = kiss_fftnd_alloc (dims, n_dims, inverse, 0, 0);
+    else
+        plan->cfg = kiss_fftndr_alloc (dims, n_dims, inverse, 0, 0);
 
     /* clean up on failure */
-    if (!fft->cfg)
+    if (!plan->cfg)
     {
-        atfft_dft_nd_destroy (fft);
-        fft = NULL;
+        atfft_dft_nd_destroy (plan);
+        plan = NULL;
     }
 
-    return fft;
+    return plan;
 }
 
-void atfft_dft_nd_destroy (struct atfft_dft_nd *fft)
+void atfft_dft_nd_destroy (struct atfft_dft_nd *plan)
 {
-    if (fft)
+    if (plan)
     {
-        free (fft->cfg);
-        free (fft);
+        free (plan->cfg);
+        free (plan);
     }
 }
 
-void atfft_dft_nd_complex_transform (struct atfft_dft_nd *fft, atfft_complex *in, atfft_complex *out)
+void atfft_dft_nd_complex_transform (struct atfft_dft_nd *plan, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
-    assert (fft->format == ATFFT_COMPLEX);
+    assert (plan->format == ATFFT_COMPLEX);
 
-    kiss_fftnd ((kiss_fftnd_cfg) fft->cfg, (kiss_fft_cpx*) in, (kiss_fft_cpx*) out);
+    kiss_fftnd ((kiss_fftnd_cfg) plan->cfg, (kiss_fft_cpx*) in, (kiss_fft_cpx*) out);
 }
 
-void atfft_dft_nd_real_forward_transform (struct atfft_dft_nd *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_nd_real_forward_transform (struct atfft_dft_nd *plan, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
-    kiss_fftndr (fft->cfg, in, (kiss_fft_cpx*) out);
+    kiss_fftndr (plan->cfg, in, (kiss_fft_cpx*) out);
 }
 
-void atfft_dft_nd_real_backward_transform (struct atfft_dft_nd *fft, atfft_complex *in, atfft_sample *out)
+void atfft_dft_nd_real_backward_transform (struct atfft_dft_nd *plan, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
-    kiss_fftndri (fft->cfg, (kiss_fft_cpx*) in, out);
+    kiss_fftndri (plan->cfg, (kiss_fft_cpx*) in, out);
 }
