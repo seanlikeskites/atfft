@@ -67,6 +67,11 @@ else ifeq (PFFFT, $(IMPL))
 else ifeq (OOURA, $(IMPL))
 	FFT_SOURCES += ../src/ooura/dft.c ../src/ooura/fft4g.c
 
+else ifeq (KFR, $(IMPL))
+	LIBS += -lkfr_capi
+	FFT_SOURCES += ../src/kfr/dft.c
+	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_PRIMES
+
 else
 	FFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c
 	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_PRIMES
