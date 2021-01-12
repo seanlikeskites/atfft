@@ -49,11 +49,6 @@ void atfft_scale_real (atfft_sample *data, int size, atfft_sample scale_factor)
     }
 }
 
-void atfft_normalise_real (atfft_sample *data, int size)
-{
-    atfft_scale_real (data, size, 1.0 / size);
-}
-
 void atfft_scale_complex (atfft_complex *data, int size, atfft_sample scale_factor)
 {
     for (int i = 0; i < size; ++i)
@@ -61,11 +56,6 @@ void atfft_scale_complex (atfft_complex *data, int size, atfft_sample scale_fact
         ATFFT_RE (data [i]) *= scale_factor;
         ATFFT_IM (data [i]) *= scale_factor;
     }
-}
-
-void atfft_normalise_complex (atfft_complex *data, int size)
-{
-    atfft_scale_complex (data, size, 1.0 / size);
 }
 
 atfft_sample atfft_abs (const atfft_complex x)
@@ -138,6 +128,16 @@ void atfft_real_to_complex_stride (const atfft_sample *in,
     {
         ATFFT_RE (out [o]) = in [i];
         ATFFT_IM (out [o]) = 0;
+    }
+}
+
+void atfft_float_to_sample_real (const float *in,
+                                 atfft_sample *out,
+                                 int size)
+{
+    for (int i = 0; i < size; ++i)
+    {
+        out [i] = in [i];
     }
 }
 

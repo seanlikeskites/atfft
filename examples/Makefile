@@ -4,7 +4,7 @@ LIBS = -lm
 INCLUDEDIRS = -I../include
 DFT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c
 ND_DFT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c ../src/atfft/dft_nd_util.c
-DCT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c
+DCT_SOURCES = ../src/atfft/types.c ../src/atfft/dct_util.c
 PROGRAMS = complex_transform dct real_transform dct nd_complex nd_real
 
 ifeq (FLOAT, $(TYPE))
@@ -33,7 +33,7 @@ else ifeq (MKL, $(IMPL))
 	ND_DFT_SOURCES += ../src/mkl/dft_nd.c
 
 	ifeq (LONG_DOUBLE, $(TYPE))
-		DCT_SOURCES += ../src/atfft/dct.c ../src/mkl/dft.c
+		DCT_SOURCES += ../src/atfft/dct.c ../src/mkl/dft.c ../src/atfft/dft_util.c
 	else
 		DCT_SOURCES += ../src/fftw/dct.c
 	endif
@@ -42,7 +42,7 @@ else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
 	DFT_SOURCES += ../src/ffts/dft.c
 	ND_DFT_SOURCES += ../src/ffts/dft_nd.c
-	DCT_SOURCES += ../src/atfft/dct.c ../src/ffts/dft.c
+	DCT_SOURCES += ../src/atfft/dct.c ../src/ffts/dft.c ../src/atfft/dft_util.c
 
 else ifeq (GSL, $(IMPL))
 	LIBS += -lgsl -lgslcblas
@@ -94,7 +94,7 @@ else ifeq (KFR, $(IMPL))
 else
 	DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c
 	ND_DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_nd.c
-	DCT_SOURCES += ../src/atfft/dct.c ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c
+	DCT_SOURCES += ../src/atfft/dct.c ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_util.c
 
 endif
 

@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <atfft/dft.h>
+#include <atfft/dft_util.h>
 #include "atfft_internal.h"
 #include "dft_bluestein.h"
 
@@ -88,7 +89,7 @@ static int atfft_init_bluestein_convolution_dft (int size,
 
     /* take DFT of sequence */
     atfft_dft_complex_transform (fft, sequence, conv_dft);
-    atfft_normalise_complex (conv_dft, conv_size);
+    atfft_normalise_dft_complex (conv_dft, conv_size);
 
     /* take conjugate of the sequence for use later */
     for (int i = 0; i < size; ++i)

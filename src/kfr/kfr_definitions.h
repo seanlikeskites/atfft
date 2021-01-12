@@ -23,8 +23,14 @@
 #ifndef ATFFT_KFR_DEFINITIONS_H_INCLUDED
 #define ATFFT_KFR_DEFINITIONS_H_INCLUDED
 
-#ifndef ATFFT_FFTW_PLANNING_METHOD
-#define ATFFT_FFTW_PLANNING_METHOD FFTW_ESTIMATE
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+#   ifdef _MSC_VER
+#       pragma message(": warning: KFR only supports single and double precision floating point, " \
+                       "higher precision values will be demoted to double for FFT calculations.")
+#   else
+#       warning KFR only supports single and double precision floating point, \
+                higher precision values will be demoted to double for FFT calculations.
+#   endif
 #endif
 
 #if defined(ATFFT_TYPE_FLOAT)

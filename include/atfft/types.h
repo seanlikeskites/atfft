@@ -162,16 +162,6 @@ int atfft_is_power_of_2 (unsigned int x);
 void atfft_scale_real (atfft_sample *data, int size, atfft_sample scale_factor);
 
 /**
- * Normalise a real DFT output.
- *
- * Applies 1 / @p size scaling to a real valued signal.
- *
- * @param data the signal to normalise (should contain at least @p size elements)
- * @param size the length of the signal
- */
-void atfft_normalise_real (atfft_sample *data, int size);
-
-/**
  * Scale a complex valued signal.
  *
  * Applies a multiplicative scaling to a complex valued signal.
@@ -181,16 +171,6 @@ void atfft_normalise_real (atfft_sample *data, int size);
  * @param scale_factor the factor to scale by
  */
 void atfft_scale_complex (atfft_complex *data, int size, atfft_sample scale_factor);
-
-/**
- * Normalise a complex DFT output.
- *
- * Applies 1 / @p size scaling to a complex valued signal.
- *
- * @param data the signal to normalise (should contain at least @p size elements)
- * @param size the length of the signal
- */
-void atfft_normalise_complex (atfft_complex *data, int size);
 
 /**
  * Find the magnitude of a complex value.

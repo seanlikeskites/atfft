@@ -112,6 +112,5 @@ void atfft_dct_transform (struct atfft_dct *plan, const atfft_sample *in, atfft_
     memcpy (out, plan->out, plan->n_in_out_bytes);
 
     /* fftw multiplies DCT bins by 2 */
-    if (plan->direction == ATFFT_FORWARD)
-        atfft_scale_real (out, plan->size, 0.5);
+    atfft_scale_real (out, plan->size, 0.5);
 }

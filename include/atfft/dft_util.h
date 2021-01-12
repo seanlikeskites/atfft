@@ -21,7 +21,7 @@
  */
 
 /** @file
- * struct and functions for performing discrete fourier transforms.
+ * 
  */
 
 #ifndef ATFFT_DFT_UTIL_H_INCLUDED
@@ -60,6 +60,26 @@ void atfft_complex_to_halfcomplex_stride (atfft_complex *in,
                                           atfft_complex *out,
                                           int out_stride,
                                           int size);
+
+/**
+ * Normalise a real DFT output.
+ *
+ * Applies 1 / @p size scaling to a real valued signal.
+ *
+ * @param data the signal to normalise (should contain at least @p size elements)
+ * @param size the length of the signal
+ */
+void atfft_normalise_dft_real (atfft_sample *data, int size);
+
+/**
+ * Normalise a complex DFT output.
+ *
+ * Applies 1 / @p size scaling to a complex valued signal.
+ *
+ * @param data the signal to normalise (should contain at least @p size elements)
+ * @param size the length of the signal
+ */
+void atfft_normalise_dft_complex (atfft_complex *data, int size);
 
 #ifdef __cplusplus
 }

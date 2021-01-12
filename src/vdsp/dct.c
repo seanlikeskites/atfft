@@ -112,7 +112,4 @@ void atfft_dct_transform (struct atfft_dct *dct, const atfft_sample *in, atfft_s
     vDSP_DCT_Execute (dct->setup, dct->in, dct->out);
     atfft_float_to_sample_real (dct->out, out, dct->size);
 #endif
-
-    if (dct->direction == ATFFT_BACKWARD)
-        atfft_scale_real (out, dct->size, 2.0);
 }

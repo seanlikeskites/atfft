@@ -118,7 +118,7 @@ int main()
     printSampleArray (signal, nSamples);
 
     /* normalise the output */
-    atfft_normalise_real (signal, nSamples);
+    atfft_normalise_dft_real (signal, nSamples);
     printf ("\nNormalised Signal:\n");
     printSampleArray (signal, nSamples);
 

@@ -88,10 +88,12 @@ void atfft_complex_to_halfcomplex_stride (atfft_complex *in,
     }
 }
 
-void atfft_float_to_sample_real (const float *in, atfft_sample *out, int size)
+void atfft_normalise_dft_real (atfft_sample *data, int size)
 {
-    for (int i = 0; i < size; ++i)
-    {
-        out [i] = in [i];
-    }
+    atfft_scale_real (data, size, 1.0 / size);
+}
+
+void atfft_normalise_dft_complex (atfft_complex *data, int size)
+{
+    atfft_scale_complex (data, size, 1.0 / size);
 }

@@ -20,10 +20,9 @@
  * SOFTWARE.
  */
 
-#include <atfft/dft.h>
-#include <atfft/dft_util.h>
-#include <atfft/dft_nd.h>
-#include <atfft/dft_nd_util.h>
-#include <atfft/dct.h>
 #include <atfft/dct_util.h>
-#include <atfft/windows.h>
+
+void atfft_normalise_dct (atfft_sample *data, int size)
+{
+    atfft_scale_real (data, size, 2.0 / size);
+}

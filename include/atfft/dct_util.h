@@ -20,10 +20,32 @@
  * SOFTWARE.
  */
 
-#include <atfft/dft.h>
-#include <atfft/dft_util.h>
-#include <atfft/dft_nd.h>
-#include <atfft/dft_nd_util.h>
-#include <atfft/dct.h>
-#include <atfft/dct_util.h>
-#include <atfft/windows.h>
+/** @file
+ * 
+ */
+
+#ifndef ATFFT_DCT_UTIL_H_INCLUDED
+#define ATFFT_DCT_UTIL_H_INCLUDED
+
+#include <atfft/types.h>
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/**
+ * Normalise a DCT output.
+ *
+ * Applies 2 / @p size scaling to a signal.
+ *
+ * @param data the signal to normalise (should contain at least @p size elements)
+ * @param size the length of the signal
+ */
+void atfft_normalise_dct (atfft_sample *data, int size);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ATFFT_DCT_UTIL_H_INCLUDED */

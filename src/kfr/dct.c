@@ -122,7 +122,4 @@ void atfft_dct_transform (struct atfft_dct *plan, const atfft_sample *in, atfft_
 #else
     plan->transform_function (plan->plan, out, in, plan->work_area);
 #endif
-
-    if (plan->direction == ATFFT_BACKWARD)
-        atfft_scale_real (out, plan->size, 2.0);
 }

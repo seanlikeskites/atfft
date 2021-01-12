@@ -128,13 +128,13 @@ void atfft_dct_forward_transform (struct atfft_dct *dct, const atfft_sample *in,
 
 void atfft_dct_scale_backward (struct atfft_dct *dct, const atfft_sample *in)
 {
-    ATFFT_RE (dct->in [0]) = in [0];
+    ATFFT_RE (dct->in [0]) = in [0] / 2.0;
     ATFFT_IM (dct->in [0]) = 0.0;
 
     for (int i = 1; i < dct->size; ++i)
     {
-        atfft_sample realPart = in [i];
-        atfft_sample imagPart = -in [dct->size - i];
+        atfft_sample realPart = in [i] / 2.0;
+        atfft_sample imagPart = -in [dct->size - i] / 2.0;
 
         atfft_sample realCosComponent = dct->cosins [i] * realPart;
         atfft_sample realSinComponent = - dct->sins [i] * imagPart;

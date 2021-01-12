@@ -111,12 +111,12 @@ void atfft_dct_transform (struct atfft_dct *plan, const atfft_sample *in, atfft_
     av_dct_calc (plan->context, plan->data);
 
 #ifdef ATFFT_TYPE_FLOAT
-    memcpy (out, plan->data, n_bytes);
+    memcpy (out, plan->data, plan->n_data_bytes);
 #else
     atfft_float_to_sample_real (plan->data, out, plan->size);
 #endif
 
     /* libavcodec normalises the backward transform */
     if (plan->direction == ATFFT_BACKWARD)
-        atfft_scale_real (out, plan->size, plan->size);
+        atfft_scale_real (out, plan->size, plan->size / 2.0);
 }

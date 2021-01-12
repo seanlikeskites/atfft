@@ -127,7 +127,4 @@ void atfft_dct_transform (struct atfft_dct *plan, const atfft_sample *in, atfft_
 #else
     atfft_double_to_sample_real (plan->data, out, plan->size);
 #endif
-
-    if (plan->direction == ATFFT_BACKWARD)
-        atfft_scale_real (out, plan->size, 2.0);
 }

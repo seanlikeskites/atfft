@@ -99,7 +99,7 @@ int main()
     printComplexArray (out, outSize);
 
     atfft_dft_nd_real_backward_transform (ifft, out, in);
-    atfft_normalise_real (in, nSamples);
+    atfft_normalise_dft_real (in, nSamples);
     printf ("\nReconstructed Signal:\n");
     printSampleArray (in, nSamples);
 
