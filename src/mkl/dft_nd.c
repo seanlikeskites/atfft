@@ -22,10 +22,10 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include "mkl_definitions.h"
 #include <atfft/dft_nd.h>
 #include <atfft/dft_nd_util.h>
 #include <atfft/dft_util.h>
+#include "mkl_definitions.h"
 
 struct atfft_dft_nd
 {
@@ -34,12 +34,12 @@ struct atfft_dft_nd
 
     MKL_LONG *dims;
     MKL_LONG n_dims;
-    MKL_LONG *halfcomplex_strides;
 
+    /* the mkl plan */
     DFTI_DESCRIPTOR_HANDLE plan;
 
-    /* buffers to work in if working with long double */
 #ifdef ATFFT_TYPE_LONG_DOUBLE
+    /* input and output buffers for mkl transform */
     int in_size, out_size;
     double *in, *out;
 #endif
@@ -61,8 +61,8 @@ static MKL_LONG* alloc_and_copy_dims_array (const int *dims,
     return copy;
 }
 
-static MKL_LONG* init_halfcomplex_strides (const int *dims,
-                                          int n_dims)
+static MKL_LONG* init_halfcomplex_strides (const MKL_LONG *dims,
+                                           MKL_LONG n_dims)
 {
     MKL_LONG *strides = malloc ((n_dims + 1) * sizeof (*strides));
 
@@ -81,189 +81,223 @@ static MKL_LONG* init_halfcomplex_strides (const int *dims,
     return strides;
 }
 
+static int set_mkl_strides (DFTI_DESCRIPTOR_HANDLE plan,
+                            const MKL_LONG *dims,
+                            MKL_LONG n_dims,
+                            enum atfft_direction direction)
+{
+    int ret = 1;
+    MKL_LONG *halfcomplex_strides = init_halfcomplex_strides (dims, n_dims);
+
+    if (!halfcomplex_strides)
+        return 0;
+
+    MKL_LONG status = DFTI_NO_ERROR;
+
+    if (direction == ATFFT_FORWARD)
+    {
+        status = DftiSetValue(plan,
+                              DFTI_OUTPUT_STRIDES,
+                              halfcomplex_strides);
+
+    }
+    else
+    {
+        status = DftiSetValue(plan,
+                              DFTI_INPUT_STRIDES,
+                              halfcomplex_strides);
+
+    }
+
+    if (status != DFTI_NO_ERROR)
+        ret = 0;
+
+    free (halfcomplex_strides);
+    return ret;
+}
+
+static DFTI_DESCRIPTOR_HANDLE init_mkl_plan (const MKL_LONG *dims,
+                                             MKL_LONG n_dims,
+                                             enum atfft_direction direction,
+                                             enum atfft_format format)
+{
+    MKL_LONG status = DFTI_NO_ERROR;
+    DFTI_DESCRIPTOR_HANDLE plan;
+
+    /* create the plan */
+    if (format == ATFFT_COMPLEX)
+        status = DftiCreateDescriptor (&plan,
+                                       ATFFT_MKL_PRECISION,
+                                       DFTI_COMPLEX,
+                                       n_dims,
+                                       dims);
+    else
+        status = DftiCreateDescriptor (&plan,
+                                       ATFFT_MKL_PRECISION,
+                                       DFTI_REAL,
+                                       n_dims,
+                                       dims);
+
+    if (status != DFTI_NO_ERROR)
+        goto failed;
+
+    /* set strides for real transforms */
+    if (format == ATFFT_REAL)
+    {
+        if (!set_mkl_strides (plan, dims, n_dims, direction))
+            goto failed;
+    }
+
+    /* we aren't doing in place transforms */
+    if (DftiSetValue(plan,
+                     DFTI_PLACEMENT,
+                     DFTI_NOT_INPLACE) != DFTI_NO_ERROR)
+        goto failed;
+
+    /* for real transforms we want an unpacked frequency domain */
+    if (DftiSetValue(plan,
+                     DFTI_CONJUGATE_EVEN_STORAGE,
+                     DFTI_COMPLEX_COMPLEX) != DFTI_NO_ERROR)
+        goto failed;
+    
+    /* commit the plan settings */
+    if (DftiCommitDescriptor(plan) != DFTI_NO_ERROR)
+        goto failed;
+
+    return plan;
+
+failed:
+    DftiFreeDescriptor (&plan);
+    return NULL;
+
+}
+
 struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
                                           int n_dims,
                                           enum atfft_direction direction,
                                           enum atfft_format format)
 {
-    struct atfft_dft_nd *fft;
+    struct atfft_dft_nd *plan;
 
-    if (!(fft = calloc (1, sizeof (*fft))))
+    if (!(plan = calloc (1, sizeof (*plan))))
         return NULL;
 
-    fft->direction = direction;
-    fft->format = format;
-    fft->n_dims = n_dims;
+    plan->direction = direction;
+    plan->format = format;
+    plan->n_dims = n_dims;
 
     /* copy dims array */
-    fft->dims = alloc_and_copy_dims_array (dims, n_dims);
+    plan->dims = alloc_and_copy_dims_array (dims, n_dims);
 
-    if (!fft->dims)
+    if (!plan->dims)
         goto failed;
 
-    if (format == ATFFT_REAL)
-    {
-        /* init halfcomplex strides array */
-        fft->halfcomplex_strides = init_halfcomplex_strides (dims, n_dims);
+    /* initialise the mkl plan */
+    plan->plan = init_mkl_plan (plan->dims, plan->n_dims, direction, format);
 
-        if (!fft->halfcomplex_strides)
-            goto failed;
-    }
+    if (!plan->plan)
+        goto failed;
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
+    /* allocate input and output buffers */
     int full_size = atfft_int_array_product (dims, n_dims);
-    int halfcomplex_size = atfft_nd_halfcomplex_size (dims, n_dims);
-#endif
 
-    /* create the plan */
-    MKL_LONG status = DFTI_NO_ERROR;
-
-    switch (format)
+    if (format == ATFFT_COMPLEX)
     {
-        case ATFFT_COMPLEX:
-            status = DftiCreateDescriptor (&(fft->plan),
-                                           ATFFT_MKL_PRECISION,
-                                           DFTI_COMPLEX,
-                                           fft->n_dims,
-                                           fft->dims);
+        plan->in_size = 2 * full_size;
+        plan->out_size = 2 * full_size;
+    }
+    else
+    {
+        int halfcomplex_size = atfft_nd_halfcomplex_size (dims, n_dims);
 
-#ifdef ATFFT_TYPE_LONG_DOUBLE
-            fft->in_size = 2 * full_size;
-            fft->out_size = 2 * full_size;
-#endif
-            break;
-
-        case ATFFT_REAL:
-            status = DftiCreateDescriptor (&(fft->plan),
-                                           ATFFT_MKL_PRECISION,
-                                           DFTI_REAL,
-                                           fft->n_dims,
-                                           fft->dims);
-
-            if (direction == ATFFT_FORWARD)
-            {
-                status = DftiSetValue(fft->plan,
-                                      DFTI_OUTPUT_STRIDES,
-                                      fft->halfcomplex_strides);
-
-#ifdef ATFFT_TYPE_LONG_DOUBLE
-                fft->in_size = full_size;
-                fft->out_size = 2 * halfcomplex_size;
-#endif
-            }
-            else
-            {
-                status = DftiSetValue(fft->plan,
-                                      DFTI_INPUT_STRIDES,
-                                      fft->halfcomplex_strides);
-
-#ifdef ATFFT_TYPE_LONG_DOUBLE
-                fft->in_size = 2 * halfcomplex_size;
-                fft->out_size = full_size;
-#endif
-            }
-
-            break;
+        if (direction == ATFFT_FORWARD)
+        {
+            plan->in_size = full_size;
+            plan->out_size = 2 * halfcomplex_size;
+        }
+        else
+        {
+            plan->in_size = 2 * halfcomplex_size;
+            plan->out_size = full_size;
+        }
     }
 
-#ifdef ATFFT_TYPE_LONG_DOUBLE
-    fft->in = malloc (fft->in_size * sizeof (*(fft->in)));
-    fft->out = malloc (fft->out_size * sizeof (*(fft->out)));
+    plan->in = malloc (plan->in_size * sizeof (*(plan->in)));
+    plan->out = malloc (plan->out_size * sizeof (*(plan->out)));
+
+    if (!(plan->in && plan->out))
+        goto failed;
 #endif
 
-#ifdef ATFFT_TYPE_LONG_DOUBLE
-    if (!(fft->in && fft->out) && status != DFTI_NO_ERROR)
-#else
-    if (status != DFTI_NO_ERROR)
-#endif
-        goto failed;
-
-    /* set some other parameters on the plan */
-    if (DftiSetValue(fft->plan,
-                     DFTI_PLACEMENT,
-                     DFTI_NOT_INPLACE) != DFTI_NO_ERROR)
-        goto failed;
-
-    if (DftiSetValue(fft->plan,
-                     DFTI_CONJUGATE_EVEN_STORAGE,
-                     DFTI_COMPLEX_COMPLEX) != DFTI_NO_ERROR)
-        goto failed;
-
-    /* commit the plan settings */
-    status = DftiCommitDescriptor(fft->plan);
-
-    if (status != DFTI_NO_ERROR)
-        goto failed;
-
-    return fft;
+    return plan;
 
 failed:
-    atfft_dft_nd_destroy (fft);
+    atfft_dft_nd_destroy (plan);
     return NULL;
 }
 
-void atfft_dft_nd_destroy (struct atfft_dft_nd *fft)
+void atfft_dft_nd_destroy (struct atfft_dft_nd *plan)
 {
-    if (fft)
+    if (plan)
     {
 #ifdef ATFFT_TYPE_LONG_DOUBLE
-        free (fft->out);
-        free (fft->in);
+        free (plan->out);
+        free (plan->in);
 #endif
 
-        DftiFreeDescriptor (&(fft->plan));
-        free (fft->halfcomplex_strides);
-        free (fft->dims);
-        free (fft);
+        DftiFreeDescriptor (&(plan->plan));
+        free (plan->dims);
+        free (plan);
     }
 }
 
-void atfft_dft_nd_complex_transform (struct atfft_dft_nd *fft, atfft_complex *in, atfft_complex *out)
+void atfft_dft_nd_complex_transform (struct atfft_dft_nd *plan, atfft_complex *in, atfft_complex *out)
 {
     /* Only to be used with complex FFTs. */
-    assert (fft->format == ATFFT_COMPLEX);
+    assert (plan->format == ATFFT_COMPLEX);
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
-    atfft_sample_to_double_real ((atfft_sample*) in, fft->in, fft->in_size);
+    atfft_sample_to_double_real ((atfft_sample*) in, plan->in, plan->in_size);
 
-    if (fft->direction == ATFFT_FORWARD)
-        DftiComputeForward(fft->plan, fft->in, fft->out);
+    if (plan->direction == ATFFT_FORWARD)
+        DftiComputeForward(plan->plan, plan->in, plan->out);
     else
-        DftiComputeBackward(fft->plan, fft->in, fft->out);
+        DftiComputeBackward(plan->plan, plan->in, plan->out);
 
-    atfft_double_to_sample_real (fft->out, (atfft_sample*) out, fft->out_size);
+    atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
 #else
-    if (fft->direction == ATFFT_FORWARD)
-        DftiComputeForward(fft->plan, (atfft_sample*) in, (atfft_sample*) out);
+    if (plan->direction == ATFFT_FORWARD)
+        DftiComputeForward(plan->plan, (atfft_sample*) in, (atfft_sample*) out);
     else
-        DftiComputeBackward(fft->plan, (atfft_sample*) in, (atfft_sample*) out);
+        DftiComputeBackward(plan->plan, (atfft_sample*) in, (atfft_sample*) out);
 #endif
 }
 
-void atfft_dft_nd_real_forward_transform (struct atfft_dft_nd *fft, const atfft_sample *in, atfft_complex *out)
+void atfft_dft_nd_real_forward_transform (struct atfft_dft_nd *plan, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_FORWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
-    atfft_sample_to_double_real ((atfft_sample*) in, fft->in, fft->in_size);
-    DftiComputeForward(fft->plan, fft->in, fft->out);
-    atfft_double_to_sample_real (fft->out, (atfft_sample*) out, fft->out_size);
+    atfft_sample_to_double_real ((atfft_sample*) in, plan->in, plan->in_size);
+    DftiComputeForward(plan->plan, plan->in, plan->out);
+    atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
 #else
-    DftiComputeForward(fft->plan, (atfft_sample*) in, (atfft_sample*) out);
+    DftiComputeForward(plan->plan, (atfft_sample*) in, (atfft_sample*) out);
 #endif
 }
 
-void atfft_dft_nd_real_backward_transform (struct atfft_dft_nd *fft, atfft_complex *in, atfft_sample *out)
+void atfft_dft_nd_real_backward_transform (struct atfft_dft_nd *plan, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
-    assert ((fft->format == ATFFT_REAL) && (fft->direction == ATFFT_BACKWARD));
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
-    atfft_sample_to_double_real ((atfft_sample*) in, fft->in, fft->in_size);
-    DftiComputeBackward(fft->plan, fft->in, fft->out);
-    atfft_double_to_sample_real (fft->out, (atfft_sample*) out, fft->out_size);
+    atfft_sample_to_double_real ((atfft_sample*) in, plan->in, plan->in_size);
+    DftiComputeBackward(plan->plan, plan->in, plan->out);
+    atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
 #else
-    DftiComputeBackward(fft->plan, (atfft_sample*) in, (atfft_sample*) out);
+    DftiComputeBackward(plan->plan, (atfft_sample*) in, (atfft_sample*) out);
 #endif
 }

@@ -48,7 +48,7 @@ struct atfft_dft_nd* atfft_dft_nd_create (const int *dims,
 
     struct atfft_dft_nd *plan;
 
-    if (!(plan = malloc (sizeof (*plan))))
+    if (!(plan = calloc (1, sizeof (*plan))))
         return NULL;
 
     plan->direction = direction;

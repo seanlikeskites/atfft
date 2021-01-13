@@ -52,7 +52,7 @@ struct atfft_dct* atfft_dct_create (int size, enum atfft_direction direction)
 
     struct atfft_dct *plan;
 
-    if (!(plan = malloc (sizeof (*plan))))
+    if (!(plan = calloc (1, sizeof (*plan))))
         return NULL;
 
     plan->size = size;
