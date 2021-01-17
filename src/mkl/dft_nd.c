@@ -86,11 +86,11 @@ static int set_mkl_strides (DFTI_DESCRIPTOR_HANDLE plan,
                             MKL_LONG n_dims,
                             enum atfft_direction direction)
 {
-    int ret = 1;
+    int ret = 0;
     MKL_LONG *halfcomplex_strides = init_halfcomplex_strides (dims, n_dims);
 
     if (!halfcomplex_strides)
-        return 0;
+        return -1;
 
     MKL_LONG status = DFTI_NO_ERROR;
 
@@ -110,7 +110,7 @@ static int set_mkl_strides (DFTI_DESCRIPTOR_HANDLE plan,
     }
 
     if (status != DFTI_NO_ERROR)
-        ret = 0;
+        ret = -1;
 
     free (halfcomplex_strides);
     return ret;
@@ -144,7 +144,7 @@ static DFTI_DESCRIPTOR_HANDLE init_mkl_plan (const MKL_LONG *dims,
     /* set strides for real transforms */
     if (format == ATFFT_REAL)
     {
-        if (!set_mkl_strides (plan, dims, n_dims, direction))
+        if (set_mkl_strides (plan, dims, n_dims, direction) < 0)
             goto failed;
     }
 

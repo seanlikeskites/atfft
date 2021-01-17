@@ -38,6 +38,10 @@ else ifeq (MKL, $(IMPL))
 		DCT_SOURCES += ../src/fftw/dct.c
 	endif
 	
+else ifeq (IPP, $(IMPL))
+	LIBS += -lipps -lippvm -lippcore
+	DFT_SOURCES += ../src/ipp/dft.c
+
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts
 	DFT_SOURCES += ../src/ffts/dft.c

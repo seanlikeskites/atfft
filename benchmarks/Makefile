@@ -22,12 +22,17 @@ ifeq (FFTW3, $(IMPL))
 	endif
 
 	FFT_SOURCES += ../src/fftw/dft.c
+	CFLAGS += -DATFFT_FFTW_PLANNING_METHOD=FFTW_MEASURE
 	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_PRIMES
 
 else ifeq (MKL, $(IMPL))
 	LIBS += -lmkl_rt
-
 	FFT_SOURCES += ../src/mkl/dft.c
+	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_PRIMES
+
+else ifeq (IPP, $(IMPL))
+	LIBS += -lipps -lippvm -lippcore
+	FFT_SOURCES += ../src/ipp/dft.c
 	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_PRIMES
 	
 else ifeq (FFTS, $(IMPL))
