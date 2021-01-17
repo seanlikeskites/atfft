@@ -95,8 +95,12 @@ static void* init_ipp_plan (int size,
         return NULL;
 
     /* allocate buffers */
+    void *plan = ippMalloc (plan_buffer_size);
     Ipp8u *plan_init_buffer = NULL;
-        
+
+    if (!plan)
+        goto failed;
+
     if (plan_init_size > 0)
     {
         plan_init_buffer = ippMalloc (plan_init_size);
@@ -104,11 +108,6 @@ static void* init_ipp_plan (int size,
         if (!plan_init_buffer)
             goto failed;
     }
-
-    void *plan = ippMalloc (plan_buffer_size);
-
-    if (!plan)
-        goto failed;
 
     if (work_area_size > 0)
     {
@@ -120,17 +119,20 @@ static void* init_ipp_plan (int size,
 
     /* initialise the ipp plan */
     if (format == ATFFT_COMPLEX)
-        ATFFT_IPPS_DFT_INIT_C (size,
-                               IPP_FFT_NODIV_BY_ANY,
-                               ippAlgHintNone,
-                               (ATFFT_IPPS_DFT_SPEC_C*) plan,
-                               plan_init_buffer);
+        status = ATFFT_IPPS_DFT_INIT_C (size,
+                                        IPP_FFT_NODIV_BY_ANY,
+                                        ippAlgHintNone,
+                                        (ATFFT_IPPS_DFT_SPEC_C*) plan,
+                                        plan_init_buffer);
     else
-        ATFFT_IPPS_DFT_INIT_R (size,
-                               IPP_FFT_NODIV_BY_ANY,
-                               ippAlgHintNone,
-                               (ATFFT_IPPS_DFT_SPEC_R*) plan,
-                               plan_init_buffer);
+        status = ATFFT_IPPS_DFT_INIT_R (size,
+                                        IPP_FFT_NODIV_BY_ANY,
+                                        ippAlgHintNone,
+                                        (ATFFT_IPPS_DFT_SPEC_R*) plan,
+                                        plan_init_buffer);
+
+    if (status != ippStsNoErr)
+        goto failed;
 
     ippFree (plan_init_buffer);
 
@@ -141,6 +143,8 @@ static void* init_ipp_plan (int size,
     *work_area = NULL;
 
     ippFree (plan_init_buffer);
+    ippFree (plan);
+
     return NULL;
 }
 
