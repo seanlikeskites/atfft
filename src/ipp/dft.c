@@ -25,18 +25,7 @@
 #include <math.h>
 #include <atfft/dft.h>
 #include <atfft/dft_util.h>
-#include <ipp.h>
 #include "ipp_definitions.h"
-
-static void atfft_init_ipp()
-{
-    static int ipp_initialised = 0;
-
-    if (!ipp_initialised)
-    {
-        ippInit();
-    }
-}
 
 struct atfft_dft
 {
@@ -47,6 +36,12 @@ struct atfft_dft
     /* the ipp plan and work area */
     void *plan;
     Ipp8u *work_area;
+
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    /* input and output buffers for mkl transform */
+    int in_size, out_size;
+    atfft_ipp_sample *in, *out;
+#endif
 };
 
 int atfft_dft_is_supported_size (int size, enum atfft_format format)
@@ -166,6 +161,34 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
                                 format,
                                 &(plan->work_area));
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    /* allocate input and output buffers */
+    if (format == ATFFT_COMPLEX)
+    {
+        plan->in_size = 2 * size;
+        plan->out_size = 2 * size;
+    }
+    else
+    {
+        if (direction == ATFFT_FORWARD)
+        {
+            plan->in_size = size;
+            plan->out_size = 2 * atfft_halfcomplex_size (size);
+        }
+        else
+        {
+            plan->in_size = 2 * atfft_halfcomplex_size (size);
+            plan->out_size = size;
+        }
+    }
+
+    plan->in = ippMalloc (plan->in_size * sizeof (*(plan->in)));
+    plan->out = ippMalloc (plan->out_size * sizeof (*(plan->out)));
+
+    if (!(plan->in && plan->out))
+        goto failed;
+#endif
+
     if (!plan->plan)
         goto failed;
 
@@ -180,6 +203,11 @@ void atfft_dft_destroy (struct atfft_dft *plan)
 {
     if (plan)
     {
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+        ippFree (plan->out);
+        ippFree (plan->in);
+#endif
+
         ippFree (plan->work_area);
         ippFree (plan->plan);
         free (plan);
@@ -191,10 +219,27 @@ void atfft_dft_complex_transform (struct atfft_dft *plan, atfft_complex *in, atf
     /* Only to be used with complex FFTs. */
     assert (plan->format == ATFFT_COMPLEX);
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    atfft_sample_to_double_real ((atfft_sample*) in, plan->in, plan->in_size);
+
+    if (plan->direction == ATFFT_FORWARD)
+        ATFFT_IPPS_DFT_FWD_CTOC ((const atfft_ipp_complex*) plan->in,
+                                 (atfft_ipp_complex*) plan->out,
+                                 plan->plan,
+                                 plan->work_area);
+    else
+        ATFFT_IPPS_DFT_INV_CTOC ((const atfft_ipp_complex*) plan->in,
+                                 (atfft_ipp_complex*) plan->out,
+                                 plan->plan,
+                                 plan->work_area);
+
+    atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
+#else
     if (plan->direction == ATFFT_FORWARD)
         ATFFT_IPPS_DFT_FWD_CTOC ((const atfft_ipp_complex*) in, (atfft_ipp_complex*) out, plan->plan, plan->work_area);
     else
         ATFFT_IPPS_DFT_INV_CTOC ((const atfft_ipp_complex*) in, (atfft_ipp_complex*) out, plan->plan, plan->work_area);
+#endif
 }
 
 void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sample *in, atfft_complex *out)
@@ -202,7 +247,13 @@ void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sampl
     /* Only to be used for forward real FFTs. */
     assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    atfft_sample_to_double_real ((atfft_sample*) in, plan->in, plan->in_size);
+    ATFFT_IPPS_DFT_FWD_RTOCCS (plan->in, plan->out, plan->plan, plan->work_area);
+    atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
+#else
     ATFFT_IPPS_DFT_FWD_RTOCCS ((const atfft_ipp_sample*) in, (atfft_ipp_sample*) out, plan->plan, plan->work_area);
+#endif
 }
 
 void atfft_dft_real_backward_transform (struct atfft_dft *plan, atfft_complex *in, atfft_sample *out)
@@ -210,5 +261,11 @@ void atfft_dft_real_backward_transform (struct atfft_dft *plan, atfft_complex *i
     /* Only to be used for backward real FFTs. */
     assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    atfft_sample_to_double_real ((atfft_sample*) in, plan->in, plan->in_size);
+    ATFFT_IPPS_DFT_INV_CCSTOR (plan->in, plan->out, plan->plan, plan->work_area);
+    atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
+#else
     ATFFT_IPPS_DFT_INV_CCSTOR ((const atfft_ipp_sample*) in, (atfft_ipp_sample*) out, plan->plan, plan->work_area);
+#endif
 }

@@ -40,7 +40,8 @@ else ifeq (MKL, $(IMPL))
 	
 else ifeq (IPP, $(IMPL))
 	LIBS += -lipps -lippvm -lippcore
-	DFT_SOURCES += ../src/ipp/dft.c
+	DFT_SOURCES += ../src/ipp/dft.c ../src/ipp/ipp_definitions.c
+	DCT_SOURCES += ../src/ipp/dct.c ../src/ipp/ipp_definitions.c
 
 else ifeq (FFTS, $(IMPL))
 	LIBS += -lffts

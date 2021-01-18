@@ -23,6 +23,8 @@
 #ifndef ATFFT_IPP_DEFINITIONS_H_INCLUDED
 #define ATFFT_IPP_DEFINITIONS_H_INCLUDED
 
+#include <ipp.h>
+
 #ifdef ATFFT_TYPE_LONG_DOUBLE
 #   ifdef _MSC_VER
 #       pragma message(": warning: IPP only supports single and double precision floating point, " \
@@ -45,6 +47,16 @@
 #   define ATFFT_IPPS_DFT_INIT_R ippsDFTInit_R_32f
 #   define ATFFT_IPPS_DFT_FWD_RTOCCS ippsDFTFwd_RToCCS_32f
 #   define ATFFT_IPPS_DFT_INV_CCSTOR ippsDFTInv_CCSToR_32f
+
+#   define ATFFT_IPPS_DCT_FWD_SPEC IppsDCTFwdSpec_32f
+#   define ATFFT_IPPS_DCT_FWD_GET_SIZE ippsDCTFwdGetSize_32f
+#   define ATFFT_IPPS_DCT_FWD_INIT ippsDCTFwdInit_32f
+#   define ATFFT_IPPS_DCT_FWD ippsDCTFwd_32f
+
+#   define ATFFT_IPPS_DCT_INV_SPEC IppsDCTInvSpec_32f
+#   define ATFFT_IPPS_DCT_INV_GET_SIZE ippsDCTInvGetSize_32f
+#   define ATFFT_IPPS_DCT_INV_INIT ippsDCTInvInit_32f
+#   define ATFFT_IPPS_DCT_INV ippsDCTInv_32f
     typedef Ipp32f atfft_ipp_sample;
     typedef Ipp32fc atfft_ipp_complex;
     
@@ -60,9 +72,22 @@
 #   define ATFFT_IPPS_DFT_INIT_R ippsDFTInit_R_64f
 #   define ATFFT_IPPS_DFT_FWD_RTOCCS ippsDFTFwd_RToCCS_64f
 #   define ATFFT_IPPS_DFT_INV_CCSTOR ippsDFTInv_CCSToR_64f
+
+#   define ATFFT_IPPS_DCT_FWD_SPEC IppsDCTFwdSpec_64f
+#   define ATFFT_IPPS_DCT_FWD_GET_SIZE ippsDCTFwdGetSize_64f
+#   define ATFFT_IPPS_DCT_FWD_INIT ippsDCTFwdInit_64f
+#   define ATFFT_IPPS_DCT_FWD ippsDCTFwd_64f
+
+#   define ATFFT_IPPS_DCT_INV_SPEC IppsDCTInvSpec_64f
+#   define ATFFT_IPPS_DCT_INV_GET_SIZE ippsDCTInvGetSize_64f
+#   define ATFFT_IPPS_DCT_INV_INIT ippsDCTInvInit_64f
+#   define ATFFT_IPPS_DCT_INV ippsDCTInv_64f
     typedef Ipp64f atfft_ipp_sample;
     typedef Ipp64fc atfft_ipp_complex;
 
 #endif
+
+/* function for initialising IPP */
+void atfft_init_ipp();
 
 #endif /* ATFFT_IPP_DEFINITIONS_H_INCLUDED */
