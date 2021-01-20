@@ -39,6 +39,11 @@ struct atfft_dct
     /* scale factors and scaled buffer */
     atfft_sample factor0, factor1;
     atfft_ipp_sample *scaled_buffer;
+
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    /* buffer for converting to/from long double */
+    atfft_ipp_sample *conversion_buffer;
+#endif
 };
 
 int atfft_dct_is_supported_size (int size)
@@ -168,6 +173,14 @@ struct atfft_dct* atfft_dct_create (int size, enum atfft_direction direction)
     if (!plan->scaled_buffer)
         goto failed;
 
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    /* allocate conversion buffers */
+    plan->conversion_buffer = ippMalloc (plan->size * sizeof (*(plan->conversion_buffer)));
+
+    if (!plan->conversion_buffer)
+        goto failed;
+#endif
+
     return plan;
 
 failed:
@@ -179,6 +192,10 @@ void atfft_dct_destroy (struct atfft_dct *plan)
 {
     if (plan)
     {
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+        ippFree (plan->conversion_buffer);
+#endif
+
         ippFree (plan->scaled_buffer);
         ippFree (plan->work_area);
         ippFree (plan->plan);
@@ -216,6 +233,31 @@ static void scale_backward_transform (const atfft_sample* in,
 
 void atfft_dct_transform (struct atfft_dct *plan, const atfft_sample *in, atfft_sample *out)
 {
+#ifdef ATFFT_TYPE_LONG_DOUBLE
+    if (plan->direction == ATFFT_FORWARD)
+    {
+        atfft_sample_to_double_real (in, plan->conversion_buffer, plan->size);
+        ATFFT_IPPS_DCT_FWD (plan->conversion_buffer, plan->scaled_buffer, plan->plan, plan->work_area);
+        scale_forward_transform (plan->scaled_buffer,
+                                 out,
+                                 plan->size,
+                                 plan->factor0,
+                                 plan->factor1);
+
+
+    }
+    else
+    {
+        scale_backward_transform (in,
+                                  plan->scaled_buffer,
+                                  plan->size,
+                                  plan->factor0,
+                                  plan->factor1);
+
+        ATFFT_IPPS_DCT_INV (plan->scaled_buffer, plan->conversion_buffer, plan->plan, plan->work_area);
+        atfft_double_to_sample_real (plan->conversion_buffer, out, plan->size);
+    }
+#else
     if (plan->direction == ATFFT_FORWARD)
     {
         ATFFT_IPPS_DCT_FWD (in, plan->scaled_buffer, plan->plan, plan->work_area);
@@ -237,5 +279,5 @@ void atfft_dct_transform (struct atfft_dct *plan, const atfft_sample *in, atfft_
 
         ATFFT_IPPS_DCT_INV (plan->scaled_buffer, out, plan->plan, plan->work_area);
     }
-
+#endif
 }
