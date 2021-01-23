@@ -67,15 +67,27 @@ static int atfft_init_bluestein_convolution_dft (int size,
                                                  atfft_complex *factors,
                                                  struct atfft_dft *fft)
 {
+    atfft_complex *sin_table = malloc (2 * size * sizeof (*sin_table));
     atfft_complex *sequence = calloc (conv_size, sizeof (*sequence));
+    int ret = 0;
 
-    if (!sequence)
-        return -1;
+    if (!(sequence && sin_table))
+    {
+        ret = -1;
+        goto failed;
+    }
+
+    /* calculate sin table */
+    for (int i = 0; i < 2 * size; ++i)
+    {
+        atfft_twiddle_factor (-i, 2 * size, direction, sin_table + i);
+    }
 
     /* produce convolution sequence */
     for (int i = 0; i < size; ++i)
     {
-        atfft_twiddle_factor (-i * i, 2 * size, direction, sequence + i);
+        int index = (i * i) % (2 * size);
+        atfft_copy_complex (sin_table [index], &sequence [i]);
     }
 
     /* replicate samples for circular convolution */
@@ -98,8 +110,10 @@ static int atfft_init_bluestein_convolution_dft (int size,
         ATFFT_IM (factors [i]) = - ATFFT_IM (sequence [i]);
     }
 
+failed:
     free (sequence);
-    return 0;
+    free (sin_table);
+    return ret;
 }
 
 struct atfft_dft_bluestein* atfft_dft_bluestein_create (int size,
