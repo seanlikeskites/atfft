@@ -12,11 +12,27 @@ to stray from our preferred implementations. Providing a uniform
 interface to as many libraries as possible should help to ease 
 this pain.
 
+ATFFT also provides it own FFT implementation. While this is not
+optimised to be anywhere near as fast as some of the wrapped 
+libraries, the code is written to be as clear as possible.
+
 Here is some useful information about the libraries usable via
 the atfft interface:
 
 * FFTW3 (www.fftw.org)
   - Swift as the wind!
+  - GPL Licenced.
+
+* Intel IPP (https://software.intel.com/content/www/us/en/develop/documentation/ipp-dev-reference/top.html)
+  - Ultra-optimised black box.
+  - Intel processors only.
+
+* Intel MKL (https://software.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top.html)
+  - A slightly different ultra-optimised black box.
+  - Intel processors only.
+
+* KFR (http://gtihub.com/kfrlib/kfr)
+  - Uses all sorts of C++ template magic to specialise DFTs of short lengths.
   - GPL Licenced.
 
 * FFTS (www.github.com/anthonix/ffts)
