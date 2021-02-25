@@ -252,7 +252,7 @@ void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sampl
     ATFFT_IPPS_DFT_FWD_RTOCCS (plan->in, plan->out, plan->plan, plan->work_area);
     atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
 #else
-    ATFFT_IPPS_DFT_FWD_RTOCCS ((const atfft_ipp_sample*) in, (atfft_ipp_sample*) out, plan->plan, plan->work_area);
+    ATFFT_IPPS_DFT_FWD_RTOCCS (in, (atfft_ipp_sample*) out, plan->plan, plan->work_area);
 #endif
 }
 
@@ -266,6 +266,6 @@ void atfft_dft_real_backward_transform (struct atfft_dft *plan, atfft_complex *i
     ATFFT_IPPS_DFT_INV_CCSTOR (plan->in, plan->out, plan->plan, plan->work_area);
     atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
 #else
-    ATFFT_IPPS_DFT_INV_CCSTOR ((const atfft_ipp_sample*) in, (atfft_ipp_sample*) out, plan->plan, plan->work_area);
+    ATFFT_IPPS_DFT_INV_CCSTOR ((const atfft_ipp_sample*) in, out, plan->plan, plan->work_area);
 #endif
 }

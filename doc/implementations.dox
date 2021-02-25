@@ -1,0 +1,15 @@
+/**
+\page implementations Implementations
+
+<table>
+<tr><th>Implementation <th>Webpage                                                                           <th>Licence
+<tr><td>FFTW3          <td>http://www.fftw.org                                                               <td>GPL
+<tr><td>FFTS           <td>http://www.github.com/anthonix/ffts                                               <td>BSD
+<tr><td>Ooura FFT      <td>http://www.kurims.kyoto-u.ac.jp/~ooura/fft.html                                   <td>Permissive
+<tr><td>GSL            <td>http://www.gnu.org/software/gsl                                                   <td>GPL
+<tr><td>KISS FFT       <td>https://www.gtihub.com/mborgerding/kissfft                                        <td>BSD
+<tr><td>FFmpeg         <td>http://www.ffmpeg.org                                                             <td>GPL or LGPL
+<tr><td>vDSP           <td>http://developer.apple.com/library/mac/documentation/Accelerate/Reference/vDSPRef <td>Some proprietary apple licence.
+<tr><td>PFFFT          <td>http://www.bitbucket.org/jpommier/pffft                                           <td>FFTPACK
+
+*/
