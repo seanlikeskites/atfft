@@ -32,7 +32,7 @@ the atfft interface:
   - A slightly different ultra-optimised black box.
   - Intel processors only.
 
-* [KFR](http://gtihub.com/kfrlib/kfr)
+* [KFR](http://github.com/kfrlib/kfr)
   - Uses all sorts of C++ template magic to specialise DFTs of short lengths.
   - GPL Licenced.
 
