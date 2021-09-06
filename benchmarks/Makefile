@@ -78,8 +78,8 @@ else ifeq (KFR, $(IMPL))
 	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_PRIMES
 
 else
-	FFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c
-	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_PRIMES
+	FFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_pfa.c ../src/atfft/dft_nd.c ../src/atfft/dft_nd_util.c
+	CXXFLAGS += -DBENCHMARK_POWERS_OF_3 -DBENCHMARK_COMPOSITES -DBENCHMARK_PRIMES
 endif
 
 FFT_TEMP1 = $(notdir $(FFT_SOURCES))

@@ -181,8 +181,10 @@ int atfft_mult_inverse_mod_n (int a, int n);
  *
  * size is the size of the factors array, if size is smaller
  * than the number of factors only the first size are returned.
+ *
+ * if n_unique is not null it will be set to the number of unique factors.
  */
-int atfft_prime_factors (int n, int *factors, int size);
+int atfft_prime_factors (int n, int *factors, int size, int *n_unique);
 
 /******************************************
  * Functions for allocating sub-transform

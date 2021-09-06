@@ -30,6 +30,7 @@
 #include "dft_cooley_tukey.h"
 #include "dft_rader.h"
 #include "dft_bluestein.h"
+#include "dft_pfa.h"
 
 typedef void (*complex_transform_function) (void*, atfft_complex*, int, atfft_complex*, int);
 typedef void (*fft_destroy_function) (void*);

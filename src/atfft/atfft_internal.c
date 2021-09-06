@@ -145,7 +145,7 @@ int atfft_mult_inverse_mod_n (int a, int n)
         return -1;
 }
 
-int atfft_prime_factors (int n, int *factors, int size)
+int atfft_prime_factors (int n, int *factors, int size, int *n_unique)
 {
     /* check array was provided */
     if (!factors)
@@ -155,6 +155,8 @@ int atfft_prime_factors (int n, int *factors, int size)
     int f = 2;
     int n_factors = 0;
     int sqrt_size = (int) sqrt ((double) n);
+    int unique_factors = 0;
+    int last_f = 0;
 
     do
     {
@@ -170,8 +172,16 @@ int atfft_prime_factors (int n, int *factors, int size)
         n /= f;
         factors [n_factors] = f;
         ++n_factors;
+
+        if (f != last_f)
+            ++unique_factors;
+
+        last_f = f;
     }
     while (n > 1 && n_factors < size);
+
+    if (n_unique)
+        *n_unique = unique_factors;
 
     return n_factors;
 }
