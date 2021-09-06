@@ -153,6 +153,15 @@ int atfft_is_prime (int x);
 int atfft_mod (int a, int n);
 
 /**
+ * Put the greatest common divisor of a and b in gcd.
+ *
+ * If x and y are not null they are set to values such that:
+ *
+ *   ax + by = gcd
+ */
+void atfft_gcd (int a, int b, int *gcd, int *x, int *y);
+
+/**
  * Return the multiplicative inverse of a mod n.
  */
 int atfft_mult_inverse_mod_n (int a, int n);

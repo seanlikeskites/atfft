@@ -97,7 +97,7 @@ int atfft_mod (int a, int n)
     return r < 0 ? r + n : r;
 }
 
-static void atfft_gcd (int a, int b, int *gcd, int *x, int *y)
+void atfft_gcd (int a, int b, int *gcd, int *x, int *y)
 {
     int abs_a = abs (a);
     int abs_b = abs (b);
@@ -125,8 +125,12 @@ static void atfft_gcd (int a, int b, int *gcd, int *x, int *y)
     }
 
     *gcd = r0;
-    *x = a < 0 ? -s0 : s0;
-    *y = b < 0 ? -t0 : t0;
+
+    if (x)
+        *x = a < 0 ? -s0 : s0;
+
+    if (y)
+        *y = b < 0 ? -t0 : t0;
 }
 
 int atfft_mult_inverse_mod_n (int a, int n)

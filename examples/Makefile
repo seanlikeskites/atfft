@@ -97,8 +97,8 @@ else ifeq (KFR, $(IMPL))
 	DCT_SOURCES += ../src/kfr/dct.c
 
 else
-	DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c
-	ND_DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_nd.c
+	DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_pfa.c ../src/atfft/dft_nd.c ../src/atfft/dft_nd_util.c
+	ND_DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_pfa.c ../src/atfft/dft_nd.c
 	DCT_SOURCES += ../src/atfft/dct.c ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_util.c
 
 endif
