@@ -42,10 +42,6 @@ BENCHMARK (complexTransform)->RangeMultiplier (2)->Range (1 << 5, 1 << 16);
 BENCHMARK (complexTransform)->RangeMultiplier (3)->Range (27, std::pow (3, 10));
 #endif
 
-#ifdef BENCHMARK_COMPOSITES
-BENCHMARK (complexTransform)->RangeMultiplier (30)->Range (30, std::pow (30, 4));
-#endif
-
 #ifdef BENCHMARK_PRIMES
 BENCHMARK (complexTransform)->Arg (37)
                             ->Arg (67)
@@ -54,6 +50,16 @@ BENCHMARK (complexTransform)->Arg (37)
                             ->Arg (521)
                             ->Arg (1031)
                             ->Arg (2053);
+#endif
+
+#ifdef BENCHMARK_COMPOSITES
+BENCHMARK (complexTransform)->Arg (37 * 3)
+                            ->Arg (67 * 2)
+                            ->Arg (131 * 2)
+                            ->Arg (257 * 3)
+                            ->Arg (521 * 2)
+                            ->Arg (1031 * 3)
+                            ->Arg (2053 * 2);
 #endif
 
 BENCHMARK_MAIN();

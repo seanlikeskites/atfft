@@ -32,6 +32,12 @@
 #include "dft_bluestein.h"
 #include "dft_pfa.h"
 
+#ifndef ATFFT_ENABLE_PFA
+#define USE_PFA 0
+#else
+#define USE_PFA 1
+#endif /* ATFFT_ENABLE_PFA */
+
 typedef void (*complex_transform_function) (void*, atfft_complex*, int, atfft_complex*, int);
 typedef void (*fft_destroy_function) (void*);
 
@@ -78,10 +84,26 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     }
     else
     {
-        /* Use Cooley-Tukey */
-        fft->fft = atfft_dft_cooley_tukey_create (size, direction, ATFFT_COMPLEX);
-        fft->complex_transform = (void*) atfft_dft_cooley_tukey_complex_transform;
-        fft->fft_destroy = (void*) atfft_dft_cooley_tukey_destroy;
+        int factors [MAX_INT_FACTORS];
+        int n_unique = 0;
+        int n_factors = atfft_prime_factors (size, factors, MAX_INT_FACTORS, &n_unique);
+
+
+        if (n_unique == n_factors && n_factors > 1 && USE_PFA)
+        {
+            /* use prime factor algorithm */
+            fft->fft = atfft_dft_pfa_create (factors [0], size / factors [0], direction, ATFFT_COMPLEX);
+            fft->complex_transform = (void*) atfft_dft_pfa_complex_transform;
+            fft->fft_destroy = (void*) atfft_dft_pfa_destroy;
+        }
+        else
+        {
+            /* Use Cooley-Tukey */
+            fft->fft = atfft_dft_cooley_tukey_create (size, direction, ATFFT_COMPLEX);
+            fft->complex_transform = (void*) atfft_dft_cooley_tukey_complex_transform;
+            fft->fft_destroy = (void*) atfft_dft_cooley_tukey_destroy;
+        }
+
     }
 
     if (!fft->fft)
