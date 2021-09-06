@@ -91,6 +91,56 @@ int atfft_is_prime (int x)
     return 1;
 }
 
+int atfft_mod (int a, int n)
+{
+    int r = a % n;
+    return r < 0 ? r + n : r;
+}
+
+static void atfft_gcd (int a, int b, int *gcd, int *x, int *y)
+{
+    int abs_a = abs (a);
+    int abs_b = abs (b);
+    int r0 = ATFFT_MAX (abs_a, abs_b);
+    int r1 = ATFFT_MIN (abs_a, abs_b);
+    int s0 = abs_a > abs_b ? 1 : 0;
+    int s1 = 1 - s0;
+    int t0 = s1;
+    int t1 = s0;
+
+    while (r1)
+    {
+        int q = r0 / r1;
+
+        int r2 = r0 - q * r1;
+        int s2 = s0 - q * s1;
+        int t2 = t0 - q * t1;
+
+        r0 = r1;
+        r1 = r2;
+        s0 = s1;
+        s1 = s2;
+        t0 = t1;
+        t1 = t2;
+    }
+
+    *gcd = r0;
+    *x = a < 0 ? -s0 : s0;
+    *y = b < 0 ? -t0 : t0;
+}
+
+int atfft_mult_inverse_mod_n (int a, int n)
+{
+    int gcd, x, y;
+
+    atfft_gcd (a % n, n, &gcd, &x, &y);
+
+    if (gcd == 1)
+        return atfft_mod (x, n);
+    else
+        return -1;
+}
+
 /******************************************
  * Functions for allocating sub-transform
  * plans for use on transforms of large

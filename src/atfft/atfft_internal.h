@@ -147,6 +147,16 @@ void atfft_scaled_twiddle_factor (int n,
  */
 int atfft_is_prime (int x);
 
+/**
+ * Return a mod n.
+ */
+int atfft_mod (int a, int n);
+
+/**
+ * Return the multiplicative inverse of a mod n.
+ */
+int atfft_mult_inverse_mod_n (int a, int n);
+
 /******************************************
  * Functions for allocating sub-transform
  * plans for use on transforms of large
