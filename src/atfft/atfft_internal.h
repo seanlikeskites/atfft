@@ -23,7 +23,16 @@
 #ifndef ATFFT_INTERNAL_H_INCLUDED
 #define ATFFT_INTERNAL_H_INCLUDED
 
+#include <limits.h>
 #include <atfft/types.h>
+
+/* Because an int is used to represent the size of a transform
+ * valid sizes are anywhere between 0 and 2^(n - 1), where n is
+ * the number of bits in an int. The maximum number of factors
+ * will therefore be (n - 1) as it will occur when the factors
+ * are all 2s.
+ */
+#define MAX_INT_FACTORS (sizeof (int) * CHAR_BIT - 1)
 
 /**
  * Copy the complex value x into the complex value y.
@@ -165,6 +174,15 @@ void atfft_gcd (int a, int b, int *gcd, int *x, int *y);
  * Return the multiplicative inverse of a mod n.
  */
 int atfft_mult_inverse_mod_n (int a, int n);
+
+/**
+ * Fill the factors array with the prime factors of n returning
+ * the number of factors.
+ *
+ * size is the size of the factors array, if size is smaller
+ * than the number of factors only the first size are returned.
+ */
+int atfft_prime_factors (int n, int *factors, int size);
 
 /******************************************
  * Functions for allocating sub-transform

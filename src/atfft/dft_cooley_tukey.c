@@ -23,18 +23,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-#include <limits.h>
 #include <atfft/dft.h>
 #include "dft_cooley_tukey.h"
 #include "atfft_internal.h"
-
-/* Because an int is used to represent the size of the transform
- * valid sizes are anywhere between 0 and 2^(n - 1), where n is
- * the number of bits in an int. The maximum number of radices 
- * will therefore be (n - 1) as it will occur when the radices
- * are all 2s.
- */
-#define MAX_RADICES (sizeof (int) * CHAR_BIT - 1)
 
 #ifndef ATFFT_SUB_TRANSFORM_THRESHOLD
 #define ATFFT_SUB_TRANSFORM_THRESHOLD 4
@@ -48,8 +39,8 @@ struct atfft_dft_cooley_tukey
 
     /* radices and their associated sub transform sizes */
     int n_radices;
-    int radices [MAX_RADICES];
-    int sub_sizes [MAX_RADICES];
+    int radices [MAX_INT_FACTORS];
+    int sub_sizes [MAX_INT_FACTORS];
 
     /* complex sinusoids */
     atfft_complex *sinusoids;
@@ -66,7 +57,7 @@ struct atfft_dft_cooley_tukey
     /* plans for large prime factor sub-transforms */
     int n_sub_transforms;
     struct atfft_dft **sub_transforms;
-    struct atfft_dft *radix_sub_transforms [MAX_RADICES];
+    struct atfft_dft *radix_sub_transforms [MAX_INT_FACTORS];
 };
 
 /******************************************
@@ -253,7 +244,7 @@ struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
 
     /* create any necessary sub-transform strucs */
     fft->sub_transforms = atfft_init_sub_transforms (fft->radices,
-                                                     MAX_RADICES,
+                                                     MAX_INT_FACTORS,
                                                      &(fft->n_sub_transforms),
                                                      fft->radix_sub_transforms,
                                                      direction,

@@ -145,6 +145,37 @@ int atfft_mult_inverse_mod_n (int a, int n)
         return -1;
 }
 
+int atfft_prime_factors (int n, int *factors, int size)
+{
+    /* check array was provided */
+    if (!factors)
+        return -1;
+
+    /* current factor */
+    int f = 2;
+    int n_factors = 0;
+    int sqrt_size = (int) sqrt ((double) n);
+
+    do
+    {
+        while (n % f)
+        {
+            f += f == 2 ? 1 : 2;
+
+            /* a number will only have one prime factor greater than its square root */
+            if (f > sqrt_size)
+                f = n;
+        }
+
+        n /= f;
+        factors [n_factors] = f;
+        ++n_factors;
+    }
+    while (n > 1 && n_factors < size);
+
+    return n_factors;
+}
+
 /******************************************
  * Functions for allocating sub-transform
  * plans for use on transforms of large
