@@ -53,13 +53,7 @@ BENCHMARK (complexTransform)->Arg (37)
 #endif
 
 #ifdef BENCHMARK_COMPOSITES
-BENCHMARK (complexTransform)->Arg (37 * 3)
-                            ->Arg (67 * 2)
-                            ->Arg (131 * 2)
-                            ->Arg (257 * 3)
-                            ->Arg (521 * 2)
-                            ->Arg (1031 * 3)
-                            ->Arg (2053 * 2);
+BENCHMARK (complexTransform)->Arg (131 * 67);
 #endif
 
 BENCHMARK_MAIN();
