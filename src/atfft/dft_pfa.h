@@ -37,9 +37,9 @@ struct atfft_dft_pfa* atfft_dft_pfa_create (int size1,
                                             enum atfft_direction direction,
                                             enum atfft_format format);
 
-void atfft_dft_pfa_destroy (struct atfft_dft_pfa *fft);
+void atfft_dft_pfa_destroy (void *fft);
 
-void atfft_dft_pfa_complex_transform (struct atfft_dft_pfa *fft,
+void atfft_dft_pfa_complex_transform (void *fft,
                                       atfft_complex *in,
                                       int in_stride,
                                       atfft_complex *out,

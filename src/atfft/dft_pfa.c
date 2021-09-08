@@ -124,16 +124,18 @@ failed:
     return NULL;
 }
 
-void atfft_dft_pfa_destroy (struct atfft_dft_pfa *fft)
+void atfft_dft_pfa_destroy (void *fft)
 {
-    if (fft)
+    struct atfft_dft_pfa *t = fft;
+
+    if (t)
     {
-        free (fft->o_perm);
-        free (fft->i_perm);
-        free (fft->dft);
-        free (fft->sig);
-        atfft_dft_nd_destroy (fft->fft);
-        free (fft);
+        free (t->o_perm);
+        free (t->i_perm);
+        free (t->dft);
+        free (t->sig);
+        atfft_dft_nd_destroy (t->fft);
+        free (t);
     }
 }
 
@@ -150,18 +152,20 @@ static void atfft_pfa_permute (int *perm,
     }
 }
 
-void atfft_dft_pfa_complex_transform (struct atfft_dft_pfa *fft,
+void atfft_dft_pfa_complex_transform (void *fft,
                                       atfft_complex *in,
                                       int in_stride,
                                       atfft_complex *out,
                                       int out_stride)
 {
+    struct atfft_dft_pfa *t = fft;
+
     /* permute intput */
-    atfft_pfa_permute (fft->i_perm, fft->size, in, in_stride, fft->sig, 1);
+    atfft_pfa_permute (t->i_perm, t->size, in, in_stride, t->sig, 1);
 
     /* peform 2d dft */
-    atfft_dft_nd_complex_transform (fft->fft, fft->sig, fft->dft);
+    atfft_dft_nd_complex_transform (t->fft, t->sig, t->dft);
 
     /* permute output */
-    atfft_pfa_permute (fft->o_perm, fft->size, fft->dft, 1, out, out_stride);
+    atfft_pfa_permute (t->o_perm, t->size, t->dft, 1, out, out_stride);
 }

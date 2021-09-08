@@ -36,9 +36,9 @@ struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
                                                               enum atfft_direction direction,
                                                               enum atfft_format format);
 
-void atfft_dft_cooley_tukey_destroy (struct atfft_dft_cooley_tukey *fft);
+void atfft_dft_cooley_tukey_destroy (void *fft);
 
-void atfft_dft_cooley_tukey_complex_transform (struct atfft_dft_cooley_tukey *fft,
+void atfft_dft_cooley_tukey_complex_transform (void *fft,
                                                atfft_complex *in,
                                                int in_stride,
                                                atfft_complex *out,
