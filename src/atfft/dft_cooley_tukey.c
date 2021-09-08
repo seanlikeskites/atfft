@@ -261,15 +261,17 @@ failed:
     return NULL;
 }
 
-void atfft_dft_cooley_tukey_destroy (struct atfft_dft_cooley_tukey *fft)
+void atfft_dft_cooley_tukey_destroy (void *fft)
 {
-    if (fft)
+    struct atfft_dft_cooley_tukey *t = fft;
+
+    if (t)
     {
-        atfft_free_sub_transforms (fft->sub_transforms, fft->n_sub_transforms);
-        free (fft->work_space);
-        atfft_free_twiddle_factors (fft->t_factors, fft->n_radices);
-        free (fft->sinusoids);
-        free (fft);
+        atfft_free_sub_transforms (t->sub_transforms, t->n_sub_transforms);
+        free (t->work_space);
+        atfft_free_twiddle_factors (t->t_factors, t->n_radices);
+        free (t->sinusoids);
+        free (t);
     }
 }
 
@@ -602,16 +604,18 @@ static void atfft_compute_dft_complex (const struct atfft_dft_cooley_tukey *fft,
                      sin_stride);
 }
 
-void atfft_dft_cooley_tukey_complex_transform (struct atfft_dft_cooley_tukey *fft,
+void atfft_dft_cooley_tukey_complex_transform (void *fft,
                                                atfft_complex *in,
                                                int in_stride,
                                                atfft_complex *out,
                                                int out_stride)
 {
-    /* Only to be used with complex FFTs. */
-    assert (fft->format == ATFFT_COMPLEX);
+    struct atfft_dft_cooley_tukey *t = fft;
 
-    atfft_compute_dft_complex (fft,
+    /* Only to be used with complex FFTs. */
+    assert (t->format == ATFFT_COMPLEX);
+
+    atfft_compute_dft_complex (t,
                                in,
                                out,
                                0,

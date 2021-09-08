@@ -189,18 +189,20 @@ failed:
     return NULL;
 }
 
-void atfft_dft_rader_destroy (struct atfft_dft_rader *fft)
+void atfft_dft_rader_destroy (void *fft)
 {
-    if (fft)
+    struct atfft_dft_rader *t = fft;
+
+    if (t)
     {
-        free (fft->conv_dft);
-        free (fft->conv);
-        free (fft->sig_dft);
-        free (fft->sig);
-        free (fft->perm2);
-        free (fft->perm1);
-        atfft_dft_destroy (fft->fft);
-        free (fft);
+        free (t->conv_dft);
+        free (t->conv);
+        free (t->sig_dft);
+        free (t->sig);
+        free (t->perm2);
+        free (t->perm1);
+        atfft_dft_destroy (t->fft);
+        free (t);
     }
 }
 
@@ -228,41 +230,43 @@ static void atfft_rader_permute_output (int *perm,
     }
 }
 
-void atfft_dft_rader_complex_transform (struct atfft_dft_rader *fft,
+void atfft_dft_rader_complex_transform (void *fft,
                                         atfft_complex *in,
                                         int in_stride,
                                         atfft_complex *out,
                                         int out_stride)
 {
+    struct atfft_dft_rader *t = fft;
+
     atfft_complex in0, out0;
 
     atfft_copy_complex (in [0], &in0);
     atfft_copy_complex (in0, &out0);
 
-    atfft_rader_permute_input (fft->perm1, 
-                               fft->rader_size,
+    atfft_rader_permute_input (t->perm1, 
+                               t->rader_size,
                                in,
                                in_stride,
-                               fft->sig);
+                               t->sig);
 
-    atfft_dft_complex_transform (fft->fft, fft->sig, fft->sig_dft);
+    atfft_dft_complex_transform (t->fft, t->sig, t->sig_dft);
 
-    for (int i = 0; i < fft->conv_size; ++i)
+    for (int i = 0; i < t->conv_size; ++i)
     {
-        atfft_multiply_by_and_swap_complex (fft->sig_dft + i, fft->conv_dft [i]);
+        atfft_multiply_by_and_swap_complex (t->sig_dft + i, t->conv_dft [i]);
 
-        atfft_sum_complex (out0, fft->sig [i], &out0);
+        atfft_sum_complex (out0, t->sig [i], &out0);
     }
 
     /* add DC component to DC bin */
-    ATFFT_RE (fft->sig_dft [0]) += ATFFT_IM (in0);
-    ATFFT_IM (fft->sig_dft [0]) += ATFFT_RE (in0);
+    ATFFT_RE (t->sig_dft [0]) += ATFFT_IM (in0);
+    ATFFT_IM (t->sig_dft [0]) += ATFFT_RE (in0);
 
-    atfft_dft_complex_transform (fft->fft, fft->sig_dft, fft->conv);
+    atfft_dft_complex_transform (t->fft, t->sig_dft, t->conv);
 
-    atfft_rader_permute_output (fft->perm2, 
-                                fft->rader_size,
-                                fft->conv,
+    atfft_rader_permute_output (t->perm2, 
+                                t->rader_size,
+                                t->conv,
                                 out,
                                 out_stride);
 

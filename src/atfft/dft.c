@@ -71,15 +71,15 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
         {
             /* Use Rader's algorithm */
             fft->fft = atfft_dft_rader_create (size, direction, ATFFT_COMPLEX);
-            fft->complex_transform = (void*) atfft_dft_rader_complex_transform;
-            fft->fft_destroy = (void*) atfft_dft_rader_destroy;
+            fft->complex_transform = atfft_dft_rader_complex_transform;
+            fft->fft_destroy = atfft_dft_rader_destroy;
         }
         else
         {
             /* Use Bluestein's algorithm */
             fft->fft = atfft_dft_bluestein_create (size, direction, ATFFT_COMPLEX);
-            fft->complex_transform = (void*) atfft_dft_bluestein_complex_transform;
-            fft->fft_destroy = (void*) atfft_dft_bluestein_destroy;
+            fft->complex_transform = atfft_dft_bluestein_complex_transform;
+            fft->fft_destroy = atfft_dft_bluestein_destroy;
         }
     }
     else
@@ -93,17 +93,16 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
         {
             /* use prime factor algorithm */
             fft->fft = atfft_dft_pfa_create (factors [0], size / factors [0], direction, ATFFT_COMPLEX);
-            fft->complex_transform = (void*) atfft_dft_pfa_complex_transform;
-            fft->fft_destroy = (void*) atfft_dft_pfa_destroy;
+            fft->complex_transform = atfft_dft_pfa_complex_transform;
+            fft->fft_destroy = atfft_dft_pfa_destroy;
         }
         else
         {
             /* Use Cooley-Tukey */
             fft->fft = atfft_dft_cooley_tukey_create (size, direction, ATFFT_COMPLEX);
-            fft->complex_transform = (void*) atfft_dft_cooley_tukey_complex_transform;
-            fft->fft_destroy = (void*) atfft_dft_cooley_tukey_destroy;
+            fft->complex_transform = atfft_dft_cooley_tukey_complex_transform;
+            fft->fft_destroy = atfft_dft_cooley_tukey_destroy;
         }
-
     }
 
     if (!fft->fft)

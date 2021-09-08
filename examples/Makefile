@@ -1,5 +1,5 @@
 CC = gcc -g
-CFLAGS = -Wall -O3
+CFLAGS = -Wall -O3 -pedantic
 LIBS = -lm
 INCLUDEDIRS = -I../include
 DFT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c

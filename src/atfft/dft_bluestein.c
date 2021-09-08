@@ -162,47 +162,51 @@ failed:
     return NULL;
 }
 
-void atfft_dft_bluestein_destroy (struct atfft_dft_bluestein *fft)
+void atfft_dft_bluestein_destroy (void *fft)
 {
-    if (fft)
+    struct atfft_dft_bluestein *t = fft;
+
+    if (t)
     {
-        free (fft->factors);
-        free (fft->conv_dft);
-        free (fft->conv);
-        free (fft->sig_dft);
-        free (fft->sig);
-        atfft_dft_destroy (fft->fft);
-        free (fft);
+        free (t->factors);
+        free (t->conv_dft);
+        free (t->conv);
+        free (t->sig_dft);
+        free (t->sig);
+        atfft_dft_destroy (t->fft);
+        free (t);
     }
 }
 
-void atfft_dft_bluestein_complex_transform (struct atfft_dft_bluestein *fft,
+void atfft_dft_bluestein_complex_transform (void *fft,
                                             atfft_complex *in,
                                             int in_stride,
                                             atfft_complex *out,
                                             int out_stride)
 {
+    struct atfft_dft_bluestein *t = fft;
+
     /* multiply the input signal with the factors */
-    for (int i = 0; i < fft->size; ++i)
+    for (int i = 0; i < t->size; ++i)
     {
-        atfft_product_complex (in [i * in_stride], fft->factors [i], fft->sig + i);
+        atfft_product_complex (in [i * in_stride], t->factors [i], t->sig + i);
     }
 
     /* take DFT of the result */
-    atfft_dft_complex_transform (fft->fft, fft->sig, fft->sig_dft);
+    atfft_dft_complex_transform (t->fft, t->sig, t->sig_dft);
 
     /* perform convolution in the frequency domain */
-    for (int i = 0; i < fft->conv_size; ++i)
+    for (int i = 0; i < t->conv_size; ++i)
     {
-        atfft_multiply_by_and_swap_complex (fft->sig_dft + i, fft->conv_dft [i]);
+        atfft_multiply_by_and_swap_complex (t->sig_dft + i, t->conv_dft [i]);
     }
 
     /* take the inverse DFT of the result */
-    atfft_dft_complex_transform (fft->fft, fft->sig_dft, fft->conv);
+    atfft_dft_complex_transform (t->fft, t->sig_dft, t->conv);
 
     /* multiply the output transform with the factors */
-    for (int i = 0; i < fft->size; ++i)
+    for (int i = 0; i < t->size; ++i)
     {
-        atfft_swap_and_product_complex (fft->conv [i], fft->factors [i], out + i * out_stride);
+        atfft_swap_and_product_complex (t->conv [i], t->factors [i], out + i * out_stride);
     }
 }
