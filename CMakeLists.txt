@@ -1,35 +1,43 @@
+#############################################
 # the usual gumpf
+#############################################
 cmake_minimum_required (VERSION 3.5)
 project (atfft VERSION 1.0.0)
 
-# configure sources shared between all implementations
-add_library (atfft SHARED
-	     src/atfft/dft_util.c
-	     src/atfft/dft_nd_util.c
-	     src/atfft/dct_util.c
-	     src/atfft/types.c)
+#############################################
+# Define Sources
+#############################################
+# public headers to be installed
+set (HEADERS include/atfft/atfft.h
+             include/atfft/dct.h
+             include/atfft/dct_util.h
+             include/atfft/dft.h
+             include/atfft/dft_util.h
+             include/atfft/dft_nd.h
+             include/atfft/dft_nd_util.h
+             include/atfft/types.h
+             include/atfft/windows.h)
 
-set_target_properties (atfft PROPERTIES VERSION ${PROJECT_VERSION}
-	                                SOVERSION 1)
-
-target_include_directories (atfft PUBLIC include)
+# sources shared between all implementations
+set (COMMON_SRC src/atfft/dft_util.c
+	        src/atfft/dft_nd_util.c
+	        src/atfft/dct_util.c
+	        src/atfft/types.c
+	        src/atfft/windows/windows.c)
 
 # Work out which implementation we are building with
 # and add necessary sources.
 set (IMPL "atfft" CACHE STRING "The FFT implementation to use.")
 
 if (IMPL STREQUAL "atfft")
-	target_include_directories (atfft PRIVATE src/atfft)
-
-	target_sources (atfft PRIVATE
-		        src/atfft/atfft_internal.c
-		        src/atfft/dct.c
-		        src/atfft/dft.c
-		        src/atfft/dft_bluestein.c
-		        src/atfft/dft_cooley_tukey.c
-		        src/atfft/dft_nd.c
-		        src/atfft/dft_pfa.c
-		        src/atfft/dft_rader.c)
+	set (IMPL_SRC src/atfft/atfft_internal.c
+		      src/atfft/dct.c
+		      src/atfft/dft.c
+		      src/atfft/dft_bluestein.c
+		      src/atfft/dft_cooley_tukey.c
+		      src/atfft/dft_nd.c
+		      src/atfft/dft_pfa.c
+		      src/atfft/dft_rader.c)
 
 elseif (IMPL STREQUAL "ffmpeg")
 	find_library (AVUTIL avutil)
@@ -43,13 +51,12 @@ elseif (IMPL STREQUAL "ffmpeg")
 		message (FATAL_ERROR "libavcodec not found on system.")
 	endif()
 
-	target_sources (atfft PRIVATE
-		        src/atfft/atfft_internal.c
-		        src/atfft/dft_nd.c
-		        src/ffmpeg/dct.c
-		        src/ffmpeg/dft.c)
+	set (IMPL_SRC src/atfft/atfft_internal.c
+		      src/atfft/dft_nd.c
+		      src/ffmpeg/dct.c
+		      src/ffmpeg/dft.c)
 
-	target_link_libraries (atfft ${AVUTIL} ${AVCODEC})
+	set (DOUBLE_LINK ${AVUTIL} ${AVCODEC})
 
 elseif (IMPL STREQUAL "ffts")
 	find_library (FFTS ffts)
@@ -58,12 +65,11 @@ elseif (IMPL STREQUAL "ffts")
 		message (FATAL_ERROR "libffts not found on system.")
 	endif()
 
-	target_sources (atfft PRIVATE
-		        src/atfft/dct.c
-		        src/ffts/dft.c
-		        src/ffts/dft_nd.c)
+	set (IMPL_SRC src/atfft/dct.c
+		      src/ffts/dft.c
+		      src/ffts/dft_nd.c)
 
-	target_link_libraries (atfft ${FFTS})
+	set (DOUBLE_LINK ${FFTS})
 
 elseif (IMPL STREQUAL "fftw3")
 	find_library (FFTW3 fftw3)
@@ -72,12 +78,11 @@ elseif (IMPL STREQUAL "fftw3")
 		message (FATAL_ERROR "libfftw3 not found on system.")
 	endif()
 
-	target_sources (atfft PRIVATE
-		        src/fftw/dct.c
-		        src/fftw/dft.c
-		        src/fftw/dft_nd.c)
+	set (IMPL_SRC src/fftw/dct.c
+		      src/fftw/dft.c
+		      src/fftw/dft_nd.c)
 
-	target_link_libraries (atfft ${FFTW3})
+	set (DOUBLE_LINK ${FFTW3})
 
 elseif (IMPL STREQUAL "gsl")
 	find_library (GSL gsl)
@@ -91,13 +96,12 @@ elseif (IMPL STREQUAL "gsl")
 		message (FATAL_ERROR "libgslcblas not found on system.")
 	endif()
 
-	target_sources (atfft PRIVATE
-		        src/atfft/dct.c
-		        src/atfft/atfft_internal.c
-		        src/atfft/dft_nd.c
-		        src/gsl/dft.c)
+	set (IMPL_SRC src/atfft/dct.c
+		      src/atfft/atfft_internal.c
+		      src/atfft/dft_nd.c
+		      src/gsl/dft.c)
 
-	target_link_libraries (atfft ${GSL} ${GSLCBLAS})
+	set (DOUBLE_LINK ${GSL} ${GSLCBLAS})
 
 elseif (IMPL STREQUAL "ipp")
 	string (REPLACE ":" ";" LIBRARY_DIRS $ENV{LD_LIBRARY_PATH})
@@ -117,16 +121,13 @@ elseif (IMPL STREQUAL "ipp")
 		message (FATAL_ERROR "libippcore not found on system.")
 	endif()
 
-	target_include_directories (atfft PRIVATE src/ipp)
+	set (IMPL_SRC src/atfft/atfft_internal.c
+		      src/atfft/dft_nd.c
+		      src/ipp/dft.c
+		      src/ipp/dct.c
+		      src/ipp/ipp_definitions.c)
 
-	target_sources (atfft PRIVATE
-		        src/atfft/atfft_internal.c
-		        src/atfft/dft_nd.c
-		        src/ipp/dft.c
-		        src/ipp/dct.c
-		        src/ipp/ipp_definitions.c)
-
-	target_link_libraries (atfft ${IPPS} ${IPPVM} ${IPPCORE})
+	set (DOUBLE_LINK ${IPPS} ${IPPVM} ${IPPCORE})
 
 elseif (IMPL STREQUAL "kfr")
 	find_library (KFR kfr_capi)
@@ -135,15 +136,12 @@ elseif (IMPL STREQUAL "kfr")
 		message (FATAL_ERROR "libkfr_capi not found on system.")
 	endif()
 
-	target_include_directories (atfft PRIVATE src/kfr)
+	set (IMPL_SRC src/atfft/atfft_internal.c
+		      src/atfft/dft_nd.c
+		      src/kfr/dft.c
+		      src/kfr/dct.c)
 
-	target_sources (atfft PRIVATE
-		        src/atfft/atfft_internal.c
-		        src/atfft/dft_nd.c
-		        src/kfr/dft.c
-		        src/kfr/dct.c)
-
-	target_link_libraries (atfft ${KFR})
+	set (DOUBLE_LINK ${KFR})
 
 elseif (IMPL STREQUAL "kiss")
 	find_library (KISSFFT kissfft)
@@ -152,12 +150,11 @@ elseif (IMPL STREQUAL "kiss")
 		message (FATAL_ERROR "libkissfft not found on system.")
 	endif()
 
-	target_sources (atfft PRIVATE
-		        src/atfft/dct.c
-		        src/kiss/dft.c
-		        src/kiss/dft_nd.c)
+	set (IMPL_SRC src/atfft/dct.c
+		      src/kiss/dft.c
+		      src/kiss/dft_nd.c)
 
-		target_link_libraries (atfft ${KISSFFT})
+	set (DOUBLE_LINK ${KISSFFT})
 
 elseif (IMPL STREQUAL "mkl")
 	string (REPLACE ":" ";" LIBRARY_DIRS $ENV{LD_LIBRARY_PATH})
@@ -167,34 +164,25 @@ elseif (IMPL STREQUAL "mkl")
 		message (FATAL_ERROR "libmkl_rt not found on system.")
 	endif()
 
-	target_include_directories (atfft PRIVATE src/mkl)
+	set (IMPL_SRC src/atfft/dct.c
+		      src/mkl/dft.c
+		      src/mkl/dft_nd.c)
 
-	target_sources (atfft PRIVATE
-		        src/atfft/dct.c
-		        src/mkl/dft.c
-		        src/mkl/dft_nd.c)
-
-	target_link_libraries (atfft mkl_rt)
+	set (DOUBLE_LINK mkl_rt)
 
 elseif (IMPL STREQUAL "ooura")
-	target_include_directories (atfft PRIVATE src/ooura)
-
-	target_sources (atfft PRIVATE
-		        src/atfft/atfft_internal.c
-		        src/atfft/dft_nd.c
-		        src/ooura/dft.c
-		        src/ooura/dct.c
-			src/ooura/fft4g.c)
+	set (IMPL_SRC src/atfft/atfft_internal.c
+		      src/atfft/dft_nd.c
+		      src/ooura/dft.c
+		      src/ooura/dct.c
+		      src/ooura/fft4g.c)
 
 elseif (IMPL STREQUAL "pffft")
-	target_include_directories (atfft PRIVATE src/pffft)
-
-	target_sources (atfft PRIVATE
-		        src/atfft/atfft_internal.c
-		        src/atfft/dft_nd.c
-		        src/atfft/dct.c
-		        src/pffft/dft.c
-			src/pffft/pffft.c)
+	set (IMPL_SRC src/atfft/atfft_internal.c
+		      src/atfft/dft_nd.c
+		      src/atfft/dct.c
+		      src/pffft/dft.c
+		      src/pffft/pffft.c)
 
 elseif (IMPL STREQUAL "vdsp")
 	find_library (ACCELERATE Accelerate)
@@ -203,14 +191,54 @@ elseif (IMPL STREQUAL "vdsp")
 		message (FATAL_ERROR "Accelerate framework not found on system.")
 	endif()
 
-	target_sources (atfft PRIVATE
-		        src/atfft/atfft_internal.c
-		        src/atfft/dft_nd.c
-		        src/vdsp/dct.c
-		        src/vdsp/dft.c)
+	set (IMPL_SRC src/atfft/atfft_internal.c
+		      src/atfft/dft_nd.c
+		      src/vdsp/dct.c
+		      src/vdsp/dft.c)
 
-	target_link_libraries (atfft ${ACCELERATE})
+	set (DOUBLE_LINK ${ACCELERATE})
 
 else()
 	message (FATAL_ERROR "Unknown implementation: ${IMPL}")
 endif()
+
+#############################################
+# Build for double type samples
+#############################################
+add_library (atfft SHARED "${COMMON_SRC}" "${IMPL_SRC}")
+set_target_properties (atfft PROPERTIES VERSION ${PROJECT_VERSION}
+	                                SOVERSION 1
+					PUBLIC_HEADER "${HEADERS}")
+target_include_directories (atfft PUBLIC include)
+target_compile_definitions (atfft PUBLIC ATFFT_TYPE_DOUBLE)
+target_link_libraries (atfft "${DOUBLE_LINK}")
+
+#############################################
+# Build for float type samples
+#############################################
+add_library (atfftf SHARED "${COMMON_SRC}" "${IMPL_SRC}")
+set_target_properties (atfftf PROPERTIES VERSION ${PROJECT_VERSION}
+	                                 SOVERSION 1
+					 PUBLIC_HEADER "${HEADERS}")
+target_include_directories (atfftf PUBLIC include)
+target_compile_definitions (atfftf PUBLIC ATFFT_TYPE_FLOAT)
+target_link_libraries (atfftf "${FLOAT_LINK}")
+
+#############################################
+# Build for long double type samples
+#############################################
+add_library (atfftl SHARED "${COMMON_SRC}" "${IMPL_SRC}")
+set_target_properties (atfftl PROPERTIES VERSION ${PROJECT_VERSION}
+	                                 SOVERSION 1
+					 PUBLIC_HEADER "${HEADERS}")
+target_include_directories (atfftl PUBLIC include)
+target_compile_definitions (atfftl PUBLIC ATFFT_TYPE_LONG_DOUBLE)
+target_link_libraries (atfftl "${FLOAT_LINK}")
+
+#############################################
+# Installation Config
+#############################################
+include (GNUInstallDirs)
+install (TARGETS atfft atfftf atfftl
+	 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	 PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/atfft)
