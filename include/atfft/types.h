@@ -274,6 +274,26 @@ void atfft_real_to_complex_stride (const atfft_sample *in,
                                    int out_stride,
                                    int size);
 
+void atfft_copy_real_array (const atfft_sample *in,
+                            atfft_sample *out,
+                            int size);
+
+void atfft_copy_real_array_stride (const atfft_sample *in,
+                                   int in_stride,
+                                   atfft_sample *out,
+                                   int out_stride,
+                                   int size);
+
+void atfft_copy_complex_array (atfft_complex *in,
+                               atfft_complex *out,
+                               int size);
+
+void atfft_copy_complex_array_stride (atfft_complex *in,
+                                      int in_stride,
+                                      atfft_complex *out,
+                                      int out_stride,
+                                      int size);
+
 /**
  * Convert a real valued signal from single precision floats to \ref atfft_sample values.
  *

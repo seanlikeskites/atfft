@@ -44,6 +44,8 @@ struct atfft_dft
 
 int atfft_dft_is_supported_size (int size, enum atfft_format format)
 {
+    (void) format;
+
     return size > 0;
 }
 
@@ -164,6 +166,20 @@ void atfft_dft_complex_transform (struct atfft_dft *plan, atfft_complex *in, atf
     apply_transform (plan, (atfft_sample*) in, (atfft_sample*) out);
 }
 
+void atfft_dft_complex_transform_stride (struct atfft_dft *plan,
+                                         atfft_complex *in,
+                                         int in_stride,
+                                         atfft_complex *out,
+                                         int out_stride)
+{
+    /* Only to be used with complex FFTs. */
+    assert (plan->format == ATFFT_COMPLEX);
+
+    atfft_copy_complex_array_stride (in, in_stride, (atfft_complex*) plan->in, 1, plan->size);
+    ATFFT_FFTW_EXECUTE (plan->plan);
+    atfft_copy_complex_array_stride ((atfft_complex*) plan->out, 1, out, out_stride, plan->size);
+}
+
 void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sample *in, atfft_complex *out)
 {
     /* Only to be used for forward real FFTs. */
@@ -172,10 +188,38 @@ void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sampl
     apply_transform (plan, in, (atfft_sample*) out);
 }
 
+void atfft_dft_real_forward_transform_stride (struct atfft_dft *plan,
+                                              const atfft_sample *in,
+                                              int in_stride,
+                                              atfft_complex *out,
+                                              int out_stride)
+{
+    /* Only to be used for forward real FFTs. */
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
+
+    atfft_copy_real_array_stride (in, in_stride, plan->in, 1, plan->size);
+    ATFFT_FFTW_EXECUTE (plan->plan);
+    atfft_copy_complex_array_stride ((atfft_complex*) plan->out, 1, out, out_stride, atfft_halfcomplex_size (plan->size));
+}
+
 void atfft_dft_real_backward_transform (struct atfft_dft *plan, atfft_complex *in, atfft_sample *out)
 {
     /* Only to be used for backward real FFTs. */
     assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
     apply_transform (plan, (atfft_sample*) in, out);
+}
+
+void atfft_dft_real_backward_transform_stride (struct atfft_dft *plan,
+                                               atfft_complex *in,
+                                               int in_stride,
+                                               atfft_sample *out,
+                                               int out_stride)
+{
+    /* Only to be used for backward real FFTs. */
+    assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
+
+    atfft_copy_complex_array_stride (in, in_stride, (atfft_complex*) plan->in, 1, atfft_halfcomplex_size (plan->size));
+    ATFFT_FFTW_EXECUTE (plan->plan);
+    atfft_copy_real_array_stride (plan->out, 1, out, out_stride, plan->size);
 }

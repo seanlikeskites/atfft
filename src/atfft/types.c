@@ -131,6 +131,57 @@ void atfft_real_to_complex_stride (const atfft_sample *in,
     }
 }
 
+void atfft_copy_real_array (const atfft_sample *in,
+                            atfft_sample *out,
+                            int size)
+{
+    memcpy (out, in, size * sizeof (atfft_sample));
+}
+
+void atfft_copy_real_array_stride (const atfft_sample *in,
+                                   int in_stride,
+                                   atfft_sample *out,
+                                   int out_stride,
+                                   int size)
+{
+    if (in_stride == 1 && out_stride == 1)
+    {
+        atfft_copy_real_array (in, out, size);
+        return;
+    }
+
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        out [o] = in [i];
+    }
+}
+
+void atfft_copy_complex_array (atfft_complex *in,
+                               atfft_complex *out,
+                               int size)
+{
+    memcpy (out, in, size * sizeof (atfft_complex));
+}
+
+void atfft_copy_complex_array_stride (atfft_complex *in,
+                                      int in_stride,
+                                      atfft_complex *out,
+                                      int out_stride,
+                                      int size)
+{
+    if (in_stride == 1 && out_stride == 1)
+    {
+        atfft_copy_complex_array (in, out, size);
+        return;
+    }
+
+    for (int i = 0, o = 0; i < size * in_stride; i += in_stride, o += out_stride)
+    {
+        ATFFT_RE (out [o]) = ATFFT_RE (in [i]);
+        ATFFT_IM (out [o]) = ATFFT_IM (in [i]);
+    }
+}
+
 void atfft_float_to_sample_real (const float *in,
                                  atfft_sample *out,
                                  int size)

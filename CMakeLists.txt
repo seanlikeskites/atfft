@@ -4,6 +4,8 @@
 cmake_minimum_required (VERSION 3.5)
 project (atfft VERSION 1.0.0)
 
+add_compile_options (-Wall -Wextra -pedantic)
+
 #############################################
 # Define Sources
 #############################################
@@ -213,32 +215,33 @@ target_include_directories (atfft PUBLIC include)
 target_compile_definitions (atfft PUBLIC ATFFT_TYPE_DOUBLE)
 target_link_libraries (atfft "${DOUBLE_LINK}")
 
-#############################################
-# Build for float type samples
-#############################################
-add_library (atfftf SHARED "${COMMON_SRC}" "${IMPL_SRC}")
-set_target_properties (atfftf PROPERTIES VERSION ${PROJECT_VERSION}
-	                                 SOVERSION 1
-					 PUBLIC_HEADER "${HEADERS}")
-target_include_directories (atfftf PUBLIC include)
-target_compile_definitions (atfftf PUBLIC ATFFT_TYPE_FLOAT)
-target_link_libraries (atfftf "${FLOAT_LINK}")
-
-#############################################
-# Build for long double type samples
-#############################################
-add_library (atfftl SHARED "${COMMON_SRC}" "${IMPL_SRC}")
-set_target_properties (atfftl PROPERTIES VERSION ${PROJECT_VERSION}
-	                                 SOVERSION 1
-					 PUBLIC_HEADER "${HEADERS}")
-target_include_directories (atfftl PUBLIC include)
-target_compile_definitions (atfftl PUBLIC ATFFT_TYPE_LONG_DOUBLE)
-target_link_libraries (atfftl "${FLOAT_LINK}")
+##############################################
+## Build for float type samples
+##############################################
+#add_library (atfftf SHARED "${COMMON_SRC}" "${IMPL_SRC}")
+#set_target_properties (atfftf PROPERTIES VERSION ${PROJECT_VERSION}
+#	                                 SOVERSION 1
+#					 PUBLIC_HEADER "${HEADERS}")
+#target_include_directories (atfftf PUBLIC include)
+#target_compile_definitions (atfftf PUBLIC ATFFT_TYPE_FLOAT)
+#target_link_libraries (atfftf "${FLOAT_LINK}")
+#
+##############################################
+## Build for long double type samples
+##############################################
+#add_library (atfftl SHARED "${COMMON_SRC}" "${IMPL_SRC}")
+#set_target_properties (atfftl PROPERTIES VERSION ${PROJECT_VERSION}
+#	                                 SOVERSION 1
+#					 PUBLIC_HEADER "${HEADERS}")
+#target_include_directories (atfftl PUBLIC include)
+#target_compile_definitions (atfftl PUBLIC ATFFT_TYPE_LONG_DOUBLE)
+#target_link_libraries (atfftl "${FLOAT_LINK}")
 
 #############################################
 # Installation Config
 #############################################
 include (GNUInstallDirs)
-install (TARGETS atfft atfftf atfftl
+install (TARGETS atfft
 	 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	 ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	 PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/atfft)
