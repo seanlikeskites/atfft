@@ -48,8 +48,16 @@ struct atfft_dft
     atfft_complex *real_in, *real_out;
 };
 
+int atfft_dft_is_supported_size (int size, enum atfft_format format)
+{
+    return size > 0;
+}
+
 struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, enum atfft_format format)
 {
+    /* check size isn't negative */
+    assert (atfft_dft_is_supported_size (size, format));
+
     struct atfft_dft *fft;
 
     if (!(fft = calloc (1, sizeof (*fft))))
