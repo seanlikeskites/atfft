@@ -50,6 +50,8 @@ struct atfft_dft
 
 int atfft_dft_is_supported_size (int size, enum atfft_format format)
 {
+    (void) format;
+
     return size > 0;
 }
 

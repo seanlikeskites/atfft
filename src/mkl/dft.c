@@ -44,6 +44,8 @@ struct atfft_dft
 
 int atfft_dft_is_supported_size (int size, enum atfft_format format)
 {
+    (void) format;
+
     return size > 0;
 }
 
@@ -163,21 +165,48 @@ void atfft_dft_destroy (struct atfft_dft *plan)
     }
 }
 
+static int set_mkl_strides (DFTI_DESCRIPTOR_HANDLE plan,
+                            MKL_LONG in_stride,
+                            MKL_LONG out_stride)
+{
+    MKL_LONG in_strides[] = {0, in_stride};
+    MKL_LONG out_strides[] = {0, out_stride};
+
+    DftiSetValue (plan, DFTI_INPUT_STRIDES, in_strides);
+    DftiSetValue (plan, DFTI_OUTPUT_STRIDES, out_strides);
+
+    if (DftiCommitDescriptor (plan) != DFTI_NO_ERROR)
+        return -1;
+
+    return 0;
+}
+
 void atfft_dft_complex_transform (struct atfft_dft *plan, atfft_complex *in, atfft_complex *out)
+{
+    atfft_dft_complex_transform_stride (plan, in, 1, out, 1);
+}
+
+void atfft_dft_complex_transform_stride (struct atfft_dft *plan,
+                                         atfft_complex *in,
+                                         int in_stride,
+                                         atfft_complex *out,
+                                         int out_stride)
 {
     /* Only to be used with complex FFTs. */
     assert (plan->format == ATFFT_COMPLEX);
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
-    atfft_sample_to_double_real ((atfft_sample*) in, plan->in, plan->in_size);
+    atfft_sample_to_double_complex_stride (in, in_stride, (atfft_complex_d*) plan->in, 1, plan->size);
 
     if (plan->direction == ATFFT_FORWARD)
         DftiComputeForward(plan->plan, plan->in, plan->out);
     else
         DftiComputeBackward(plan->plan, plan->in, plan->out);
 
-    atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
+    atfft_double_to_sample_complex_stride ((atfft_complex_d*) plan->out, 1, out, out_stride, plan->size);
 #else
+    set_mkl_strides (plan->plan, in_stride, out_stride);
+
     if (plan->direction == ATFFT_FORWARD)
         DftiComputeForward(plan->plan, (atfft_sample*) in, (atfft_sample*) out);
     else
@@ -187,28 +216,48 @@ void atfft_dft_complex_transform (struct atfft_dft *plan, atfft_complex *in, atf
 
 void atfft_dft_real_forward_transform (struct atfft_dft *plan, const atfft_sample *in, atfft_complex *out)
 {
+    atfft_dft_real_forward_transform_stride (plan, in, 1, out, 1);
+}
+
+void atfft_dft_real_forward_transform_stride (struct atfft_dft *plan,
+                                              const atfft_sample *in,
+                                              int in_stride,
+                                              atfft_complex *out,
+                                              int out_stride)
+{
     /* Only to be used for forward real FFTs. */
     assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_FORWARD));
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
-    atfft_sample_to_double_real ((atfft_sample*) in, plan->in, plan->in_size);
+    atfft_sample_to_double_real_stride (in, in_stride, plan->in, 1, plan->in_size);
     DftiComputeForward(plan->plan, plan->in, plan->out);
-    atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
+    atfft_double_to_sample_complex_stride ((atfft_complex_d*) plan->out, 1, out, out_stride, plan->out_size / 2);
 #else
+    set_mkl_strides (plan->plan, in_stride, out_stride);
     DftiComputeForward(plan->plan, (atfft_sample*) in, (atfft_sample*) out);
 #endif
 }
 
 void atfft_dft_real_backward_transform (struct atfft_dft *plan, atfft_complex *in, atfft_sample *out)
 {
+    atfft_dft_real_backward_transform_stride (plan, in, 1, out, 1);
+}
+
+void atfft_dft_real_backward_transform_stride (struct atfft_dft *plan,
+                                               atfft_complex *in,
+                                               int in_stride,
+                                               atfft_sample *out,
+                                               int out_stride)
+{
     /* Only to be used for backward real FFTs. */
     assert ((plan->format == ATFFT_REAL) && (plan->direction == ATFFT_BACKWARD));
 
 #ifdef ATFFT_TYPE_LONG_DOUBLE
-    atfft_sample_to_double_real ((atfft_sample*) in, plan->in, plan->in_size);
+    atfft_sample_to_double_complex_stride (in, in_stride, (atfft_complex_d*) plan->in, 1, plan->in_size / 2);
     DftiComputeBackward(plan->plan, plan->in, plan->out);
-    atfft_double_to_sample_real (plan->out, (atfft_sample*) out, plan->out_size);
+    atfft_double_to_sample_real_stride (plan->out, 1, out, out_stride, plan->out_size);
 #else
+    set_mkl_strides (plan->plan, in_stride, out_stride);
     DftiComputeBackward(plan->plan, (atfft_sample*) in, (atfft_sample*) out);
 #endif
 }
