@@ -213,7 +213,7 @@ set_target_properties (atfft PROPERTIES VERSION ${PROJECT_VERSION}
 					PUBLIC_HEADER "${HEADERS}")
 target_include_directories (atfft PUBLIC include)
 target_compile_definitions (atfft PUBLIC ATFFT_TYPE_DOUBLE)
-target_link_libraries (atfft "${DOUBLE_LINK}")
+target_link_libraries (atfft "${DOUBLE_LINK}" m)
 
 ##############################################
 ## Build for float type samples
@@ -235,7 +235,7 @@ target_link_libraries (atfft "${DOUBLE_LINK}")
 #					 PUBLIC_HEADER "${HEADERS}")
 #target_include_directories (atfftl PUBLIC include)
 #target_compile_definitions (atfftl PUBLIC ATFFT_TYPE_LONG_DOUBLE)
-#target_link_libraries (atfftl "${FLOAT_LINK}")
+#target_link_libraries (atfftl "${LONG_DOUBLE_LINK}")
 
 #############################################
 # Installation Config
@@ -245,3 +245,10 @@ install (TARGETS atfft
 	 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	 ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	 PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/atfft)
+
+#############################################
+# Tests
+#############################################
+enable_testing()
+#include (CTest)
+add_subdirectory (tests tests EXCLUDE_FROM_ALL)
