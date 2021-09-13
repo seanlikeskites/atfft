@@ -1,5 +1,6 @@
 #include <atfft/atfft.h>
 #include <stdlib.h>
+#include <math.h>
 #include <stdio.h>
 
 void generate_real_dc (atfft_sample *sig, int size, atfft_sample offset)
@@ -40,7 +41,7 @@ atfft_sample max_error_real (const atfft_sample *a, const atfft_sample *b, int s
 
     for (int i = 0; i < size; ++i)
     {
-        atfft_sample e = abs (a [i] - b [i]);
+        atfft_sample e = fabs (a [i] - b [i]);
 
         if (e > error)
             error = e;
