@@ -25,26 +25,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void generate_real_dc (atfft_sample *sig, int size, atfft_sample offset)
+void generate_real_dc (atfft_sample *sig, int size, atfft_sample amplitude)
 {
     for (int i = 0; i < size; ++i)
     {
-        sig [i] = offset;
+        sig [i] = amplitude;
     }
 }
 
-void generate_complex_dc (atfft_complex *sig, int size, atfft_complex offset)
+void generate_complex_dc (atfft_complex *sig, int size, atfft_complex amplitude)
 {
     for (int i = 0; i < size; ++i)
     {
-        ATFFT_RE (sig [i]) = ATFFT_RE (offset);
-        ATFFT_IM (sig [i]) = ATFFT_IM (offset);
+        ATFFT_RE (sig [i]) = ATFFT_RE (amplitude);
+        ATFFT_IM (sig [i]) = ATFFT_IM (amplitude);
     }
 }
 
-void generate_real_impulse (atfft_sample *sig, int size)
+void generate_real_impulse (atfft_sample *sig, int size, atfft_sample amplitude)
 {
-    sig [0] = 1.0;
+    sig [0] = amplitude;
 
     for (int i = 1; i < size; ++i)
     {
@@ -52,9 +52,34 @@ void generate_real_impulse (atfft_sample *sig, int size)
     }
 }
 
-void generate_complex_impulse (atfft_complex *sig, int size)
+void generate_complex_impulse (atfft_complex *sig, int size, atfft_complex amplitude)
 {
-    generate_real_impulse ((atfft_sample*) sig, size * 2);
+    ATFFT_RE (sig [0]) = ATFFT_RE (amplitude);
+    ATFFT_IM (sig [0]) = ATFFT_IM (amplitude);
+
+    for (int i = 1; i < size; ++i)
+    {
+        ATFFT_RE (sig [i]) = 0.0;
+        ATFFT_IM (sig [i]) = 0.0;
+    }
+}
+
+void generate_complex_cosine (atfft_complex *sig,
+                              int size,
+                              atfft_sample frequency,
+                              atfft_sample amplitude,
+                              atfft_sample phase)
+{
+    atfft_sample inc = 2 * M_PI * frequency / size;
+    atfft_sample p = 0.0;
+
+    for (int i = 0; i < size; ++i)
+    {
+        ATFFT_RE (sig [i]) = amplitude * cos (p + phase);
+        ATFFT_IM (sig [i]) = 0.0;
+
+        p = fmod (p + inc, 2 * M_PI);
+    }
 }
 
 atfft_sample max_error_real (const atfft_sample *a, const atfft_sample *b, int size)
@@ -109,7 +134,7 @@ enum test_result test_complex_dft (atfft_complex *in,
     /* verify output */
     atfft_sample error = max_error_complex (out, expected, size);
 
-    printf ("Max Error: %f\n", error);
+    printf ("Max Error: %e\n", error);
 
     if (error > threshold)
     {

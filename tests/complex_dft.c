@@ -23,6 +23,7 @@
 #include <atfft/atfft.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "test_functions.h"
 
 int main()
@@ -30,26 +31,27 @@ int main()
     enum test_result ret = TEST_SUCCESS;
     enum test_result step = TEST_SUCCESS;
     int n_samples = 32;
-    atfft_complex complex_one = {1.0, 0.0};
     atfft_sample threshold = 10e-10;
 
-    /*************************************
-     * Check the DFT of an impulse is DC
-     *************************************/
-    printf ("Checking DFT of impulse function:\n");
-    atfft_complex *impulse = malloc (n_samples * sizeof (*impulse));
-    atfft_complex *dc = malloc (n_samples * sizeof (*dc));
+    atfft_complex *input = malloc (n_samples * sizeof (*input));
+    atfft_complex *expected = malloc (n_samples * sizeof (*expected));
 
-    if (!(impulse && dc))
+    if (!(input && expected))
     {
         ret = TEST_FAILURE;
         goto cleanup;
     }
 
-    generate_complex_impulse (impulse, n_samples);
-    generate_complex_dc (dc, n_samples, complex_one);
+    /*************************************
+     * Check the DFT of an impulse is DC
+     *************************************/
+    printf ("Checking DFT of impulse function:\n");
 
-    step = test_complex_dft (impulse, dc, n_samples, ATFFT_FORWARD, threshold);
+    atfft_complex complex_1 = {1.0, 0.0};
+    generate_complex_impulse (input, n_samples, complex_1);
+    generate_complex_dc (expected, n_samples, complex_1);
+
+    step = test_complex_dft (input, expected, n_samples, ATFFT_FORWARD, threshold);
 
     if (step != TEST_SUCCESS)
         ret = TEST_FAILURE;
@@ -58,15 +60,50 @@ int main()
      * Check the iDFT of DC is an impulse
      *************************************/
     printf ("\nChecking iDFT of DC:\n");
-    ATFFT_RE (impulse [0]) *= n_samples; /* scale impulse to correct magnitude */
-    step = test_complex_dft (dc, impulse, n_samples, ATFFT_BACKWARD, threshold);
+
+    atfft_complex complex_32 = {32.0, 0.0};
+    generate_complex_dc (input, n_samples, complex_1);
+    generate_complex_impulse (expected, n_samples, complex_32);
+
+    step = test_complex_dft (input, expected, n_samples, ATFFT_BACKWARD, threshold);
+
+    if (step != TEST_SUCCESS)
+        ret = TEST_FAILURE;
+
+    /*************************************
+     * Check the DFT of a cosine
+     *************************************/
+    printf ("\nChecking iDFT of cosine wave:\n");
+
+    atfft_complex complex_0 = {0.0, 0.0};
+    generate_complex_cosine (input, n_samples, 5.0, 1.0, 0);
+    generate_complex_dc (expected, n_samples, complex_0);
+    ATFFT_RE (expected [5]) = 16.0;
+    ATFFT_RE (expected [n_samples - 5]) = 16.0;
+
+    step = test_complex_dft (input, expected, n_samples, ATFFT_FORWARD, threshold);
+
+    if (step != TEST_SUCCESS)
+        ret = TEST_FAILURE;
+
+    /*************************************
+     * Check the DFT of a sine
+     *************************************/
+    printf ("\nChecking iDFT of sine wave:\n");
+
+    generate_complex_cosine (input, n_samples, 5.0, 1.0, - M_PI / 2.0);
+    generate_complex_dc (expected, n_samples, complex_0);
+    ATFFT_IM (expected [5]) = -16.0;
+    ATFFT_IM (expected [n_samples - 5]) = 16.0;
+
+    step = test_complex_dft (input, expected, n_samples, ATFFT_FORWARD, threshold);
 
     if (step != TEST_SUCCESS)
         ret = TEST_FAILURE;
 
 cleanup:
-    free (dc);
-    free (impulse);
+    free (expected);
+    free (input);
 
     return ret;
 }

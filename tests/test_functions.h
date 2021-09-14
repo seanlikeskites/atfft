@@ -31,11 +31,17 @@ enum test_result
     TEST_FAILURE
 };
 
-void generate_real_dc (atfft_sample *sig, int size, atfft_sample offset);
-void generate_complex_dc (atfft_complex *sig, int size, atfft_complex offset);
+void generate_real_dc (atfft_sample *sig, int size, atfft_sample amplitude);
+void generate_complex_dc (atfft_complex *sig, int size, atfft_complex amplitude);
 
-void generate_real_impulse (atfft_sample *sig, int size);
-void generate_complex_impulse (atfft_complex *sig, int size);
+void generate_real_impulse (atfft_sample *sig, int size, atfft_sample amplitude);
+void generate_complex_impulse (atfft_complex *sig, int size, atfft_complex amplitude);
+
+void generate_complex_cosine (atfft_complex *sig,
+                              int size,
+                              atfft_sample frequency,
+                              atfft_sample amplitude,
+                              atfft_sample phase);
 
 atfft_sample max_error_real (const atfft_sample *a, const atfft_sample *b, int size);
 atfft_sample max_error_complex (atfft_complex *a, atfft_complex *b, int size);
