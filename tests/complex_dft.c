@@ -28,6 +28,7 @@
 int main()
 {
     enum test_result ret = TEST_SUCCESS;
+    enum test_result step = TEST_SUCCESS;
     int n_samples = 32;
     atfft_complex complex_one = {1.0, 0.0};
     atfft_sample threshold = 10e-10;
@@ -48,14 +49,20 @@ int main()
     generate_complex_impulse (impulse, n_samples);
     generate_complex_dc (dc, n_samples, complex_one);
 
-    ret = test_complex_dft (impulse, dc, n_samples, ATFFT_FORWARD, threshold);
+    step = test_complex_dft (impulse, dc, n_samples, ATFFT_FORWARD, threshold);
+
+    if (step != TEST_SUCCESS)
+        ret = TEST_FAILURE;
 
     /*************************************
      * Check the iDFT of DC is an impulse
      *************************************/
     printf ("\nChecking iDFT of DC:\n");
     ATFFT_RE (impulse [0]) *= n_samples; /* scale impulse to correct magnitude */
-    ret = test_complex_dft (dc, impulse, n_samples, ATFFT_BACKWARD, threshold);
+    step = test_complex_dft (dc, impulse, n_samples, ATFFT_BACKWARD, threshold);
+
+    if (step != TEST_SUCCESS)
+        ret = TEST_FAILURE;
 
 cleanup:
     free (dc);
