@@ -24,6 +24,7 @@
 #include <math.h>
 #include <atfft/dft.h>
 #include <atfft/dct.h>
+#include "constants.h"
 
 struct atfft_dct
 {

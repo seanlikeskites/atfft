@@ -22,6 +22,7 @@
 
 #include <math.h>
 #include <atfft/windows.h>
+#include "constants.h"
 
 void atfft_bartlett_window (atfft_sample *window, int size, enum atfft_window_symmetry symmetry)
 {

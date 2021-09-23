@@ -26,6 +26,7 @@
 #include <atfft/dft.h>
 #include "dft_cooley_tukey.h"
 #include "atfft_internal.h"
+#include "constants.h"
 
 #ifndef ATFFT_SUB_TRANSFORM_THRESHOLD
 #define ATFFT_SUB_TRANSFORM_THRESHOLD 4
@@ -400,7 +401,7 @@ static void atfft_butterfly_4 (atfft_complex *out,
     int t = 0;
     int dft_stride = sub_size * stride;
 
-    atfft_complex *bins [radix];
+    atfft_complex *bins [4];
 
     bins [0] = out;
     bins [1] = bins [0] + dft_stride;

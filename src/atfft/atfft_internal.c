@@ -24,6 +24,7 @@
 #include <atfft/dft.h>
 #include <math.h>
 #include <stdlib.h>
+#include "constants.h"
 
 /******************************************
  * External definitions of inline functions.
