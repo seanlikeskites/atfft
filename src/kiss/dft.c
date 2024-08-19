@@ -26,8 +26,8 @@
 
 /* we need to make sure we are using kiss_fft with the correct type */
 #define kiss_fft_scalar atfft_sample
-#include <kiss_fft.h>
-#include <kiss_fftr.h>
+#include <kissfft/kiss_fft.h>
+#include <kissfft/kiss_fftr.h>
 
 struct atfft_dft
 {

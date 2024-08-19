@@ -34,6 +34,8 @@
 
 struct atfft_dft_cooley_tukey
 {
+    enum atfft_dft_algorithm algorithm;
+
     int size;
     enum atfft_direction direction;
     enum atfft_format format;
@@ -210,6 +212,7 @@ struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
     if (!(fft = calloc (1, sizeof (*fft))))
         return NULL;
 
+    fft->algorithm = ATFFT_COOLEY_TUKEY;
     fft->size = size;
     fft->direction = direction;
     fft->format = format;
@@ -623,4 +626,30 @@ void atfft_dft_cooley_tukey_complex_transform (void *fft,
                                in_stride,
                                out_stride,
                                1);
+}
+
+void atfft_dft_cooley_tukey_print_plan (struct atfft_dft_cooley_tukey *fft, FILE *stream, int indent)
+{
+    fprintf (stream, "%*cAlgorithm: Cooley-Tukey\n"
+                     "%*c     Size: %d\n"
+                     "%*c   Stages:\n",
+             indent, ' ',
+             indent, ' ', fft->size,
+             indent, ' ');
+
+    int stage_indent = indent + 11;
+
+    for (int i = 0; i < fft->n_radices; ++i)
+    {
+        fprintf (stream, "%*c%2d:    Radix: %d\n"
+                         "%*c    Sub-Size: %d\n",
+                 stage_indent, ' ', i, fft->radices [i],
+                 stage_indent, ' ', fft->sub_sizes [i]);
+
+        if (fft->radix_sub_transforms [i])
+        {
+            fprintf (stream, "%*c Sub-Transform:\n",
+                     stage_indent, ' ');
+        }
+    }
 }

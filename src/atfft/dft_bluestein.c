@@ -44,6 +44,8 @@ static void atfft_swap_and_product_complex (const atfft_complex a,
 
 struct atfft_dft_bluestein
 {
+    enum atfft_dft_algorithm algorithm;
+
     int size;
     enum atfft_direction direction;
     enum atfft_format format;
@@ -125,6 +127,7 @@ struct atfft_dft_bluestein* atfft_dft_bluestein_create (int size,
     if (!(fft = calloc (1, sizeof (*fft))))
         return NULL;
 
+    fft->algorithm = ATFFT_BLUESTEIN;
     fft->size = size;
     fft->direction = direction;
     fft->format = format;

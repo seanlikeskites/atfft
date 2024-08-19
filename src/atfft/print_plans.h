@@ -20,35 +20,13 @@
  * SOFTWARE.
  */
 
-#ifndef ATFFT_DFT_COOLEY_TUKEY_H_INCLUDED
-#define ATFFT_DFT_COOLEY_TUKEY_H_INCLUDED
+#ifndef PRINT_PLANS_H_INCLUDED
+#define PRINT_PLANS_H_INCLUDED
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+#include <atfft/dft.h>
 
-#include <stdio.h>
-#include <atfft/types.h>
+void atfft_dft_print_plan_internal (void *fft, FILE *stream, int indent);
 
-struct atfft_dft_cooley_tukey;
+void atfft_dft_base_print_plan (struct atfft_dft *fft, FILE *stream, int indent);
 
-struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
-                                                              enum atfft_direction direction,
-                                                              enum atfft_format format);
-
-void atfft_dft_cooley_tukey_destroy (void *fft);
-
-void atfft_dft_cooley_tukey_complex_transform (void *fft,
-                                               atfft_complex *in,
-                                               int in_stride,
-                                               atfft_complex *out,
-                                               int out_stride);
-
-void atfft_dft_cooley_tukey_print_plan (struct atfft_dft_cooley_tukey *fft, FILE *stream, int indent);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* ATFFT_DFT_COOLEY_TUKEY_H_INCLUDED */
+#endif /* PRINT_PLANS_H_INCLUDED */

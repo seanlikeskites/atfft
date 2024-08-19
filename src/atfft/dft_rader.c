@@ -69,6 +69,8 @@ static int atfft_rader_convolution_fft_size (int rader_size)
 
 struct atfft_dft_rader
 {
+    enum atfft_dft_algorithm algorithm;
+
     int size;
     int rader_size;
     enum atfft_direction direction;
@@ -139,6 +141,7 @@ struct atfft_dft_rader* atfft_dft_rader_create (int size,
     if (!(fft = calloc (1, sizeof (*fft))))
         return NULL;
 
+    fft->algorithm = ATFFT_RADER;
     fft->size = size;
     fft->rader_size = size - 1;
     fft->direction = direction;

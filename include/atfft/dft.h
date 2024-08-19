@@ -50,6 +50,7 @@
 #ifndef ATFFT_DFT_H_INCLUDED
 #define ATFFT_DFT_H_INCLUDED
 
+#include <stdio.h>
 #include <atfft/types.h>
 
 #ifdef __cplusplus
@@ -196,6 +197,8 @@ void atfft_dft_real_backward_transform_stride (struct atfft_dft *plan,
                                                int in_stride,
                                                atfft_sample *out,
                                                int out_stride);
+
+void atfft_dft_print_plan (struct atfft_dft *plan, FILE *stream, int indent);
 
 #ifdef __cplusplus
 }

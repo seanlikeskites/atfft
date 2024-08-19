@@ -34,6 +34,15 @@
  */
 #define MAX_INT_FACTORS (sizeof (int) * CHAR_BIT - 1)
 
+enum atfft_dft_algorithm
+{
+    ATFFT_BASE,
+    ATFFT_COOLEY_TUKEY,
+    ATFFT_PFA,
+    ATFFT_RADER,
+    ATFFT_BLUESTEIN
+};
+
 /**
  * Copy the complex value x into the complex value y.
  */

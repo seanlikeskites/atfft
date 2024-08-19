@@ -20,35 +20,30 @@
  * SOFTWARE.
  */
 
-#ifndef ATFFT_DFT_COOLEY_TUKEY_H_INCLUDED
-#define ATFFT_DFT_COOLEY_TUKEY_H_INCLUDED
+#include "atfft_internal.h"
+#include "print_plans.h"
+#include "dft_cooley_tukey.h"
 
-#ifdef __cplusplus
-extern "C"
+void atfft_dft_print_plan_internal (void *fft, FILE *stream, int indent)
 {
-#endif
+    enum atfft_dft_algorithm *algorithm = fft;
 
-#include <stdio.h>
-#include <atfft/types.h>
+    switch (*algorithm) {
+        case ATFFT_BASE:
+            atfft_dft_base_print_plan (fft, stream, indent);
+            break;
 
-struct atfft_dft_cooley_tukey;
+        case ATFFT_COOLEY_TUKEY:
+            atfft_dft_cooley_tukey_print_plan (fft, stream, indent);
+            break;
 
-struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
-                                                              enum atfft_direction direction,
-                                                              enum atfft_format format);
+        case ATFFT_PFA:
+            break;
 
-void atfft_dft_cooley_tukey_destroy (void *fft);
+        case ATFFT_RADER:
+            break;
 
-void atfft_dft_cooley_tukey_complex_transform (void *fft,
-                                               atfft_complex *in,
-                                               int in_stride,
-                                               atfft_complex *out,
-                                               int out_stride);
-
-void atfft_dft_cooley_tukey_print_plan (struct atfft_dft_cooley_tukey *fft, FILE *stream, int indent);
-
-#ifdef __cplusplus
+        case ATFFT_BLUESTEIN:
+            break;
+    }
 }
-#endif
-
-#endif /* ATFFT_DFT_COOLEY_TUKEY_H_INCLUDED */

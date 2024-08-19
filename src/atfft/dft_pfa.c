@@ -28,6 +28,8 @@
 
 struct atfft_dft_pfa
 {
+    enum atfft_dft_algorithm algorithm;
+
     int dims [2];
     int size;
     enum atfft_direction direction;
@@ -89,6 +91,7 @@ struct atfft_dft_pfa* atfft_dft_pfa_create (int size1,
     if (!(fft = calloc (1, sizeof (*fft))))
         return NULL;
 
+    fft->algorithm = ATFFT_PFA;
     fft->dims [0] = size1;
     fft->dims [1] = size2;
     fft->size = size1 * size2;

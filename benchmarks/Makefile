@@ -47,11 +47,11 @@ else ifeq (GSL, $(IMPL))
 
 else ifeq (KISS, $(IMPL))
 	ifeq (FLOAT, $(TYPE))
-		LIBS += -lkissfftf
+		LIBS += -lkissfft-float
 	else ifeq (LONG_DOUBLE, $(TYPE))
 		LIBS += -lkissfftl
 	else
-		LIBS += -lkissfft
+		LIBS += -lkissfft-double
 	endif
 
 	FFT_SOURCES += ../src/kiss/dft.c
