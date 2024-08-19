@@ -31,7 +31,7 @@
 #include "dft_rader.h"
 #include "dft_bluestein.h"
 #include "dft_pfa.h"
-#include "print_plans.h"
+#include "dft_plan.h"
 
 static void atfft_init_even_real_sinusoids (atfft_complex *sinusoids,
                                             int sinusoids_size,
@@ -278,23 +278,64 @@ void atfft_dft_real_backward_transform_stride (struct atfft_dft *fft,
     atfft_real_stride (fft->real_out, 1, out, out_stride, fft->size);
 }
 
-void atfft_dft_base_print_plan (struct atfft_dft *fft, FILE *stream, int indent)
+cJSON* atfft_dft_base_get_plan (struct atfft_dft *fft)
 {
-    fprintf (stream, "%*c         Algorithm: atfft Base Transform\n"
-                     "%*c              Size: %d\n"
-                     "%*c         Direction: %s\n"
-                     "%*c            Format: %s\n"
-                     "%*cInternal Transform:\n",
-             indent, ' ',
-             indent, ' ', fft->size,
-             indent, ' ', fft->direction == ATFFT_FORWARD ? "forward" : "backward",
-             indent, ' ', fft->format == ATFFT_COMPLEX ? "complex" : "real",
-             indent, ' ');
+    cJSON *alg = NULL,
+          *size = NULL,
+          *direction = NULL,
+          *format = NULL,
+          *internal_transform = NULL;
 
-    atfft_dft_print_plan (fft->fft, stream, indent + 20);
+    cJSON *plan_structure = cJSON_CreateObject();
+
+    if (!plan_structure)
+        goto failed;
+
+    alg = cJSON_AddStringToObject (plan_structure, "Algorithm", "atfft Base Transform");
+    size = cJSON_AddNumberToObject (plan_structure, "Size", fft->size);
+    direction = cJSON_AddStringToObject (plan_structure, "Direction",
+                                         fft->direction == ATFFT_FORWARD ? "forward" : "backward");
+    format = cJSON_AddStringToObject (plan_structure, "Format",
+                                      fft->format == ATFFT_COMPLEX ? "complex" : "real");
+
+    if (!(alg && size && direction && format))
+        goto failed;
+
+    internal_transform = atfft_dft_get_plan (fft->fft);
+
+    if (!internal_transform)
+        goto failed;
+
+    cJSON_AddItemToObject (plan_structure, "Internal Transform", internal_transform);
+    
+    return plan_structure;
+
+failed:
+    cJSON_Delete (plan_structure);
+    return NULL;
 }
 
-void atfft_dft_print_plan (struct atfft_dft *fft, FILE *stream, int indent)
+void atfft_dft_print_plan (struct atfft_dft *fft, FILE *stream)
 {
-    atfft_dft_print_plan_internal (fft, stream, indent);
+    char *plan_json = NULL;
+    cJSON* plan_structure = atfft_dft_get_plan (fft);
+
+    if (!plan_structure)
+        goto failed;
+
+    plan_json = cJSON_Print (plan_structure);
+
+    if (!plan_json)
+        goto failed;
+
+    fprintf (stream, "%s\n", plan_json);
+
+    goto succeeded;
+
+failed:
+    fprintf (stream, "{\"Error\": \"Failed to serialise plan.\"}\n");
+
+succeeded:
+    cJSON_Delete (plan_structure);
+    free (plan_json);
 }

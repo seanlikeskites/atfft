@@ -27,6 +27,7 @@
 #include <atfft/dft.h>
 #include "atfft_internal.h"
 #include "dft_rader.h"
+#include "dft_plan.h"
 
 static int atfft_primitive_root_mod_n (int n)
 {
@@ -274,4 +275,37 @@ void atfft_dft_rader_complex_transform (void *fft,
                                 out_stride);
 
     atfft_copy_complex (out0, &out[0]);
+}
+
+cJSON* atfft_dft_rader_get_plan (struct atfft_dft_rader *fft)
+{
+    cJSON *alg = NULL,
+          *size = NULL,
+          *conv_size = NULL,
+          *conv_transform = NULL;
+
+    cJSON *plan_structure = cJSON_CreateObject();
+
+    if (!plan_structure)
+        goto failed;
+
+    alg = cJSON_AddStringToObject (plan_structure, "Algorithm", "Rader");
+    size = cJSON_AddNumberToObject (plan_structure, "Size", fft->size);
+    conv_size = cJSON_AddNumberToObject (plan_structure, "Convolution Transform Size", fft->conv_size);
+
+    if (!(alg && size && conv_size))
+        goto failed;
+
+    conv_transform = atfft_dft_get_plan (fft->fft);
+
+    if (!conv_transform)
+        goto failed;
+
+    cJSON_AddItemToObject (plan_structure, "Convolution Transform", conv_transform);
+
+    return plan_structure;
+
+failed:
+    cJSON_Delete (plan_structure);
+    return NULL;
 }

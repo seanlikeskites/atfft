@@ -29,6 +29,7 @@ extern "C"
 #endif
 
 #include <atfft/types.h>
+#include "../cJSON/cJSON.h"
 
 struct atfft_dft_pfa;
 
@@ -44,6 +45,8 @@ void atfft_dft_pfa_complex_transform (void *fft,
                                       int in_stride,
                                       atfft_complex *out,
                                       int out_stride);
+
+cJSON* atfft_dft_pfa_get_plan (struct atfft_dft_pfa *fft);
 
 #ifdef __cplusplus
 }

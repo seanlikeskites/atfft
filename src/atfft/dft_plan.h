@@ -20,30 +20,14 @@
  * SOFTWARE.
  */
 
-#include "atfft_internal.h"
-#include "print_plans.h"
-#include "dft_cooley_tukey.h"
+#ifndef DFT_PLAN_H_INCLUDED
+#define DFT_PLAN_H_INCLUDED
 
-void atfft_dft_print_plan_internal (void *fft, FILE *stream, int indent)
-{
-    enum atfft_dft_algorithm *algorithm = fft;
+#include <atfft/dft.h>
+#include "../cJSON/cJSON.h"
 
-    switch (*algorithm) {
-        case ATFFT_BASE:
-            atfft_dft_base_print_plan (fft, stream, indent);
-            break;
+cJSON* atfft_dft_get_plan (void *fft);
 
-        case ATFFT_COOLEY_TUKEY:
-            atfft_dft_cooley_tukey_print_plan (fft, stream, indent);
-            break;
+cJSON* atfft_dft_base_get_plan (struct atfft_dft *fft);
 
-        case ATFFT_PFA:
-            break;
-
-        case ATFFT_RADER:
-            break;
-
-        case ATFFT_BLUESTEIN:
-            break;
-    }
-}
+#endif /* DFT_PLAN_H_INCLUDED */

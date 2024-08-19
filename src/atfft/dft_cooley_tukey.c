@@ -27,6 +27,7 @@
 #include "dft_cooley_tukey.h"
 #include "atfft_internal.h"
 #include "constants.h"
+#include "dft_plan.h"
 
 #ifndef ATFFT_SUB_TRANSFORM_THRESHOLD
 #define ATFFT_SUB_TRANSFORM_THRESHOLD 4
@@ -628,28 +629,90 @@ void atfft_dft_cooley_tukey_complex_transform (void *fft,
                                1);
 }
 
-void atfft_dft_cooley_tukey_print_plan (struct atfft_dft_cooley_tukey *fft, FILE *stream, int indent)
+static cJSON* atfft_get_plan_stage (struct atfft_dft_cooley_tukey *fft, int stage_idx)
 {
-    fprintf (stream, "%*cAlgorithm: Cooley-Tukey\n"
-                     "%*c     Size: %d\n"
-                     "%*c   Stages:\n",
-             indent, ' ',
-             indent, ' ', fft->size,
-             indent, ' ');
+    cJSON *radix = NULL,
+          *sub_size = NULL;
 
-    int stage_indent = indent + 11;
+    cJSON *stage = cJSON_CreateObject();
+
+    if (!stage)
+        goto failed;
+
+    radix = cJSON_AddNumberToObject (stage, "Radix", fft->radices [stage_idx]);
+    sub_size = cJSON_AddNumberToObject (stage, "Sub-Size", fft->sub_sizes [stage_idx]);
+
+    if (!(radix && sub_size))
+        goto failed;
+
+    if (fft->radix_sub_transforms [stage_idx])
+    {
+        cJSON *sub_plan = atfft_dft_get_plan (fft->radix_sub_transforms [stage_idx]);
+
+        if (!sub_plan)
+            goto failed;
+
+        cJSON_AddItemToObject (stage, "Sub-Transform", sub_plan);
+    }
+
+    return stage;
+
+failed:
+    cJSON_Delete (stage);
+    return NULL;
+}
+
+static cJSON* atfft_get_plan_stages (struct atfft_dft_cooley_tukey *fft)
+{
+    cJSON *stages = cJSON_CreateArray();
+
+    if (!stages)
+        goto failed;
 
     for (int i = 0; i < fft->n_radices; ++i)
     {
-        fprintf (stream, "%*c%2d:    Radix: %d\n"
-                         "%*c    Sub-Size: %d\n",
-                 stage_indent, ' ', i, fft->radices [i],
-                 stage_indent, ' ', fft->sub_sizes [i]);
+        cJSON* stage = atfft_get_plan_stage (fft, i);
 
-        if (fft->radix_sub_transforms [i])
-        {
-            fprintf (stream, "%*c Sub-Transform:\n",
-                     stage_indent, ' ');
-        }
+        if (!stage)
+            goto failed;
+
+        cJSON_AddItemToArray (stages, stage);
     }
+
+    return stages;
+
+failed:
+    cJSON_Delete (stages);
+    return NULL;
+}
+
+cJSON* atfft_dft_cooley_tukey_get_plan (struct atfft_dft_cooley_tukey *fft)
+{
+    cJSON *alg = NULL,
+          *size = NULL,
+          *stages = NULL;
+
+    cJSON *plan_structure = cJSON_CreateObject();
+
+    if (!plan_structure)
+        goto failed;
+
+    alg = cJSON_AddStringToObject (plan_structure, "Algorithm", "Cooley-Tukey");
+    size = cJSON_AddNumberToObject (plan_structure, "Size", fft->size);
+
+    if (!(alg && size))
+        goto failed;
+
+    stages = atfft_get_plan_stages (fft);
+
+    if (!stages)
+        goto failed;
+
+    cJSON_AddItemToObject (plan_structure, "Stages", stages);
+
+    return plan_structure;
+
+failed:
+    cJSON_Delete (plan_structure);
+    return NULL;
 }

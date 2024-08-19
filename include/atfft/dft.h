@@ -198,7 +198,7 @@ void atfft_dft_real_backward_transform_stride (struct atfft_dft *plan,
                                                atfft_sample *out,
                                                int out_stride);
 
-void atfft_dft_print_plan (struct atfft_dft *plan, FILE *stream, int indent);
+void atfft_dft_print_plan (struct atfft_dft *plan, FILE *stream);
 
 #ifdef __cplusplus
 }

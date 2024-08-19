@@ -172,3 +172,24 @@ void atfft_dft_pfa_complex_transform (void *fft,
     /* permute output */
     atfft_pfa_permute (t->o_perm, t->size, t->dft, 1, out, out_stride);
 }
+
+cJSON* atfft_dft_pfa_get_plan (struct atfft_dft_pfa *fft)
+{
+    cJSON *alg = NULL;
+
+    cJSON *plan_structure = cJSON_CreateObject();
+
+    if (!plan_structure)
+        goto failed;
+
+    alg = cJSON_AddStringToObject (plan_structure, "Algorithm", "Prime Factor Algorithm");
+
+    if (!alg)
+        goto failed;
+
+    return plan_structure;
+
+failed:
+    cJSON_Delete (plan_structure);
+    return NULL;
+}

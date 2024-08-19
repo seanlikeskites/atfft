@@ -28,8 +28,8 @@ extern "C"
 {
 #endif
 
-#include <stdio.h>
 #include <atfft/types.h>
+#include "../cJSON/cJSON.h"
 
 struct atfft_dft_cooley_tukey;
 
@@ -45,7 +45,7 @@ void atfft_dft_cooley_tukey_complex_transform (void *fft,
                                                atfft_complex *out,
                                                int out_stride);
 
-void atfft_dft_cooley_tukey_print_plan (struct atfft_dft_cooley_tukey *fft, FILE *stream, int indent);
+cJSON* atfft_dft_cooley_tukey_get_plan (struct atfft_dft_cooley_tukey *fft);
 
 #ifdef __cplusplus
 }

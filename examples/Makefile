@@ -2,10 +2,10 @@ CC = gcc -g
 CFLAGS = -Wall -O3 -pedantic
 LIBS = -lm
 INCLUDEDIRS = -I../include
-DFT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c
-ND_DFT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c ../src/atfft/dft_nd_util.c
-DCT_SOURCES = ../src/atfft/types.c ../src/atfft/dct_util.c
-PROGRAMS = complex_transform dct real_transform dct nd_complex nd_real
+DFT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c ../src/cJSON/cJSON.c
+ND_DFT_SOURCES = ../src/atfft/types.c ../src/atfft/dft_util.c ../src/atfft/dft_nd_util.c ../src/cJSON/cJSON.c
+DCT_SOURCES = ../src/atfft/types.c ../src/atfft/dct_util.c ../src/cJSON/cJSON.c
+PROGRAMS = complex_transform dct real_transform dct nd_complex nd_real print_plan
 
 ifeq (FLOAT, $(TYPE))
 	CFLAGS += -DATFFT_TYPE_FLOAT
@@ -97,9 +97,9 @@ else ifeq (KFR, $(IMPL))
 	DCT_SOURCES += ../src/kfr/dct.c
 
 else
-	DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_pfa.c ../src/atfft/dft_nd.c ../src/atfft/dft_nd_util.c
-	ND_DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_pfa.c ../src/atfft/dft_nd.c
-	DCT_SOURCES += ../src/atfft/dct.c ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_util.c
+	DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_pfa.c ../src/atfft/dft_nd.c ../src/atfft/dft_nd_util.c ../src/atfft/dft_plan.c
+	ND_DFT_SOURCES += ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_pfa.c ../src/atfft/dft_nd.c ../src/atfft/dft_plan.c
+	DCT_SOURCES += ../src/atfft/dct.c ../src/atfft/dft.c ../src/atfft/dft_rader.c ../src/atfft/atfft_internal.c ../src/atfft/dft_cooley_tukey.c ../src/atfft/dft_bluestein.c ../src/atfft/dft_pfa.c ../src/atfft/dft_nd.c ../src/atfft/dft_nd_util.c ../src/atfft/dft_util.c ../src/atfft/dft_plan.c
 
 endif
 
@@ -119,6 +119,9 @@ nd_real: nd_real.c $(ND_DFT_SOURCES)
 
 dct: dct.c $(DCT_SOURCES)
 	$(CC) -o $@ $< $(DCT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
+
+print_plan: print_plan.c $(DFT_SOURCES)
+	$(CC) -o $@ $< $(DFT_SOURCES) $(INCLUDEDIRS) $(LIBS) $(CFLAGS)
 
 clean:
 	rm -f $(PROGRAMS)

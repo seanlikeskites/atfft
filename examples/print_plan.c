@@ -20,35 +20,21 @@
  * SOFTWARE.
  */
 
-#ifndef ATFFT_DFT_BLUESTEIN_H_INCLUDED
-#define ATFFT_DFT_BLUESTEIN_H_INCLUDED
+#include <stdlib.h>
+#include <atfft/atfft.h>
 
-#ifdef __cplusplus
-extern "C"
+int main (int argc, char **argv)
 {
-#endif
+    int size = strtol (argv [1], NULL, 10);
 
-#include <atfft/types.h>
-#include "../cJSON/cJSON.h"
+    /* create fft */
+    struct atfft_dft *fft = atfft_dft_create (size, ATFFT_FORWARD, ATFFT_COMPLEX);
 
-struct atfft_dft_bluestein;
+    /* print plans */
+    atfft_dft_print_plan (fft, stdout);
 
-struct atfft_dft_bluestein* atfft_dft_bluestein_create (int size,
-                                                        enum atfft_direction direction,
-                                                        enum atfft_format format);
+    /* free everything */
+    atfft_dft_destroy (fft);
 
-void atfft_dft_bluestein_destroy (void *fft);
-
-void atfft_dft_bluestein_complex_transform (void *fft,
-                                            atfft_complex *in,
-                                            int in_stride,
-                                            atfft_complex *out,
-                                            int out_stride);
-
-cJSON* atfft_dft_bluestein_get_plan (struct atfft_dft_bluestein *fft);
-
-#ifdef __cplusplus
+    return 0;
 }
-#endif
-
-#endif /* ATFFT_DFT_BLUESTEIN_H_INCLUDED */

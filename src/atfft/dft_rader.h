@@ -29,6 +29,7 @@ extern "C"
 #endif
 
 #include <atfft/types.h>
+#include "../cJSON/cJSON.h"
 
 struct atfft_dft_rader;
 
@@ -43,6 +44,8 @@ void atfft_dft_rader_complex_transform (void *fft,
                                         int in_stride,
                                         atfft_complex *out,
                                         int out_stride);
+
+cJSON* atfft_dft_rader_get_plan (struct atfft_dft_rader *fft);
 
 #ifdef __cplusplus
 }

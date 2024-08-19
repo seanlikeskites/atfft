@@ -25,6 +25,7 @@
 #include <atfft/dft_util.h>
 #include "atfft_internal.h"
 #include "dft_bluestein.h"
+#include "dft_plan.h"
 
 /**
  * Swap the real and imaginary parts of a and then multiply by b:
@@ -212,4 +213,37 @@ void atfft_dft_bluestein_complex_transform (void *fft,
     {
         atfft_swap_and_product_complex (t->conv [i], t->factors [i], out + i * out_stride);
     }
+}
+
+cJSON* atfft_dft_bluestein_get_plan (struct atfft_dft_bluestein *fft)
+{
+    cJSON *alg = NULL,
+          *size = NULL,
+          *conv_size = NULL,
+          *conv_transform = NULL;
+
+    cJSON *plan_structure = cJSON_CreateObject();
+
+    if (!plan_structure)
+        goto failed;
+
+    alg = cJSON_AddStringToObject (plan_structure, "Algorithm", "Bluestein");
+    size = cJSON_AddNumberToObject (plan_structure, "Size", fft->size);
+    conv_size = cJSON_AddNumberToObject (plan_structure, "Convolution Transform Size", fft->conv_size);
+
+    if (!(alg && size && conv_size))
+        goto failed;
+
+    conv_transform = atfft_dft_get_plan (fft->fft);
+
+    if (!conv_transform)
+        goto failed;
+
+    cJSON_AddItemToObject (plan_structure, "Convolution Transform", conv_transform);
+
+    return plan_structure;
+
+failed:
+    cJSON_Delete (plan_structure);
+    return NULL;
 }
