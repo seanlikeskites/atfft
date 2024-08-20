@@ -182,7 +182,10 @@ static atfft_complex** atfft_init_twiddle_factors (int *radices,
     if (!factors)
         return NULL;
 
-    for (int i = 0; i < n_radices; ++i)
+    /* The deepest stage has a sub-size of 1 so all twiddle factors
+     * will be 1. A null pointer in the twiddle factors array
+     * indicates no multiplication need be applied. */
+    for (int i = 0; i < n_radices - 1; ++i)
     {
         atfft_complex *f = atfft_generate_twiddle_factors (radices [i],
                                                            sub_sizes [i],
@@ -358,7 +361,9 @@ static void atfft_butterfly_2 (atfft_complex *out,
 
     while (i--)
     {
-        atfft_multiply_by_complex (out + dft_stride, t_factors [t]);
+        if (t_factors)
+            atfft_multiply_by_complex (out + dft_stride, t_factors [t]);
+
         atfft_dft_2 (out, dft_stride);
 
         out += stride;
@@ -379,13 +384,16 @@ static void atfft_butterfly_3 (atfft_complex *out,
 
     while (i--)
     {
-        int m = dft_stride;
-
-        for (int n = 1; n < radix; ++n)
+        if (t_factors)
         {
-            atfft_multiply_by_complex (out + m, t_factors [t]);
-            m += dft_stride;
-            ++t;
+            int m = dft_stride;
+
+            for (int n = 1; n < radix; ++n)
+            {
+                atfft_multiply_by_complex (out + m, t_factors [t]);
+                m += dft_stride;
+                ++t;
+            }
         }
 
         atfft_dft_3 (out, dft_stride, sin_2pi_on_3);
@@ -414,10 +422,13 @@ static void atfft_butterfly_4 (atfft_complex *out,
 
     while (i--)
     {
-        for (int n = 1; n < radix; ++n)
+        if (t_factors)
         {
-            atfft_multiply_by_complex (bins [n], t_factors [t]);
-            ++t;
+            for (int n = 1; n < radix; ++n)
+            {
+                atfft_multiply_by_complex (bins [n], t_factors [t]);
+                ++t;
+            }
         }
 
         atfft_dft_4 (bins, direction);
@@ -442,13 +453,16 @@ static void atfft_butterfly_sub_transform (atfft_complex *out,
 
     while (i--)
     {
-        int m = dft_stride;
-
-        for (int n = 1; n < radix; ++n)
+        if (t_factors)
         {
-            atfft_multiply_by_complex (out + m, t_factors [t]);
-            m += dft_stride;
-            ++t;
+            int m = dft_stride;
+
+            for (int n = 1; n < radix; ++n)
+            {
+                atfft_multiply_by_complex (out + m, t_factors [t]);
+                m += dft_stride;
+                ++t;
+            }
         }
 
         atfft_dft_complex_transform_stride (sub_transform, out, dft_stride, out, dft_stride);
