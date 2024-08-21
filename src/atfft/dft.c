@@ -34,7 +34,7 @@
 #include "dft_plan.h"
 
 #ifndef ATFFT_PRIME_TRANSFORM_THRESHOLD
-#define ATFFT_PRIME_TRANSFORM_THRESHOLD 3
+#define ATFFT_PRIME_TRANSFORM_THRESHOLD 5
 #endif /* ATFFT_PRIME_TRANSFORM_THRESHOLD */
 
 static void atfft_init_even_real_sinusoids (atfft_complex *sinusoids,
