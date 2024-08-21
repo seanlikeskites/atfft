@@ -107,7 +107,7 @@ static int atfft_init_radices (int size, int *radices, int *sub_sizes, int *max_
             r = atfft_next_radix (r);
 
             /* a number will only have one prime factor greater than its square root */
-            if (r > sqrt_size)
+            if (atfft_is_odd (r) && r > sqrt_size)
                 r = size;
         }
 
