@@ -3,4 +3,5 @@ real_transform
 dct
 nd_complex
 nd_real
+print_plan
 *.txt

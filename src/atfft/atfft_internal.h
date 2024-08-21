@@ -73,6 +73,17 @@ inline void atfft_sum_complex (const atfft_complex a,
 }
 
 /**
+ * Sum two complex numbers multiplying the second by j: s = a + jb
+ */
+inline void atfft_sum_a_jb_complex (const atfft_complex a,
+                                    const atfft_complex b,
+                                    atfft_complex *s)
+{
+    ATFFT_RE (*s) = ATFFT_RE (a) - ATFFT_IM (b);
+    ATFFT_IM (*s) = ATFFT_IM (a) + ATFFT_RE (b);
+}
+
+/**
  * Take the difference of two complex numbers: d = a - b
  */
 inline void atfft_difference_complex (const atfft_complex a,
@@ -81,6 +92,18 @@ inline void atfft_difference_complex (const atfft_complex a,
 {
     ATFFT_RE (*d) = ATFFT_RE (a) - ATFFT_RE (b);
     ATFFT_IM (*d) = ATFFT_IM (a) - ATFFT_IM (b);
+}
+
+/**
+ * Take the difference of two complex numbers
+ * multiplying the second by j: s = a - jb
+ */
+inline void atfft_difference_a_jb_complex (const atfft_complex a,
+                                           const atfft_complex b,
+                                           atfft_complex *s)
+{
+    ATFFT_RE (*s) = ATFFT_RE (a) + ATFFT_IM (b);
+    ATFFT_IM (*s) = ATFFT_IM (a) - ATFFT_RE (b);
 }
 
 /**

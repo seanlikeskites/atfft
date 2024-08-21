@@ -33,6 +33,10 @@
 #include "dft_pfa.h"
 #include "dft_plan.h"
 
+#ifndef ATFFT_PRIME_TRANSFORM_THRESHOLD
+#define ATFFT_PRIME_TRANSFORM_THRESHOLD 3
+#endif /* ATFFT_PRIME_TRANSFORM_THRESHOLD */
+
 static void atfft_init_even_real_sinusoids (atfft_complex *sinusoids,
                                             int sinusoids_size,
                                             int dft_size,
@@ -107,7 +111,8 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
                                         direction);
     }
 
-    if (atfft_is_prime (fft->internal_dft_size))
+    if (fft->internal_dft_size > ATFFT_PRIME_TRANSFORM_THRESHOLD &&
+        atfft_is_prime (fft->internal_dft_size))
     {
         if (atfft_is_power_of_2 (fft->internal_dft_size - 1))
         {
