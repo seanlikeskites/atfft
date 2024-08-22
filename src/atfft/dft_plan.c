@@ -39,7 +39,7 @@ cJSON* atfft_dft_get_plan (void *fft)
             break;
 
         case ATFFT_COOLEY_TUKEY:
-            plan_structure = atfft_dft_cooley_tukey_get_plan (fft);
+            plan_structure = atfft_dft_ct_get_plan (fft);
             break;
 
         case ATFFT_PFA:

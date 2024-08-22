@@ -27,6 +27,7 @@
 #include <atfft/dft.h>
 #include "atfft_internal.h"
 #include "dft_rader.h"
+#include "dft_cooley_tukey.h"
 #include "dft_plan.h"
 
 static int atfft_primitive_root_mod_n (int n)
@@ -62,7 +63,7 @@ static int atfft_primitive_root_mod_n (int n)
 
 static int atfft_rader_convolution_fft_size (int rader_size)
 {
-    if (atfft_is_power_of_2 (rader_size))
+    if (atfft_dft_ct_is_fast_size (rader_size))
         return rader_size;
     else
         return atfft_next_power_of_2 (2 * rader_size - 1);

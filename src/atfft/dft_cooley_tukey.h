@@ -31,21 +31,30 @@ extern "C"
 #include <atfft/types.h>
 #include "../cJSON/cJSON.h"
 
-struct atfft_dft_cooley_tukey;
+enum atfft_dft_ct_method
+{
+    ATFFT_DFT_CT_RECURSIVE,
+    ATFFT_DFT_CT_ITERATIVE
+};
 
-struct atfft_dft_cooley_tukey* atfft_dft_cooley_tukey_create (int size,
-                                                              enum atfft_direction direction,
-                                                              enum atfft_format format);
+struct atfft_dft_ct;
 
-void atfft_dft_cooley_tukey_destroy (void *fft);
+struct atfft_dft_ct* atfft_dft_ct_create (int size,
+                                          enum atfft_direction direction,
+                                          enum atfft_format format,
+                                          enum atfft_dft_ct_method);
 
-void atfft_dft_cooley_tukey_complex_transform (void *fft,
-                                               atfft_complex *in,
-                                               int in_stride,
-                                               atfft_complex *out,
-                                               int out_stride);
+void atfft_dft_ct_destroy (void *fft);
 
-cJSON* atfft_dft_cooley_tukey_get_plan (struct atfft_dft_cooley_tukey *fft);
+void atfft_dft_ct_complex_transform (void *fft,
+                                     atfft_complex *in,
+                                     int in_stride,
+                                     atfft_complex *out,
+                                     int out_stride);
+
+int atfft_dft_ct_is_fast_size (int size);
+
+cJSON* atfft_dft_ct_get_plan (struct atfft_dft_ct *fft);
 
 #ifdef __cplusplus
 }

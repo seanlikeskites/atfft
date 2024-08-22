@@ -114,7 +114,7 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     if (fft->internal_dft_size > ATFFT_PRIME_TRANSFORM_THRESHOLD &&
         atfft_is_prime (fft->internal_dft_size))
     {
-        if (atfft_is_power_of_2 (fft->internal_dft_size - 1))
+        if (atfft_dft_ct_is_fast_size (fft->internal_dft_size - 1))
         {
             /* Use Rader's algorithm */
             fft->fft = atfft_dft_rader_create (fft->internal_dft_size, direction, ATFFT_COMPLEX);
@@ -132,9 +132,9 @@ struct atfft_dft* atfft_dft_create (int size, enum atfft_direction direction, en
     else
     {
         /* Use Cooley-Tukey */
-        fft->fft = atfft_dft_cooley_tukey_create (fft->internal_dft_size, direction, ATFFT_COMPLEX);
-        fft->complex_transform = atfft_dft_cooley_tukey_complex_transform;
-        fft->fft_destroy = atfft_dft_cooley_tukey_destroy;
+        fft->fft = atfft_dft_ct_create (fft->internal_dft_size, direction, ATFFT_COMPLEX, ATFFT_DFT_CT_ITERATIVE);
+        fft->complex_transform = atfft_dft_ct_complex_transform;
+        fft->fft_destroy = atfft_dft_ct_destroy;
     }
 
     if (!fft->fft)
