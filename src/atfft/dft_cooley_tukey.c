@@ -50,11 +50,11 @@ struct atfft_dft_ct
     /* index permutation for decimation in time */
     int *permutation;
 
-    /* complex sinusoids */
-    atfft_complex *sinusoids;
-
     /* twiddle factors */
     atfft_complex **t_factors;
+
+    /* complex sinusoids */
+    atfft_complex *sinusoids;
 
     /* working space for length-n butterflies */
     atfft_complex *work_space;
@@ -295,33 +295,35 @@ struct atfft_dft_ct* atfft_dft_ct_create (int size,
     int max_r = 0;
     fft->n_radices = atfft_init_radices (size, fft->radices, fft->sub_sizes, &max_r);
 
-    /* calculate permutation */
-    fft->permutation = atfft_init_index_permutation (size,
-                                                     fft->radices,
-                                                     fft->sub_sizes,
-                                                     fft->n_radices);
+    /* calculate permutation for iterative implementation */
+    if (method == ATFFT_DFT_CT_ITERATIVE)
+    {
+        fft->permutation = atfft_init_index_permutation (size,
+                                                         fft->radices,
+                                                         fft->sub_sizes,
+                                                         fft->n_radices);
 
-    if (!fft->permutation)
-        goto failed;
+        if (!fft->permutation)
+            goto failed;
+    }
 
     /* calculate twiddle factors */
-    fft->sinusoids = malloc (size * sizeof (*(fft->sinusoids)));
     fft->t_factors = atfft_init_twiddle_factors (fft->radices,
                                                  fft->sub_sizes,
                                                  fft->n_radices,
                                                  direction);
 
-    /* clean up on failure */
-    if (!(fft->sinusoids && fft->t_factors))
+    if (!fft->t_factors)
+        goto failed;
+
+    /* allocate complex sinusoid and working space for non-optimised butterfly */
+    fft->sinusoids = malloc (size * sizeof (*(fft->sinusoids)));
+    fft->work_space = malloc (max_r * sizeof (*(fft->work_space)));
+
+    if (!(fft->sinusoids && fft->work_space))
         goto failed;
     else
         atfft_init_complex_sinusoids (fft->sinusoids, size, direction);
-
-    /* allocate some working space */
-    fft->work_space = malloc (max_r * sizeof (*(fft->work_space)));
-
-    if (!fft->work_space)
-        goto failed;
 
     /* create any necessary sub-transform strucs */
     fft->sub_transforms = atfft_init_sub_transforms (fft->radices,
@@ -548,8 +550,10 @@ static inline void atfft_dft_8 (atfft_complex *out,
                                 int stride,
                                 enum atfft_direction direction)
 {
+    /* Necessary Constants */
     static const atfft_sample one_on_root_two = 0.7071067811865475244008443621048;
 
+    /* Input/Output Bins */
     const int radix = 8;
     atfft_complex *bins [radix];
 
@@ -560,60 +564,82 @@ static inline void atfft_dft_8 (atfft_complex *out,
         bins [n] = bins [n - 1] + stride;
     }
 
+    /* Intermediate Variables */
     atfft_complex ts [8];
     atfft_complex qs [6];
     atfft_complex ss [4];
 
+    /* t[0] = x[0] + x[4]
+     * t[1] = x[1] + x[5]
+     * t[2] = x[2] + x[6]
+     * t[3] = x[3] + x[7]
+     * t[4] = x[0] - x[4]
+     * t[5] = x[1] - x[5]
+     * t[6] = x[2] - x[6]
+     * t[7] = x[3] - x[7] */
     for (int i = 0; i < 4; ++i)
     {
         atfft_sum_complex (*bins [i], *bins [i + 4], &ts [i]);
+        atfft_difference_complex (*bins [i], *bins [i + 4], &ts [i + 4]);
     }
 
-    atfft_difference_complex (*bins [0], *bins [4], &ts [4]);
-    atfft_difference_complex (*bins [1], *bins [5], &ts [5]);
-    atfft_difference_complex (*bins [3], *bins [7], &ts [7]);
-
+    /* q[0] = t[0] + t[2]
+     * q[1] = t[1] + t[3]
+     * q[2] = t[0] - t[2]
+     * q[3] = t[1] - t[3] */
     for (int i = 0; i < 2; ++i)
     {
         atfft_sum_complex (ts [i], ts [i + 2], &qs [i]);
+        atfft_difference_complex (ts [i], ts [i + 2], &qs [i + 2]);
     }
 
-    atfft_difference_complex (ts [0], ts [2], &qs [2]);
+    /* q[4] = 1/sqrt(2) * (t[5] + t[8]) */
+    ATFFT_RE (qs [4]) = one_on_root_two * (ATFFT_RE (ts [5]) + ATFFT_RE (ts [7]));
+    ATFFT_IM (qs [4]) = one_on_root_two * (ATFFT_IM (ts [5]) + ATFFT_IM (ts [7]));
+
+    /* q[5] = 1/sqrt(2) * (t[5] - t[8]) */
     ATFFT_RE (qs [5]) = one_on_root_two * (ATFFT_RE (ts [5]) - ATFFT_RE (ts [7]));
     ATFFT_IM (qs [5]) = one_on_root_two * (ATFFT_IM (ts [5]) - ATFFT_IM (ts [7]));
 
-    if (direction == ATFFT_FORWARD)
-    {
-        atfft_difference_complex (*bins [2], *bins [6], &ts [6]);
-
-        atfft_difference_complex (ts [1], ts [3], &qs [3]);
-
-        ATFFT_RE (qs [4]) = one_on_root_two * (ATFFT_RE (ts [5]) + ATFFT_RE (ts [7]));
-        ATFFT_IM (qs [4]) = one_on_root_two * (ATFFT_IM (ts [5]) + ATFFT_IM (ts [7]));
-    }
-    else
-    {
-        atfft_difference_complex (*bins [6], *bins [2], &ts [6]);
-
-        atfft_difference_complex (ts [3], ts [1], &qs [3]);
-
-        ATFFT_RE (qs [4]) = - one_on_root_two * (ATFFT_RE (ts [5]) + ATFFT_RE (ts [7]));
-        ATFFT_IM (qs [4]) = - one_on_root_two * (ATFFT_IM (ts [5]) + ATFFT_IM (ts [7]));
-    }
-
+    /* s[0] = t[4] - j * q[4]
+     * s[1] = t[5] + j * q[4]
+     * s[3] = q[5] - j * t[6] 
+     * s[4] = q[5] + j * t[6] */
     atfft_difference_a_jb_complex (ts [4], qs [4], &ss [0]);
     atfft_sum_a_jb_complex (ts [4], qs [4], &ss [1]);
     atfft_difference_a_jb_complex (qs [5], ts [6], &ss [2]);
     atfft_sum_a_jb_complex (qs [5], ts [6], &ss [3]);
 
+    /* X[0] = q[0] + q[1]
+     * X[1] = s[0] + s[2]
+     * X[2] = q[2] - j * q[3]
+     * X[3] = s[0] - s[2]
+     * X[4] = q[0] - q[1]
+     * X[5] = s[1] - s[3]
+     * X[6] = q[2] + j * q[3]
+     * X[7] = s[1] + s[3] */
     atfft_sum_complex (qs [0], qs [1], bins [0]);
-    atfft_sum_complex (ss [0], ss [2], bins [1]);
-    atfft_difference_a_jb_complex (qs [2], qs [3], bins [2]);
-    atfft_difference_complex (ss [0], ss [2], bins [3]);
     atfft_difference_complex (qs [0], qs [1], bins [4]);
-    atfft_difference_complex (ss [1], ss [3], bins [5]);
-    atfft_sum_a_jb_complex (qs [2], qs [3], bins [6]);
-    atfft_sum_complex (ss [1], ss [3], bins [7]);
+
+    if (direction == ATFFT_FORWARD)
+    {
+        atfft_sum_complex (ss [0], ss [2], bins [1]);
+        atfft_difference_a_jb_complex (qs [2], qs [3], bins [2]);
+        atfft_difference_complex (ss [0], ss [2], bins [3]);
+        atfft_difference_complex (ss [1], ss [3], bins [5]);
+        atfft_sum_a_jb_complex (qs [2], qs [3], bins [6]);
+        atfft_sum_complex (ss [1], ss [3], bins [7]);
+    }
+    else
+    {
+        /* Mirror all but first element for inverse. */
+        atfft_sum_complex (ss [1], ss [3], bins [1]);
+        atfft_sum_a_jb_complex (qs [2], qs [3], bins [2]);
+        atfft_difference_complex (ss [1], ss [3], bins [3]);
+        atfft_difference_complex (ss [0], ss [2], bins [5]);
+        atfft_difference_a_jb_complex (qs [2], qs [3], bins [6]);
+        atfft_sum_complex (ss [0], ss [2], bins [7]);
+    }
 }
 
 /******************************************
