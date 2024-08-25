@@ -120,6 +120,28 @@ inline void atfft_product_complex (const atfft_complex a,
 }
 
 /**
+ * Find the product of a real and a complex number: p = ab
+ */
+inline void atfft_product_real_complex (const atfft_sample a,
+                                        const atfft_complex b,
+                                        atfft_complex *p)
+{
+    ATFFT_RE (*p) = a * ATFFT_RE (b);
+    ATFFT_IM (*p) = a * ATFFT_IM (b);
+}
+
+/**
+ * Find the product of an imaginary and a complex number: p = ajb
+ */
+inline void atfft_product_imaginary_complex (const atfft_sample aj,
+                                             const atfft_complex b,
+                                             atfft_complex *p)
+{
+    ATFFT_RE (*p) = - aj * ATFFT_IM (b);
+    ATFFT_IM (*p) = aj * ATFFT_RE (b);
+}
+
+/**
  * Multiply a complex variable by another: a *= b
  */
 inline void atfft_multiply_by_complex (atfft_complex *a, const atfft_complex b)

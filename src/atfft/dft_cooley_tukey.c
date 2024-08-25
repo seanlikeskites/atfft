@@ -546,6 +546,156 @@ static inline void atfft_dft_5 (atfft_complex *out,
     }
 }
 
+static inline void atfft_dft_7 (atfft_complex *out,
+                                int stride,
+                                enum atfft_direction direction)
+{
+    /* Necessary Constants */
+    /* u = -2*pi/7 */
+    /* k0 = (cos(u) + cos(2u) + cos(3u))/3 - 1 */
+    static const atfft_sample k0 = -1.1666666666666666666666666666667;
+    /* k1 = (2cos(u) - cos(2u) - cos(3u))/3 */
+    static const atfft_sample k1 = 0.7901564685254001971916715506709;
+    /* k2 = (cos(u) - 2cos(2u) + cos(3u))/3 */
+    static const atfft_sample k2 = 0.0558542672896477376222358978301;
+    /* k3 = (cos(u) + cos(2u) - 2cos(3u))/3 */
+    static const atfft_sample k3 = 0.7343022012357524595694356528408;
+    /* k4 = (sin(u) + sin(2u) - sin(3u))/3 */
+    static const atfft_sample k4 = -0.4409585518440984317502692922732;
+    /* k5 = (2sin(u) - sin(2u) + sin(3u))/3 */
+    static const atfft_sample k5 = -0.3408729306239313769581752344008;
+    /* k6 = (sin(u) - 2sin(2u) - sin(3u))/3 */
+    static const atfft_sample k6 = 0.5339693603377251752678623907207;
+    /* k7 = (sin(u) + sin(2u) + 2sin(3u))/3 */
+    static const atfft_sample k7 = -0.8748422909616565522260376251216;
+
+    /* Input/Output Bins */
+    const int radix = 7;
+    atfft_complex *bins [radix];
+
+    bins [0] = out;
+
+    for (int n = 1; n < radix; ++n)
+    {
+        bins [n] = bins [n - 1] + stride;
+    }
+
+    /* Intermediate Variables */
+    atfft_complex ts [6];
+    atfft_complex qs [10];
+    atfft_complex ms [9];
+    atfft_complex ss [13];
+
+    /* t[0] = x[1] + x[6] -- s1
+     * t[1] = x[1] - x[6] -- s2
+     * t[2] = x[4] + x[3] -- s3
+     * t[3] = x[4] - x[3] -- s4
+     * t[4] = x[2] + x[5] -- s5
+     * t[5] = x[2] - x[5] -- s6 */
+    atfft_sum_complex (*bins [1], *bins [6], &ts [0]);
+    atfft_difference_complex (*bins [1], *bins [6], &ts [1]);
+    atfft_sum_complex (*bins [4], *bins [3], &ts [2]);
+    atfft_difference_complex (*bins [4], *bins [3], &ts [3]);
+    atfft_sum_complex (*bins [2], *bins [5], &ts [4]);
+    atfft_difference_complex (*bins [2], *bins [5], &ts [5]);
+
+    /* q[0] = t[0] + t[2] -- s7
+     * q[1] = q[0] + t[4] -- s8
+     * q[2] = t[0] - t[2] -- s10
+     * q[3] = t[2] - t[4] -- s11
+     * q[4] = t[4] - t[0] -- s12
+     * q[5] = t[1] + t[3] -- s12
+     * q[6] = q[5] + t[5] -- s14
+     * q[7] = t[1] - t[3] -- s15
+     * q[8] = t[3] - t[5] -- s16
+     * q[9] = t[5] - t[1] -- s17 */
+    atfft_sum_complex (ts [0], ts [2], &qs [0]);
+    atfft_sum_complex (qs [0], ts [4], &qs [1]);
+    atfft_difference_complex (ts [0], ts [2], &qs [2]);
+    atfft_difference_complex (ts [2], ts [4], &qs [3]);
+    atfft_difference_complex (ts [4], ts [0], &qs [4]);
+    atfft_sum_complex (ts [1], ts [3], &qs [5]);
+    atfft_sum_complex (qs [5], ts [5], &qs [6]);
+    atfft_difference_complex (ts [1], ts [3], &qs [7]);
+    atfft_difference_complex (ts [3], ts [5], &qs [8]);
+    atfft_difference_complex (ts [5], ts [1], &qs [9]);
+
+    /* m[0] = q[1] + x[0]
+     * m[1] = k0 * q[1] 
+     * m[2] = k1 * q[2] 
+     * m[3] = k2 * q[3]
+     * m[4] = k3 * q[4]
+     * m[5] = j * k4 * q[6]
+     * m[6] = j * k5 * q[7]
+     * m[7] = j * k6 * q[8]
+     * m[8] = j * k7 * q[9] */
+    atfft_sum_complex (qs [1], *bins [0], &ms [0]);
+    atfft_product_real_complex (k0, qs [1], &ms [1]);
+    atfft_product_real_complex (k1, qs [2], &ms [2]);
+    atfft_product_real_complex (k2, qs [3], &ms [3]);
+    atfft_product_real_complex (k3, qs [4], &ms [4]);
+    atfft_product_imaginary_complex (k4, qs [6], &ms [5]);
+    atfft_product_imaginary_complex (k5, qs [7], &ms [6]);
+    atfft_product_imaginary_complex (k6, qs [8], &ms [7]);
+    atfft_product_imaginary_complex (k7, qs [9], &ms [8]);
+
+    /* s[0] = m[0] + m[1] -- s18
+     * s[1] = s[0] + m[2] -- s19
+     * s[2] = s[1] + m[3] -- s20
+     * s[3] = s[0] - m[2] -- s21
+     * s[4] = s[3] - m[4] -- s22 
+     * s[5] = s[0] - m[3] -- s23
+     * s[6] = s[5] + m[4] -- s24
+     * s[7] = m[5] + m[6] -- s25
+     * s[8] = s[7] + m[7] -- s26
+     * s[9] = m[5] - m[6] -- s27
+     * s[10] = s[9] - m[8] -- s28
+     * s[11] = m[5] - m[7] -- s29
+     * s[12] = s[11] + m[8] -- s30 */
+    atfft_sum_complex (ms [0], ms [1], &ss [0]);
+    atfft_sum_complex (ss [0], ms [2], &ss [1]);
+    atfft_sum_complex (ss [1], ms [3], &ss [2]);
+    atfft_difference_complex (ss [0], ms [2], &ss [3]);
+    atfft_difference_complex (ss [3], ms [4], &ss [4]);
+    atfft_difference_complex (ss [0], ms [3], &ss [5]);
+    atfft_sum_complex (ss [5], ms [4], &ss [6]);
+    atfft_sum_complex (ms [5], ms [6], &ss [7]);
+    atfft_sum_complex (ss [7], ms [7], &ss [8]);
+    atfft_difference_complex (ms [5], ms [6], &ss [9]);
+    atfft_difference_complex (ss [9], ms [8], &ss [10]);
+    atfft_difference_complex (ms [5], ms [7], &ss [11]);
+    atfft_sum_complex (ss [11], ms [8], &ss [12]);
+
+    /* X[0] = m[0]
+     * X[1] = s[2] + s[8]
+     * X[2] = s[4] + s[10]
+     * X[3] = s[6] - s[12]
+     * X[4] = s[6] + s[12]
+     * X[5] = s[4] - s[10]
+     * X[6] = s[2] - s[8] */
+    atfft_copy_complex (ms [0], bins [0]);
+
+    if (direction == ATFFT_FORWARD)
+    {
+        atfft_sum_complex (ss [2], ss [8], bins [1]);
+        atfft_sum_complex (ss [4], ss [10], bins [2]);
+        atfft_difference_complex (ss [6], ss [12], bins [3]);
+        atfft_sum_complex (ss [6], ss [12], bins [4]);
+        atfft_difference_complex (ss [4], ss [10], bins [5]);
+        atfft_difference_complex (ss [2], ss [8], bins [6]);
+    }
+    else
+    {
+        /* Mirror all but first element for inverse. */
+        atfft_difference_complex (ss [2], ss [8], bins [1]);
+        atfft_difference_complex (ss [4], ss [10], bins [2]);
+        atfft_sum_complex (ss [6], ss [12], bins [3]);
+        atfft_difference_complex (ss [6], ss [12], bins [4]);
+        atfft_sum_complex (ss [4], ss [10], bins [5]);
+        atfft_sum_complex (ss [2], ss [8], bins [6]);
+    }
+}
+
 static inline void atfft_dft_8 (atfft_complex *out,
                                 int stride,
                                 enum atfft_direction direction)
@@ -692,6 +842,7 @@ ATFFT_GENERATE_BUTTERFLY(2)
 ATFFT_GENERATE_BUTTERFLY(3)
 ATFFT_GENERATE_BUTTERFLY(4)
 ATFFT_GENERATE_BUTTERFLY(5)
+ATFFT_GENERATE_BUTTERFLY(7)
 ATFFT_GENERATE_BUTTERFLY(8)
 
 static void atfft_butterfly_sub_transform (atfft_complex *out,
@@ -805,6 +956,9 @@ static void atfft_butterfly (const struct atfft_dft_ct *fft,
             break;
         case 5:
             atfft_butterfly_5 (out, stride, radix, sub_size, t_factors, fft->direction);
+            break;
+        case 7:
+            atfft_butterfly_7 (out, stride, radix, sub_size, t_factors, fft->direction);
             break;
         case 8:
             atfft_butterfly_8 (out, stride, radix, sub_size, t_factors, fft->direction);

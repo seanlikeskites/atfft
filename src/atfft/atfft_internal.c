@@ -46,6 +46,12 @@ extern inline void atfft_difference_a_jb_complex (const atfft_complex a,
 extern inline void atfft_product_complex (const atfft_complex a,
                                           const atfft_complex b,
                                           atfft_complex *p);
+extern inline void atfft_product_real_complex (const atfft_sample a,
+                                               const atfft_complex b,
+                                               atfft_complex *p);
+extern inline void atfft_product_imaginary_complex (const atfft_sample aj,
+                                                    const atfft_complex b,
+                                                    atfft_complex *p);
 extern inline void atfft_multiply_by_complex (atfft_complex *a, const atfft_complex b);
 extern inline void atfft_multiply_by_and_swap_complex (atfft_complex *a, const atfft_complex b);
 
